@@ -1,4 +1,4 @@
-import { createId } from '@paralleldrive/cuid2';
+import { createId } from "@paralleldrive/cuid2";
 
 export interface Token2FaInterface {
   token: string;
@@ -8,10 +8,9 @@ export interface Token2FaInterface {
 }
 
 export interface UserInfo2Fa {
-  name?: string;
+  name: string;
   email: string;
-  password?: string;
-  workspaceName?: string;
+  password: string;
 }
 
 export class Token2Fa {
@@ -19,16 +18,18 @@ export class Token2Fa {
   token: string;
   expiresAt: Date;
   createdAt: Date;
-  workspaceName: string;
   isRevoked: boolean;
   userInfo2Fa: UserInfo2Fa;
 
-  constructor(token2FA: Token2FaInterface, userInfo2Fa: UserInfo2Fa, id?: string) {
+  constructor(
+    token2FA: Token2FaInterface,
+    userInfo2Fa: UserInfo2Fa,
+    id?: string,
+  ) {
     this.id = id ?? createId();
     this.token = token2FA.token;
     this.expiresAt = token2FA.expiresAt;
     this.createdAt = token2FA.createdAt;
-    this.workspaceName = userInfo2Fa.workspaceName ?? 'Workspace';
     this.isRevoked = token2FA.isRevoked;
     this.userInfo2Fa = userInfo2Fa;
   }

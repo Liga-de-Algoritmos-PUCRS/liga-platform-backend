@@ -8,8 +8,8 @@ export class Token2FAMapper {
   static toDomain(prismaToken2FA: PrismaToken2FA): Token2Fa {
     const userInfo2Fa: UserInfo2Fa = {
       email: prismaToken2FA.userEmail,
-      name: prismaToken2FA.userName ?? undefined,
-      password: prismaToken2FA.userPassword ?? undefined,
+      name: prismaToken2FA.userName,
+      password: prismaToken2FA.userPassword,
     };
 
     const token2Fa = new Token2Fa(

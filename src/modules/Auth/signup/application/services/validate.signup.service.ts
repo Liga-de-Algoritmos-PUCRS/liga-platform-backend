@@ -59,10 +59,10 @@ export class ValidateSignupService {
     const user: User = await this.TransactionAdapter.transaction(async () => {
       const user = await this.UserRepository.createUser(
         new User({
-          name: findToken2Fa.name,
-          email: findToken2Fa.email,
-          password: findToken2Fa.password,
-          role: Role.USER,
+          name: findToken2Fa.userInfo2Fa.name,
+          email: findToken2Fa.userInfo2Fa.email,
+          password: findToken2Fa.userInfo2Fa.password,
+          role: "USER",
         }),
       );
       return user;

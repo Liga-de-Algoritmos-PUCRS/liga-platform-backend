@@ -1,4 +1,4 @@
-import { applyDecorators } from '@nestjs/common';
+import { applyDecorators } from "@nestjs/common";
 import {
   ApiOperation,
   ApiOkResponse,
@@ -8,129 +8,114 @@ import {
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiUnauthorizedResponse,
-} from '@nestjs/swagger';
-import { UserResponseDTO, CreateUserWithAccountResponseDTO } from './response-user.dto';
+} from "@nestjs/swagger";
+import { UserResponseDTO } from "./response-user.dto";
 
 export const CreateUserDecorator = applyDecorators(
   ApiOperation({
-    summary: 'Create a new user',
-    description: 'This endpoint allows you to create a new user in the system.',
+    summary: "Create a new user",
+    description: "This endpoint allows you to create a new user in the system.",
   }),
   ApiCreatedResponse({
-    description: 'User created successfully.',
+    description: "User created successfully.",
     type: UserResponseDTO,
   }),
   ApiBadRequestResponse({
-    description: 'Bad request. The input data is invalid or missing.',
+    description: "Bad request. The input data is invalid or missing.",
   }),
   ApiInternalServerErrorResponse({
     description:
-      'Internal server error. An unexpected error occurred while processing the request.',
+      "Internal server error. An unexpected error occurred while processing the request.",
   }),
 );
 
 export const UpdateUserDecorator = applyDecorators(
   ApiOperation({
-    summary: 'Update an existing user',
-    description: 'This endpoint allows you to update an existing user in the system.',
+    summary: "Update an existing user",
+    description:
+      "This endpoint allows you to update an existing user in the system.",
   }),
   ApiOkResponse({
-    description: 'User updated successfully.',
+    description: "User updated successfully.",
     type: UserResponseDTO,
   }),
   ApiNotFoundResponse({
-    description: 'User not found. The user with the specified ID does not exist.',
+    description:
+      "User not found. The user with the specified ID does not exist.",
   }),
   ApiBadRequestResponse({
-    description: 'Bad request. The input data is invalid or missing.',
+    description: "Bad request. The input data is invalid or missing.",
   }),
   ApiInternalServerErrorResponse({
     description:
-      'Internal server error. An unexpected error occurred while processing the request.',
+      "Internal server error. An unexpected error occurred while processing the request.",
   }),
 );
 
 export const GetAllUsersDecorator = applyDecorators(
   ApiOperation({
-    summary: 'List all users',
-    description: 'This endpoint retrieves a list of all users in the system.',
+    summary: "List all users",
+    description: "This endpoint retrieves a list of all users in the system.",
   }),
   ApiOkResponse({
-    description: 'List of users retrieved successfully.',
+    description: "List of users retrieved successfully.",
     type: [UserResponseDTO],
   }),
   ApiNotFoundResponse({
-    description: 'No users found. The system does not contain any users.',
+    description: "No users found. The system does not contain any users.",
   }),
   ApiInternalServerErrorResponse({
     description:
-      'Internal server error. An unexpected error occurred while processing the request.',
+      "Internal server error. An unexpected error occurred while processing the request.",
   }),
 );
 
 export const GetUserDecorator = applyDecorators(
   ApiOperation({
-    summary: 'Get a user by ID',
-    description: 'This endpoint retrieves a user by their unique ID.',
+    summary: "Get a user by ID",
+    description: "This endpoint retrieves a user by their unique ID.",
   }),
   ApiOkResponse({
-    description: 'User retrieved successfully.',
+    description: "User retrieved successfully.",
     type: UserResponseDTO,
   }),
   ApiNotFoundResponse({
-    description: 'User not found. The user with the specified ID does not exist.',
+    description:
+      "User not found. The user with the specified ID does not exist.",
   }),
   ApiInternalServerErrorResponse({
     description:
-      'Internal server error. An unexpected error occurred while processing the request.',
-  }),
-);
-
-export const GetUserWithAccountDecorator = applyDecorators(
-  ApiOperation({
-    summary: 'Get a user with account information by ID',
-    description:
-      'This endpoint retrieves a user along with their account information by their unique ID.',
-  }),
-  ApiOkResponse({
-    description: 'User with account information retrieved successfully.',
-    type: CreateUserWithAccountResponseDTO,
-  }),
-  ApiNotFoundResponse({
-    description: 'User not found. The user with the specified ID does not exist.',
-  }),
-  ApiInternalServerErrorResponse({
-    description:
-      'Internal server error. An unexpected error occurred while processing the request.',
+      "Internal server error. An unexpected error occurred while processing the request.",
   }),
 );
 
 export const DeleteUserDecorator = applyDecorators(
   ApiOperation({
-    summary: 'Delete a user',
-    description: 'This endpoint allows you to delete a user from the system.',
+    summary: "Delete a user",
+    description: "This endpoint allows you to delete a user from the system.",
   }),
   ApiOkResponse({
-    description: 'User deleted successfully.',
+    description: "User deleted successfully.",
   }),
   ApiNotFoundResponse({
-    description: 'User not found. The user with the specified ID does not exist.',
+    description:
+      "User not found. The user with the specified ID does not exist.",
     schema: {
       example: {
-        message: 'User not found with the provided ID',
+        message: "User not found with the provided ID",
       },
     },
   }),
   ApiUnauthorizedResponse({
-    description: 'Unauthorized. Invalid authentication credentials provided.',
+    description: "Unauthorized. Invalid authentication credentials provided.",
     schema: {
       example: {
-        message: 'Invalid password provided',
+        message: "Invalid password provided",
       },
     },
   }),
   ApiForbiddenResponse({
-    description: 'Forbidden. You do not have permission to delete this user.',
+    description: "Forbidden. You do not have permission to delete this user.",
     schema: {
       example: {
         message: "User doesn't have permission",
@@ -139,20 +124,6 @@ export const DeleteUserDecorator = applyDecorators(
   }),
   ApiInternalServerErrorResponse({
     description:
-      'Internal server error. An unexpected error occurred while processing the request.',
-  }),
-);
-
-export const DeleteUserPhoneDecorator = applyDecorators(
-  ApiOperation({
-    summary: 'Delete a user phone',
-    description: 'This endpoint allows you to delete a user phone from the system.',
-  }),
-  ApiOkResponse({
-    description: 'User phone deleted successfully.',
-  }),
-  ApiInternalServerErrorResponse({
-    description:
-      'Internal server error. An unexpected error occurred while processing the request.',
+      "Internal server error. An unexpected error occurred while processing the request.",
   }),
 );

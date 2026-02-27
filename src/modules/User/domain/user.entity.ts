@@ -26,8 +26,8 @@ export interface UserInterface {
   password: string;
   createdAt?: Date;
   role: Role;
-  course: Course;
-  semester: Semester;
+  course?: Course;
+  semester?: Semester;
   bannerUrl?: string | null;
   avatarUrl?: string | null;
   historycalSubmissions?: number;
@@ -44,8 +44,8 @@ export class User {
   bannerUrl: string | null;
   avatarUrl: string | null;
   role: Role;
-  course: Course;
-  semester: Semester;
+  course?: Course;
+  semester?: Semester;
   monthlyPoints?: number;
   allTimePoints?: number;
   historycalSubmissions?: number;

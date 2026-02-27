@@ -12,7 +12,6 @@ import { JwtAuthGuard } from "@/global/common/guards/jwt-auth.guard";
 import { UpdateUserService } from "@/modules/User/application/services/update-user.service";
 import { GetAllUserService } from "@/modules/User/application/services/get-all-user.service";
 import { DeleteUserService } from "@/modules/User/application/services/delete-user.service";
-import { GetUserWithAccountService } from "@/modules/User/application/services/get-user-with-account.service";
 import { GetUserByIdService } from "@/modules/User/application/services/get-user.service";
 import { UpdateUserDTO } from "@/modules/User/application/dtos/update-user.dto";
 import { GetUser } from "@/global/common/decorators/get-user.decorator";
@@ -21,7 +20,6 @@ import {
   GetAllUsersDecorator,
   GetUserDecorator,
   DeleteUserDecorator,
-  GetUserWithAccountDecorator,
 } from "../../application/dtos/user.decorator";
 import { UserResponseDTO } from "@/modules/User/application/dtos/response-user.dto";
 
@@ -34,7 +32,6 @@ export class UserController {
   constructor(
     private readonly UpdateUserService: UpdateUserService,
     private readonly GetAllUserService: GetAllUserService,
-    private readonly GetUserWithAccountService: GetUserWithAccountService,
     private readonly GetUser: GetUserByIdService,
     private readonly DeleteUserService: DeleteUserService,
   ) {}
@@ -50,15 +47,6 @@ export class UserController {
   @Get()
   async getAllUsers(): Promise<UserResponseDTO[]> {
     return await this.GetAllUserService.execute();
-  }
-
-  @GetUserWithAccountDecorator
-  @Get("account/:id")
-  async getUserWithAccount(
-    @Param("id") id: string,
-    @GetUser() user,
-  ): Promise<UserResponseDTO> {
-    return await this.GetUserWithAccountService.execute(String(user.id));
   }
 
   @UpdateUserDecorator

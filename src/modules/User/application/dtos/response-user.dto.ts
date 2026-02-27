@@ -64,7 +64,7 @@ export abstract class UserResponseDTO {
   @ApiProperty({
     description: "User course",
     example: "SOFTWARE_ENGINEERING",
-    required: true,
+    required: false,
     enum: [
       "SOFTWARE_ENGINEERING",
       "DATA_SCIENCE",
@@ -73,12 +73,12 @@ export abstract class UserResponseDTO {
       "COMPUTING_ENGINEERING",
     ],
   })
-  course: Course;
+  course?: Course;
 
   @ApiProperty({
     description: "User semester",
     example: "SIXTH",
-    required: true,
+    required: false,
     enum: [
       "FIRST",
       "SECOND",
@@ -93,7 +93,7 @@ export abstract class UserResponseDTO {
       "GRADUATED",
     ],
   })
-  semester: Semester;
+  semester?: Semester;
 
   @ApiProperty({
     description: "User's historical submissions",

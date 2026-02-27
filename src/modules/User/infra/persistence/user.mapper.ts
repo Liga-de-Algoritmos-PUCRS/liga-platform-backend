@@ -1,4 +1,9 @@
-import { User, Role, Semester } from "@/modules/User/domain/user.entity";
+import {
+  User,
+  Role,
+  Semester,
+  Course,
+} from "@/modules/User/domain/user.entity";
 import { User as PrismaUser, RoleEnum as PrismaRole } from "@prisma/client";
 
 export class UserMapper {
@@ -16,7 +21,7 @@ export class UserMapper {
         allTimePoints: user.allPoints,
         historycalSubmissions: user.historicalSubmissions,
         semester: user.semester as Semester,
-        course: user.course,
+        course: user.course as Course,
       },
       user.id,
     );

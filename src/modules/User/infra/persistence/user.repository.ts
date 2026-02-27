@@ -98,7 +98,7 @@ export class PrismaUserRepository implements UserRepository {
     return user ? UserMapper.toDomain(user) : null;
   }
 
-  public async findTopUsers(limit: number): Promise<User[]> {
+  public async findMonthlyTopUsers(limit: number): Promise<User[]> {
     const users = await this.prisma.user.findMany({
       orderBy: {
         monthlyPoints: "desc",
@@ -118,5 +118,22 @@ export class PrismaUserRepository implements UserRepository {
     });
 
     return users.map((user) => UserMapper.toDomain(user));
+  }
+
+  public async incrementUserPoints(
+    userId: string,
+    points: number,
+  ): Promise<void> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        monthlyPoints: {
+          increment: points,
+        },
+        allPoints: {
+          increment: points,
+        },
+      },
+    });
   }
 }

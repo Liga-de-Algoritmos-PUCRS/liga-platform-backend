@@ -12,8 +12,6 @@ export class UpdateUserService {
   ) {}
 
   async execute(id: string, updatedUser: UpdateUserDTO): Promise<User> {
-    const { name, cpf, phone, role } = updatedUser;
-
     const existingUser = await this.userRepository.findUserById(id);
     if (!existingUser) {
       throw this.exceptionsAdapter.notFound({
@@ -22,32 +20,11 @@ export class UpdateUserService {
       });
     }
 
-    if (cpf) {
-      const verifyCpf = await this.userRepository.findUserByCpf(cpf);
-      if (verifyCpf) {
-        throw this.exceptionsAdapter.badRequest({
-          message: "This cpf is already in use",
-          internalKey: UserExceptions.USER_CPF_ALREADY_IN_USE,
-        });
-      }
-    }
-
-    if (phone) {
-      const verifyPhone = await this.userRepository.findUserByPhone(phone);
-      if (verifyPhone) {
-        throw this.exceptionsAdapter.badRequest({
-          message: "This phone is already in use",
-          internalKey: UserExceptions.USER_PHONE_ALREADY_IN_USE,
-        });
-      }
-    }
-
-    existingUser.name = name ?? existingUser.name;
-    existingUser.cpf = cpf ?? existingUser.cpf;
-    existingUser.phone = phone ?? existingUser.phone;
-    existingUser.role = role ?? existingUser.role;
+    existingUser.name = updatedUser.name ?? existingUser.name;
     existingUser.bannerUrl = updatedUser.bannerUrl ?? existingUser.bannerUrl;
     existingUser.avatarUrl = updatedUser.avatarUrl ?? existingUser.avatarUrl;
+    existingUser.course = updatedUser.course ?? existingUser.course;
+    existingUser.semester = updatedUser.semester ?? existingUser.semester;
 
     return await this.userRepository.updateUser(existingUser);
   }

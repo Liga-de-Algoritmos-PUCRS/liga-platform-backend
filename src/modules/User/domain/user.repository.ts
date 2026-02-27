@@ -10,5 +10,10 @@ export abstract class UserRepository {
   public abstract deleteUser(id: string): Promise<boolean>;
   public abstract findUserById(id: string): Promise<User | null>;
   public abstract findUserByEmail(email: string): Promise<User | null>;
-  public abstract findTopUsers(limit: number): Promise<User[]>;
+  public abstract findAllTimeTopUsers(limit: number): Promise<User[]>;
+  public abstract findMonthlyTopUsers(limit: number): Promise<User[]>;
+  public abstract incrementUserPoints(
+    userId: string,
+    points: number,
+  ): Promise<void>;
 }

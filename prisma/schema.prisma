@@ -18,8 +18,8 @@ model User {
   allPoints           Int                @default(0) @map("all_points")
   monthlyPoints       Int                @default(0) @map("monthly_points")
   historicalSubmissions Int                @default(0) @map("historical_submissions")
-  course              CourseEnum
-  semester            Semester_enum
+  course              CourseEnum?
+  semester            Semester_enum?
   role                RoleEnum           @default(USER)
   files               File[]             @relation("UserFiles")
   resetPasswordTokens ResetPasswordToken[]
@@ -93,8 +93,8 @@ model Token2FA {
   createdAt     DateTime @default(now()) @map("created_at")
   isRevoked     Boolean  @default(false) @map("is_revoked")
   userEmail     String   @map("user_email")
-  userName      String?  @map("user_name")
-  userPassword  String?  @map("usage_password")
+  userName      String  @map("user_name")
+  userPassword  String  @map("usage_password")
 
   @@map("token2fa")
 }
