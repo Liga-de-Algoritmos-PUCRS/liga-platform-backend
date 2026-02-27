@@ -133,4 +133,16 @@ export class PrismaUserRepository implements UserRepository {
       },
     });
   }
+
+  public async resetAllMonthlyPoints(): Promise<void> {
+    this.LoggerAdapter.log({
+      where: 'PrismaUserRepository',
+      message: `Resetting monthly points for all users`,
+    });
+    await this.prisma.user.updateMany({
+      data: {
+        monthlyPoints: 0,
+      },
+    });
+  }
 }

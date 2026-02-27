@@ -123,3 +123,53 @@ export const DeleteUserDecorator = applyDecorators(
       'Internal server error. An unexpected error occurred while processing the request.',
   }),
 );
+
+export const GetTopUsersDecorator = applyDecorators(
+  ApiOperation({
+    summary: 'Get top users',
+    description: 'This endpoint retrieves the top users based on their performance.',
+  }),
+  ApiOkResponse({
+    description: 'Top users retrieved successfully.',
+    type: [UserResponseDTO],
+  }),
+  ApiNotFoundResponse({
+    description: 'No top users found. The system does not contain any top users.',
+  }),
+  ApiInternalServerErrorResponse({
+    description:
+      'Internal server error. An unexpected error occurred while processing the request.',
+  }),
+);
+
+export const GetMonthlyTopUsersDecorator = applyDecorators(
+  ApiOperation({
+    summary: 'Get monthly top users',
+    description: 'This endpoint retrieves the top users of the month based on their performance.',
+  }),
+  ApiOkResponse({
+    description: 'Monthly top users retrieved successfully.',
+    type: [UserResponseDTO],
+  }),
+  ApiNotFoundResponse({
+    description: 'No monthly top users found. The system does not contain any monthly top users.',
+  }),
+  ApiInternalServerErrorResponse({
+    description:
+      'Internal server error. An unexpected error occurred while processing the request.',
+  }),
+);
+
+export const ResetUserPointsDecorator = applyDecorators(
+  ApiOperation({
+    summary: 'Reset user points',
+    description: 'This endpoint allows you to reset the points of all users in the system.',
+  }),
+  ApiOkResponse({
+    description: 'User points reset successfully.',
+  }),
+  ApiInternalServerErrorResponse({
+    description:
+      'Internal server error. An unexpected error occurred while processing the request.',
+  }),
+);

@@ -13,4 +13,5 @@ export abstract class UserRepository {
   public abstract findAllTimeTopUsers(limit: number): Promise<User[]>;
   public abstract findMonthlyTopUsers(limit: number): Promise<User[]>;
   public abstract incrementUserPoints(userId: string, points: number): Promise<void>;
+  public abstract resetAllMonthlyPoints(): Promise<void>;
 }
