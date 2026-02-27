@@ -17,6 +17,7 @@ import { UserResponseDTO } from '@/modules/User/application/dtos/response-user.d
 
 import { IsAdmin } from '@/global/common/decorators/is-admin-decorator';
 import { DeleteUserDTO } from '../../application/dtos/delete-user.dto';
+import { Public } from '@/global/common/decorators/public.decorator';
 @Controller('user')
 @UseGuards(JwtAuthGuard)
 @ApiTags('User')
@@ -28,6 +29,7 @@ export class UserController {
     private readonly DeleteUserService: DeleteUserService,
   ) {}
 
+  @Public()
   @GetUserDecorator
   @Get(':id')
   async getUserById(@Param('id') id: string): Promise<UserResponseDTO> {

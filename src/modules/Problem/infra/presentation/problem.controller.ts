@@ -17,6 +17,7 @@ import {
   UpdateProblemDecorator,
   DeleteProblemDecorator,
 } from '@/modules/Problem/application/dtos/problem.decorator';
+import { IsAdmin } from '@/global/common/decorators/is-admin-decorator';
 
 @Controller('problems')
 @ApiTags('Problems')
@@ -43,12 +44,14 @@ export class ProblemController {
     return await this.GetAllProblemsService.execute();
   }
 
+  @IsAdmin()
   @CreateProblemDecorator
   @Post()
   async createProblem(@Body() CreateProblemDTO: CreateProblemDTO, @GetUser() user) {
     return await this.CreateProblemService.execute(CreateProblemDTO, String(user.id));
   }
 
+  @IsAdmin()
   @UpdateProblemDecorator
   @Patch(':id')
   async updateProblem(
@@ -59,6 +62,7 @@ export class ProblemController {
     return await this.UpdateProblemService.execute(id, UpdateProblemDTO, String(user.id));
   }
 
+  @IsAdmin()
   @DeleteProblemDecorator
   @Delete(':id')
   async deleteProblem(@Param('id') id: string, @GetUser() user) {
