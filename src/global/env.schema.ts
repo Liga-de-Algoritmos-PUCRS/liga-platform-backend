@@ -1,0 +1,41 @@
+import { z } from 'zod';
+
+export const envSchema = z.object({
+  NODE_ENV: z.string().min(2),
+  DATABASE_URL: z.string().url().min(1),
+  ACCESS_TOKEN_SECRET: z.string().min(1),
+  ACCESS_TOKEN_EXPIRATION: z.string().min(1),
+  CLOUDFRONT_KEY_PAIR_ID: z.string().min(1),
+  CLOUDFRONT_PRIVATE_KEY: z.string().min(1),
+  CLOUDFRONT_COOKIE_BASE_DOMAIN: z.string().min(1),
+  CLOUDFRONT_ASSET_DOMAIN: z.string().min(1),
+  REFRESH_TOKEN_SECRET: z.string().min(1),
+  REFRESH_TOKEN_EXPIRATION: z.string().min(1),
+  BUCKET_ACCESS_KEY_ID: z.string().min(1),
+  BUCKET_SECRET_ACCESS_KEY: z.string().min(1),
+  BUCKET_REGION: z.string().min(1),
+  BUCKET_NAME: z.string().min(1),
+  SES_ACCESS_KEY_ID: z.string().min(1),
+  SES_SECRET_ACCESS_KEY: z.string().min(1),
+  SES_REGION: z.string().min(1),
+  SES_SENDER_EMAIL: z.string().min(1),
+  SES_SENDER_NAME: z.string().min(1),
+  GOOGLE_CLIENT_ID: z.string().min(1),
+  GOOGLE_CLIENT_SECRET: z.string().min(1),
+  GOOGLE_REDIRECT_URI: z.string().url().min(1),
+  GOOGLE_GMAIL_TOPIC: z.string().min(1),
+  FRONTEND_URL: z.string().url().min(1),
+  N8N_WEBHOOK_BUCKETTRIGER_URL: z.string().min(1),
+  N8N_WEBHOOK_DRIVETRIGER_URL: z.string().min(1),
+  BEDROCK_KNOWLEDGE_BASE_ID: z.string().min(1),
+  BEDROCK_DATA_SOURCE_ID: z.string().min(1),
+  BEDROCK_ACCESS_KEY_ID: z.string().min(1),
+  N8N_WEBHOOK_GMAIL_LINK_URL: z.string().min(1),
+  BEDROCK_SECRET_ACCESS_KEY: z.string().min(1),
+  BEDROCK_REGION: z.string().min(1),
+  N8N_TOKEN_SECRET: z.string().min(1),
+
+  CORS: z.string().min(1),
+});
+
+export type Env = z.infer<typeof envSchema>;
