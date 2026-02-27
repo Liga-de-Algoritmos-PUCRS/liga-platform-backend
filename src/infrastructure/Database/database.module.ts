@@ -12,6 +12,8 @@ import { ResetPasswordTokenRepository } from '@/modules/Auth/resetPassword/domai
 import { PrismaResetPasswordTokenRepository } from '@/modules/Auth/resetPassword/infra/persistence/reset-passaword-token.repository';
 import { TransactionAdapter } from './Transaction/transaction.adapter';
 import { PrismaTransactionIntegration } from './Transaction/transaction.service';
+import { ProblemRepository } from '@/modules/Problem/domain/problem.repository';
+import { PrismaProblemRepository } from '@/modules/Problem/infra/persistence/problem.repository';
 
 @Global()
 @Module({
@@ -38,6 +40,10 @@ import { PrismaTransactionIntegration } from './Transaction/transaction.service'
     {
       provide: ResetPasswordTokenRepository,
       useClass: PrismaResetPasswordTokenRepository,
+    },
+    {
+      provide: ProblemRepository,
+      useClass: PrismaProblemRepository,
     },
     {
       provide: TransactionAdapter,
