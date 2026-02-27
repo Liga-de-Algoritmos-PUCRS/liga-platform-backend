@@ -1,0 +1,152 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {  
+  id                  String             @id @default(uuid())
+  name                String
+  email               String             @unique
+  password            String
+  createdAt           DateTime           @default(now()) @map("created_at")
+  avatarUrl           String?            @map("avatar_url")
+  bannerUrl           String?            @map("banner_url")
+  allPoints           Int                @default(0) @map("all_points")
+  monthlyPoints       Int                @default(0) @map("monthly_points")
+  historicalSubmissions Int                @default(0) @map("historical_submissions")
+  course              CourseEnum
+  semester            Semester_enum
+  role                RoleEnum           @default(USER)
+  files               File[]             @relation("UserFiles")
+  resetPasswordTokens ResetPasswordToken[]
+  refreshTokens       RefreshToken[]
+  submissions         Submission[]
+
+  @@map("users")
+}
+
+model Problem {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  answer      String
+  input       String
+  points      Int
+  difficulty  DifficultyEnum
+  bannerUrl   String?  @map("banner_url")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  submissions  Submission[]
+
+  @@map("problems")
+}
+
+model Submission{
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  problemId     String   @map("problem_id")
+  pointsEarned  Int      @map("points_earned")
+  attempts      Int      @default(0)
+  isFinished     Boolean  @default(false) @map("is_finished")
+  finishedAt    DateTime? @map("finished_at")
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem       Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@map("submissions")
+}
+
+model File {
+  id                 String              @id @default(uuid())
+  name               String
+  size               Int
+  type               String
+  fileUrl            String              @map("file_url")
+  authorId           String              @map("author_id")
+  createdAt          DateTime            @default(now()) @map("created_at")
+  deletedAt          DateTime?           @map("deleted_at")
+  deleted            Boolean             @default(false)
+  author             User                @relation("UserFiles", fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@map("files")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  expiresAt DateTime @map("expires_at")
+  isRevoked Boolean  @default(false) @map("is_revoked")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+model Token2FA {
+  id            String   @id @default(uuid())
+  token         String
+  expiresAt     DateTime @map("expires_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+  isRevoked     Boolean  @default(false) @map("is_revoked")
+  userEmail     String   @map("user_email")
+  userName      String?  @map("user_name")
+  userPassword  String?  @map("usage_password")
+
+  @@map("token2fa")
+}
+
+model ResetPasswordToken {
+  id        String   @id @default(uuid())
+  token     String
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  isRevoked Boolean  @default(false) @map("is_revoked")
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("reset_password_tokens")
+}
+
+
+
+enum RoleEnum {
+  ADMIN
+  USER
+  @@map("role_enum")
+}
+
+enum CourseEnum {
+  SOFTWARE_ENGINEERING
+  INFORMATION_SYSTEMS
+  DATA_SCIENCE
+  COMPUTING_SCIENCE
+  COMPUTING_ENGINEERING
+
+  @@map("course_enum")
+}
+
+enum DifficultyEnum {
+  EASY
+  MEDIUM
+  HARD
+  @@map("difficulty_enum")
+}
+
+enum Semester_enum {
+  FIRST
+  SECOND
+  THIRD
+  FOURTH
+  FIFTH
+  SIXTH
+  SEVENTH
+  EIGHTH
+  NINTH
+  TENTH
+  GRADUATED
+  @@map("semester_enum")
+}

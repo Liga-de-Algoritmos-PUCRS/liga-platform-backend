@@ -1,5 +1,9 @@
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
-import { RoleEnum } from '@/modules/User/domain/user.entity';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+} from "@nestjs/common";
 
 @Injectable()
 export class AdminGuard implements CanActivate {
@@ -8,7 +12,7 @@ export class AdminGuard implements CanActivate {
 
     const user = request.user;
 
-    if (user.userRole === String(RoleEnum.ADMIN) || user.userRole === String(RoleEnum.ROOT)) {
+    if (user.userRole === "ADMIN" || user.userRole === "USER") {
       return true;
     }
 

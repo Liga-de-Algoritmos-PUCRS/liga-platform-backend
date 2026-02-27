@@ -1,8 +1,8 @@
-import { FileRepository } from '@/modules/File/domain/file.repository';
-import { File } from '../../domain/file.entity';
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '@/infrastructure/Database/prisma.service';
-import { FileMapper } from './file.mapper';
+import { FileRepository } from "@/modules/File/domain/file.repository";
+import { File } from "../../domain/file.entity";
+import { Injectable } from "@nestjs/common";
+import { PrismaService } from "@/infrastructure/Database/prisma.service";
+import { FileMapper } from "./file.mapper";
 
 @Injectable()
 export class PrismaFileRepository implements FileRepository {
@@ -33,7 +33,7 @@ export class PrismaFileRepository implements FileRepository {
     const files = await this.prisma.file
       .findMany({
         where: { authorId, deleted: false },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
       })
       .then((files) => files.map((file) => FileMapper.toDomain(file)));
 
@@ -50,38 +50,6 @@ export class PrismaFileRepository implements FileRepository {
     }
 
     return FileMapper.toDomain(file);
-  }
-
-  public async getFilesByAuthorIdInKnowledge(authorId: string): Promise<File[]> {
-    const files = await this.prisma.file
-      .findMany({
-        where: {
-          authorId,
-          deleted: false,
-          fileUrl: {
-            contains: `Users/${authorId}/Knowledge`,
-          },
-        },
-
-        orderBy: { createdAt: 'desc' },
-      })
-      .then((files) => files.map((file) => FileMapper.toDomain(file)));
-
-    return files;
-  }
-
-  public async getFilesByNegociationId(negociationId: string): Promise<File[]> {
-    const files = await this.prisma.file
-      .findMany({
-        where: {
-          negociationId,
-          deleted: false,
-        },
-        orderBy: { createdAt: 'desc' },
-      })
-      .then((files) => files.map((file) => FileMapper.toDomain(file)));
-
-    return files;
   }
 
   public async updateFile(file: File, id: string): Promise<File> {

@@ -1,10 +1,10 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNumber, IsNotEmpty } from 'class-validator';
+import { ApiProperty } from "@nestjs/swagger";
+import { IsString, IsNumber, IsNotEmpty } from "class-validator";
 
 export class UpdateFileDTO {
   @ApiProperty({
-    description: 'ID do arquivo',
-    example: '1234567890abcdef',
+    description: "ID do arquivo",
+    example: "1234567890abcdef",
     required: true,
   })
   @IsString()
@@ -12,8 +12,8 @@ export class UpdateFileDTO {
   id: string;
 
   @ApiProperty({
-    description: 'Nome do arquivo',
-    example: 'relatorio_mensal.xlsx',
+    description: "Nome do arquivo",
+    example: "relatorio_mensal.xlsx",
     required: true,
   })
   @IsString()
@@ -21,7 +21,7 @@ export class UpdateFileDTO {
   name: string;
 
   @ApiProperty({
-    description: 'Tamanho do arquivo em megabytes',
+    description: "Tamanho do arquivo em megabytes",
     example: 34000,
     required: true,
   })
@@ -30,8 +30,8 @@ export class UpdateFileDTO {
   size: number;
 
   @ApiProperty({
-    description: 'Tipo MIME do arquivo',
-    example: '.pdf',
+    description: "Tipo MIME do arquivo",
+    example: ".pdf",
     required: true,
   })
   @IsString()

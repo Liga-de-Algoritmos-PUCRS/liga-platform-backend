@@ -1,34 +1,45 @@
-#
+# 🚀 Plataforma - Liga de Algoritmos da PUCRS 🚀
 
-## Description
+Olá! 👋 Bem-vindo(a) ao repositório oficial da nossa plataforma.
 
-This project is for BEE CRM Client
+## 📖 Sobre o Projeto
 
-## Dependecies
+Este projeto é o coração do nosso backend e da nossa API. É por aqui que gerenciamos os membros da liga, nossos recursos internos e fazemos todas as integrações necessárias para manter tudo funcionando perfeitamente! ⚙️
 
-- Node.js v22.14.0
-- Nest.js 11.0.5
-- Docker
+## 🛠️ Dependências:
 
-## Project setup
+Antes de começar, certifique-se de ter as seguintes ferramentas prontas na sua máquina:
+
+- **Node.js** (v22.14.0) 🟢
+- **Nest.js** (11.0.5) 🐈
+- **Docker** 🐳
+
+## ⚙️ Setup:
+
+Primeiro, vamos instalar tudo o que o projeto precisa. Abra o seu terminal e rode o comando abaixo:
 
 ```bash
-$ npm install
+npm install
 ```
 
-## Compile and run the project
+## ▶️ Rodando a Aplicação
+
+Agora vem a parte divertida! Siga os passos abaixo para levantar o projeto e começar a codar:
+
+**1. Suba os serviços e o banco de dados:**
 
 ```bash
-$ docker compose up -d --build
-$ npx prisma generate
+docker compose up -d --build
 ```
 
-```bash
-# para visualizar seu banco
-$ npx prisma studio
-```
+**2. Gere o client do Prisma (nosso ORM):**
 
 ```bash
-# backend
-$ npm run dev
+npx prisma generate
+```
+
+**3. Tudo pronto! Inicie o servidor em ambiente de desenvolvimento:**
+
+```bash
+npm run dev
 ```

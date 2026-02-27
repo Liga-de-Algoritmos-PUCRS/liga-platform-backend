@@ -1,5 +1,8 @@
-import { Token2FA as PrismaToken2FA } from '@prisma/client';
-import { Token2Fa, UserInfo2Fa } from '@/modules/Auth/signup/domain/2fa-token.entity';
+import { Token2FA as PrismaToken2FA } from "@prisma/client";
+import {
+  Token2Fa,
+  UserInfo2Fa,
+} from "@/modules/Auth/signup/domain/2fa-token.entity";
 
 export class Token2FAMapper {
   static toDomain(prismaToken2FA: PrismaToken2FA): Token2Fa {
@@ -7,7 +10,6 @@ export class Token2FAMapper {
       email: prismaToken2FA.userEmail,
       name: prismaToken2FA.userName ?? undefined,
       password: prismaToken2FA.userPassword ?? undefined,
-      workspaceName: prismaToken2FA.workspaceName,
     };
 
     const token2Fa = new Token2Fa(
@@ -31,7 +33,6 @@ export class Token2FAMapper {
       createdAt: token2Fa.createdAt,
       expiresAt: token2Fa.expiresAt,
       isRevoked: token2Fa.isRevoked,
-      workspaceName: token2Fa.workspaceName,
       userEmail: token2Fa.userInfo2Fa.email,
       userName: token2Fa.userInfo2Fa?.name ?? null,
       userPassword: token2Fa.userInfo2Fa?.password ?? null,

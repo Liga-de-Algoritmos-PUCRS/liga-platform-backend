@@ -1,17 +1,23 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
-import { applyDecorators } from '@nestjs/common';
+import { ApiProperty } from "@nestjs/swagger";
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MinLength,
+} from "class-validator";
+import { applyDecorators } from "@nestjs/common";
 import {
   ApiInternalServerErrorResponse,
   ApiOperation,
   ApiUnauthorizedResponse,
   ApiOkResponse,
-} from '@nestjs/swagger';
+} from "@nestjs/swagger";
 
 export class SignupRequestDTO {
   @ApiProperty({
-    description: 'User email',
-    example: 'guilhermecassol@gmail.com',
+    description: "User email",
+    example: "guilhermecassol@gmail.com",
     required: true,
   })
   @IsEmail()
@@ -20,26 +26,17 @@ export class SignupRequestDTO {
   email: string;
 
   @ApiProperty({
-    description: 'User name',
-    example: 'Guilherme Cassol',
+    description: "User name",
+    example: "Guilherme Cassol",
     required: true,
   })
   @IsString()
   @IsOptional()
   name: string;
 
-  @ApiPropertyOptional({
-    description: 'Workspace name',
-    example: 'Oryza Labs',
-    required: false,
-  })
-  @IsString()
-  @IsOptional()
-  workspace?: string;
-
   @ApiProperty({
-    description: 'User password',
-    example: 'Cassolzinho123*',
+    description: "User password",
+    example: "Cassolzinho123*",
     required: true,
   })
   @IsString()
@@ -50,19 +47,19 @@ export class SignupRequestDTO {
 
 export class SignupRequestResponseDTO {
   @ApiProperty({
-    description: 'Signup Token ID',
-    example: '123e4567-e89b-12d3-a456-426614174000',
+    description: "Signup Token ID",
+    example: "123e4567-e89b-12d3-a456-426614174000",
   })
   id: string;
 
   @ApiProperty({
-    description: 'Token expiration date and time',
-    example: '2024-12-31T23:59:59.000Z',
+    description: "Token expiration date and time",
+    example: "2024-12-31T23:59:59.000Z",
   })
   expiresAt: Date;
 
   @ApiProperty({
-    description: 'Indicates whether the token has been revoked',
+    description: "Indicates whether the token has been revoked",
     example: false,
   })
   isRevoked: boolean;
@@ -70,18 +67,18 @@ export class SignupRequestResponseDTO {
 
 export const SignupDecorator = applyDecorators(
   ApiOperation({
-    summary: 'User signup',
-    description: 'This endpoint allows a user to sign in to the system.',
+    summary: "User signup",
+    description: "This endpoint allows a user to sign in to the system.",
   }),
   ApiOkResponse({
-    description: 'User signed up successfully.',
+    description: "User signed up successfully.",
     type: SignupRequestResponseDTO,
   }),
   ApiUnauthorizedResponse({
-    description: 'Unauthorized. The provided credentials are invalid.',
+    description: "Unauthorized. The provided credentials are invalid.",
   }),
   ApiInternalServerErrorResponse({
     description:
-      'Internal server error. An unexpected error occurred while processing the request.',
+      "Internal server error. An unexpected error occurred while processing the request.",
   }),
 );

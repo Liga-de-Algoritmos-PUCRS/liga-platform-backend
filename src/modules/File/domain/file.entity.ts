@@ -1,4 +1,4 @@
-import { createId } from '@paralleldrive/cuid2';
+import { createId } from "@paralleldrive/cuid2";
 
 export interface FileInterface {
   name: string;
@@ -6,10 +6,8 @@ export interface FileInterface {
   type: string;
   fileUrl: string;
   authorId: string;
-  negociationId?: string;
   deleted: boolean;
   deletedAt?: Date | null;
-  messageId?: string | null;
 }
 
 export class File implements FileInterface {
@@ -19,7 +17,6 @@ export class File implements FileInterface {
   type: string;
   fileUrl: string;
   authorId: string;
-  negociationId?: string;
   createdAt: Date;
   deleted: boolean;
   deletedAt?: Date | null;
@@ -31,7 +28,6 @@ export class File implements FileInterface {
     this.type = file.type;
     this.fileUrl = file.fileUrl;
     this.authorId = file.authorId;
-    this.negociationId = file.negociationId;
     this.createdAt = createdAt ?? new Date();
     this.deleted = file.deleted || false;
     this.deletedAt = file.deletedAt || null;
@@ -45,7 +41,6 @@ export class File implements FileInterface {
       type: this.type,
       fileUrl: this.fileUrl,
       authorId: this.authorId,
-      negociationId: this.negociationId,
       createdAt: this.createdAt,
       deleted: this.deleted,
       deletedAt: this.deletedAt,

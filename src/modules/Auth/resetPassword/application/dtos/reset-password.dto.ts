@@ -1,17 +1,17 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
-import { applyDecorators } from '@nestjs/common';
+import { ApiProperty } from "@nestjs/swagger";
+import { IsNotEmpty, IsString } from "class-validator";
+import { applyDecorators } from "@nestjs/common";
 import {
   ApiInternalServerErrorResponse,
   ApiOperation,
   ApiUnauthorizedResponse,
   ApiOkResponse,
-} from '@nestjs/swagger';
+} from "@nestjs/swagger";
 
 export class ResetPasswordDTO {
   @ApiProperty({
-    description: 'Token id',
-    example: 'ivyuuzwcpdbblxmyplhx2tnh',
+    description: "Token id",
+    example: "ivyuuzwcpdbblxmyplhx2tnh",
     required: true,
   })
   @IsString()
@@ -19,8 +19,8 @@ export class ResetPasswordDTO {
   tokenId: string;
 
   @ApiProperty({
-    description: 'Indicates if the token has 4 digits',
-    example: '1234',
+    description: "Indicates if the token has 4 digits",
+    example: "1234",
     required: true,
   })
   @IsNotEmpty()
@@ -28,8 +28,8 @@ export class ResetPasswordDTO {
   token: string;
 
   @ApiProperty({
-    description: 'New password for the user',
-    example: 'StrongP@ssw0rd!',
+    description: "New password for the user",
+    example: "StrongP@ssw0rd!",
     required: true,
   })
   @IsString()
@@ -39,17 +39,17 @@ export class ResetPasswordDTO {
 
 export const ResetPasswordDecorator = applyDecorators(
   ApiOperation({
-    summary: 'Reset Password',
-    description: 'This endpoint allows a user to reset password token.',
+    summary: "Reset Password",
+    description: "This endpoint allows a user to reset password token.",
   }),
   ApiOkResponse({
-    description: 'Password reset successfully.',
+    description: "Password reset successfully.",
   }),
   ApiUnauthorizedResponse({
-    description: 'Unauthorized. The provided credentials are invalid.',
+    description: "Unauthorized. The provided credentials are invalid.",
   }),
   ApiInternalServerErrorResponse({
     description:
-      'Internal server error. An unexpected error occurred while processing the request.',
+      "Internal server error. An unexpected error occurred while processing the request.",
   }),
 );

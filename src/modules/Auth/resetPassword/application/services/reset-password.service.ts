@@ -1,12 +1,15 @@
-import { Injectable } from '@nestjs/common';
-import { ExceptionsAdapter } from '@/infrastructure/Exceptions/exceptions.adapter';
-import { UserRepository } from '@/modules/User/domain/user.repository';
-import { User } from '@/modules/User/domain/user.entity';
-import { SendEmailAdapter } from '@/infrastructure/SendEmail/sendEmail.adapter';
-import { ResetPasswordTokenRepository } from '@/modules/Auth/resetPassword/domain/reset-password-token.repository';
-import { ResetPasswordDTO } from '@/modules/Auth/resetPassword/application/dtos/reset-password.dto';
-import { CryptographyAdapter } from '@/infrastructure/Criptography/cryptography.adapter';
-import { UserExceptions, TokenExceptions } from '@/infrastructure/Exceptions/exceptions.types';
+import { Injectable } from "@nestjs/common";
+import { ExceptionsAdapter } from "@/infrastructure/Exceptions/exceptions.adapter";
+import { UserRepository } from "@/modules/User/domain/user.repository";
+import { User } from "@/modules/User/domain/user.entity";
+import { SendEmailAdapter } from "@/infrastructure/SendEmail/sendEmail.adapter";
+import { ResetPasswordTokenRepository } from "@/modules/Auth/resetPassword/domain/reset-password-token.repository";
+import { ResetPasswordDTO } from "@/modules/Auth/resetPassword/application/dtos/reset-password.dto";
+import { CryptographyAdapter } from "@/infrastructure/Criptography/cryptography.adapter";
+import {
+  UserExceptions,
+  TokenExceptions,
+} from "@/infrastructure/Exceptions/exceptions.types";
 
 @Injectable()
 export class ResetPasswordService {
@@ -19,35 +22,38 @@ export class ResetPasswordService {
   ) {}
 
   async execute(ResetPasswordDTO: ResetPasswordDTO): Promise<void> {
-    const findToken = await this.ResetPasswordTokenRepository.findValidResetPasswordToken(
-      ResetPasswordDTO.tokenId,
-    );
+    const findToken =
+      await this.ResetPasswordTokenRepository.findValidResetPasswordToken(
+        ResetPasswordDTO.tokenId,
+      );
 
     if (!findToken) {
       throw this.ExceptionsAdapter.badRequest({
-        message: 'Invalid or expired token',
+        message: "Invalid or expired token",
         internalKey: TokenExceptions.TOKEN_EXPIRED,
       });
     }
 
     if (findToken.isRevoked) {
       throw this.ExceptionsAdapter.badRequest({
-        message: 'This token has already been used',
+        message: "This token has already been used",
         internalKey: TokenExceptions.TOKEN_INVALID,
       });
     }
 
     if (findToken.expiresAt < new Date()) {
-      await this.ResetPasswordTokenRepository.revokeResetPasswordTokenById(findToken.id);
+      await this.ResetPasswordTokenRepository.revokeResetPasswordTokenById(
+        findToken.id,
+      );
       throw this.ExceptionsAdapter.badRequest({
-        message: 'This token has expired',
+        message: "This token has expired",
         internalKey: TokenExceptions.TOKEN_EXPIRED,
       });
     }
 
     if (findToken.token !== ResetPasswordDTO.token) {
       throw this.ExceptionsAdapter.badRequest({
-        message: 'Invalid token',
+        message: "Invalid token",
         internalKey: TokenExceptions.TOKEN_INVALID,
       });
     }
@@ -55,14 +61,14 @@ export class ResetPasswordService {
     const user = await this.UserRepository.findUserById(findToken.userId);
     if (!user) {
       throw this.ExceptionsAdapter.notFound({
-        message: 'User not found',
+        message: "User not found",
         internalKey: UserExceptions.USER_NOT_FOUND,
       });
     }
 
     if (!this.isSafetyPassword(ResetPasswordDTO.newPassword)) {
       throw this.ExceptionsAdapter.badRequest({
-        message: 'Your password is not strong enough',
+        message: "Your password is not strong enough",
         internalKey: UserExceptions.USER_NOT_SAFETY_PASSWORD,
       });
     }
@@ -78,9 +84,15 @@ export class ResetPasswordService {
           name: user.name,
           email: user.email,
           password: hashedPassword,
-          cpf: user.cpf,
-          phone: user.phone,
+          createdAt: user.createdAt,
+          bannerUrl: user.bannerUrl,
+          avatarUrl: user.avatarUrl,
           role: user.role,
+          course: user.course,
+          semester: user.semester,
+          monthlyPoints: user.monthlyPoints,
+          allTimePoints: user.allTimePoints,
+          historycalSubmissions: user.historycalSubmissions,
         },
         user.id,
       ),
@@ -88,7 +100,9 @@ export class ResetPasswordService {
 
     await this.SendEmailAdapter.sendEmailPaswordChanged(user.email, user.name);
 
-    await this.ResetPasswordTokenRepository.revokeResetPasswordTokenById(findToken.id);
+    await this.ResetPasswordTokenRepository.revokeResetPasswordTokenById(
+      findToken.id,
+    );
   }
 
   private isSafetyPassword(password: string): boolean {
@@ -96,6 +110,12 @@ export class ResetPasswordService {
     const hasLowerCase = /[a-z]/.test(password);
     const hasNumber = /\d/.test(password);
     const hasSymbol = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-    return password.length > 8 && hasUpperCase && hasLowerCase && hasNumber && hasSymbol;
+    return (
+      password.length > 8 &&
+      hasUpperCase &&
+      hasLowerCase &&
+      hasNumber &&
+      hasSymbol
+    );
   }
 }

@@ -1,9 +1,17 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNumber, IsNotEmpty, Validate, IsOptional } from 'class-validator';
-import { FileTypeValidator } from '@/modules/File/application/dtos/file.type.validator';
-import { Transform } from 'class-transformer';
+import { ApiProperty } from "@nestjs/swagger";
+import {
+  IsString,
+  IsNumber,
+  IsNotEmpty,
+  Validate,
+  IsOptional,
+} from "class-validator";
+import { FileTypeValidator } from "@/modules/File/application/dtos/file.type.validator";
+import { Transform } from "class-transformer";
 
-export function ConvertToCreateFileDTO(files: Express.Multer.File): CreateFileHelperDTO {
+export function ConvertToCreateFileDTO(
+  files: Express.Multer.File,
+): CreateFileHelperDTO {
   const createFileDto = new CreateFileHelperDTO();
   createFileDto.file = files;
   createFileDto.name = files.originalname;
@@ -15,45 +23,45 @@ export function ConvertToCreateFileDTO(files: Express.Multer.File): CreateFileHe
 export class CreateFileHelperDTO {
   @ApiProperty({
     required: true,
-    description: 'File (Word, Excel, MP3 ou MP4)',
-    type: 'string',
-    format: 'binary',
+    description: "File (Word, Excel, MP3 ou MP4)",
+    type: "string",
+    format: "binary",
   })
   @Validate(FileTypeValidator, [
-    'application/msword', // .doc
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
-    'application/vnd.ms-excel', // .xls
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
-    'application/pdf', // .pdf
-    'application/zip', // .zip
-    'application/x-zip-compressed', // .zip
-    'image/jpeg', // .jpg, .jpeg
-    'image/png', // .png
-    'image/gif', // .gif
-    'audio/mpeg', // .mp3
-    'audio/wav', // .wav
-    'audio/ogg', // .ogg
-    'audio/aac', // .aac
-    'audio/flac', // .flac
-    'audio/mp4', // .m4a
-    'audio/x-caf', // .caf (Core Audio Format used by iPhone)
-    'audio/3gpp', // .3gp audio
-    'video/3gpp', // .3gp video
-    'video/x-m4v', // .m4v
-    'video/mp4', // .mp4
-    'video/webm', // .webm
-    'video/quicktime', // .mov
-    'video/x-msvideo', // .avi
-    'video/mpeg', // .mpeg
-    'text/plain', // .txt
-    'text/csv', // .csv
+    "application/msword", // .doc
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // .docx
+    "application/vnd.ms-excel", // .xls
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // .xlsx
+    "application/pdf", // .pdf
+    "application/zip", // .zip
+    "application/x-zip-compressed", // .zip
+    "image/jpeg", // .jpg, .jpeg
+    "image/png", // .png
+    "image/gif", // .gif
+    "audio/mpeg", // .mp3
+    "audio/wav", // .wav
+    "audio/ogg", // .ogg
+    "audio/aac", // .aac
+    "audio/flac", // .flac
+    "audio/mp4", // .m4a
+    "audio/x-caf", // .caf (Core Audio Format used by iPhone)
+    "audio/3gpp", // .3gp audio
+    "video/3gpp", // .3gp video
+    "video/x-m4v", // .m4v
+    "video/mp4", // .mp4
+    "video/webm", // .webm
+    "video/quicktime", // .mov
+    "video/x-msvideo", // .avi
+    "video/mpeg", // .mpeg
+    "text/plain", // .txt
+    "text/csv", // .csv
   ])
   @IsNotEmpty()
   file: Express.Multer.File;
 
   @ApiProperty({
-    description: 'File name',
-    example: 'relatorio_mensal.xlsx',
+    description: "File name",
+    example: "relatorio_mensal.xlsx",
     required: true,
   })
   @IsString()
@@ -61,7 +69,7 @@ export class CreateFileHelperDTO {
   name: string;
 
   @ApiProperty({
-    description: 'File size in mb',
+    description: "File size in mb",
     example: 34000,
     required: true,
   })
@@ -71,8 +79,8 @@ export class CreateFileHelperDTO {
   size: number;
 
   @ApiProperty({
-    description: 'File type',
-    example: '.pdf',
+    description: "File type",
+    example: ".pdf",
     required: true,
   })
   @IsString()
@@ -80,8 +88,8 @@ export class CreateFileHelperDTO {
   type: string;
 
   @ApiProperty({
-    description: 'Negociation ID',
-    example: '1234567890abcdef12345678',
+    description: "Negociation ID",
+    example: "1234567890abcdef12345678",
     required: true,
   })
   @IsString()
@@ -92,37 +100,37 @@ export class CreateFileHelperDTO {
 export class CreateFileDTO {
   @ApiProperty({
     required: true,
-    description: 'File (Word, Excel, MP3 ou MP4)',
-    format: 'binary',
+    description: "File (Word, Excel, MP3 ou MP4)",
+    format: "binary",
   })
   @Validate(FileTypeValidator, [
-    'application/msword', // .doc
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
-    'application/vnd.ms-excel', // .xls
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
-    'application/pdf', // .pdf
-    'application/zip', // .zip
-    'application/x-zip-compressed', // .zip
-    'image/jpeg', // .jpg, .jpeg
-    'image/png', // .png
-    'image/gif', // .gif
-    'audio/mpeg', // .mp3
-    'audio/wav', // .wav
-    'audio/ogg', // .ogg
-    'audio/aac', // .aac
-    'audio/flac', // .flac
-    'audio/mp4', // .m4a
-    'audio/x-caf', // .caf (Core Audio Format used by iPhone)
-    'audio/3gpp', // .3gp audio
-    'video/3gpp', // .3gp video
-    'video/x-m4v', // .m4v
-    'video/mp4', // .mp4
-    'video/webm', // .webm
-    'video/quicktime', // .mov
-    'video/x-msvideo', // .avi
-    'video/mpeg', // .mpeg
-    'text/plain', // .txt
-    'text/csv', // .csv
+    "application/msword", // .doc
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // .docx
+    "application/vnd.ms-excel", // .xls
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // .xlsx
+    "application/pdf", // .pdf
+    "application/zip", // .zip
+    "application/x-zip-compressed", // .zip
+    "image/jpeg", // .jpg, .jpeg
+    "image/png", // .png
+    "image/gif", // .gif
+    "audio/mpeg", // .mp3
+    "audio/wav", // .wav
+    "audio/ogg", // .ogg
+    "audio/aac", // .aac
+    "audio/flac", // .flac
+    "audio/mp4", // .m4a
+    "audio/x-caf", // .caf (Core Audio Format used by iPhone)
+    "audio/3gpp", // .3gp audio
+    "video/3gpp", // .3gp video
+    "video/x-m4v", // .m4v
+    "video/mp4", // .mp4
+    "video/webm", // .webm
+    "video/quicktime", // .mov
+    "video/x-msvideo", // .avi
+    "video/mpeg", // .mpeg
+    "text/plain", // .txt
+    "text/csv", // .csv
   ])
   @IsNotEmpty()
   files: Express.Multer.File[];

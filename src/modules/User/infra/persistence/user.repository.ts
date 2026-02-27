@@ -1,12 +1,10 @@
-import { Injectable } from '@nestjs/common';
-import { User } from '@/modules/User/domain/user.entity';
-import { UserMapper } from '@/modules/User/infra/persistence/user.mapper';
-import { UserRepository } from '@/modules/User/domain/user.repository';
-import { PrismaService } from '@/infrastructure/Database/prisma.service';
-import { UserWithAccountInformationsResponse } from '@/modules/User/domain/user.repository';
-import { RoleEnum } from '@/modules/User/domain/user.entity';
-import { LoggerAdapter } from '@/infrastructure/Logger/logger.adapter';
-import { ExceptionsAdapter } from '@/infrastructure/Exceptions/exceptions.adapter';
+import { Injectable } from "@nestjs/common";
+import { User } from "@/modules/User/domain/user.entity";
+import { UserMapper } from "@/modules/User/infra/persistence/user.mapper";
+import { UserRepository } from "@/modules/User/domain/user.repository";
+import { PrismaService } from "@/infrastructure/Database/prisma.service";
+import { LoggerAdapter } from "@/infrastructure/Logger/logger.adapter";
+import { ExceptionsAdapter } from "@/infrastructure/Exceptions/exceptions.adapter";
 
 @Injectable()
 export class PrismaUserRepository implements UserRepository {
@@ -16,29 +14,17 @@ export class PrismaUserRepository implements UserRepository {
     private readonly ExceptionsAdapter: ExceptionsAdapter,
   ) {}
 
-  public async createUser(user: User, workspaceId: string): Promise<User> {
+  public async createUser(user: User): Promise<User> {
     try {
       const userToPersiste = UserMapper.toPersistence(user);
 
       const createdUser = await this.prisma.user.create({
-        data: {
-          ...userToPersiste,
-          account: {
-            create: {
-              status: 'ACTIVE',
-              tier: 'FREE',
-              workspaceId: workspaceId,
-            },
-          },
-        },
-        include: {
-          account: true,
-        },
+        data: userToPersiste,
       });
 
       if (createdUser) {
         this.LoggerAdapter.log({
-          where: 'UserRepository.CreateUser',
+          where: "UserRepository.CreateUser",
           message: `New user in database: ${JSON.stringify(createdUser)}`,
         });
 
@@ -72,36 +58,6 @@ export class PrismaUserRepository implements UserRepository {
     return users.map((user) => UserMapper.toDomain(user));
   }
 
-  public async getUserAccount(id: string): Promise<UserWithAccountInformationsResponse | null> {
-    const userWithAccount = await this.prisma.user.findUnique({
-      where: { id },
-      include: {
-        account: true,
-      },
-    });
-
-    if (!userWithAccount || !userWithAccount.account) {
-      return null;
-    }
-
-    const account = userWithAccount.account;
-
-    return {
-      id: userWithAccount.id,
-      name: userWithAccount.name,
-      email: userWithAccount.email,
-      cpf: userWithAccount.cpf,
-      phone: userWithAccount.phone,
-      createdAt: userWithAccount.createdAt,
-      role: userWithAccount.role as RoleEnum,
-      workspaceId: account.workspaceId,
-      accountStatus: account.status,
-      accountTier: account.tier,
-      bannerUrl: userWithAccount.bannerUrl,
-      avatarUrl: userWithAccount.avatarUrl,
-    };
-  }
-
   public async updateUser(user: User): Promise<User> {
     const data = UserMapper.toPersistence(user);
     const updatedUser = await this.prisma.user.update({
@@ -120,24 +76,8 @@ export class PrismaUserRepository implements UserRepository {
       return true;
     } catch (error) {
       this.LoggerAdapter.error({
-        where: 'PrismaUserRepository',
+        where: "PrismaUserRepository",
         message: `Error deleting user with ID: ${id}. Error: ${error}`,
-      });
-      return false;
-    }
-  }
-
-  public async deleteUserPhone(userId: string): Promise<boolean> {
-    try {
-      await this.prisma.user.update({
-        where: { id: userId },
-        data: { phone: null },
-      });
-      return true;
-    } catch (error) {
-      this.LoggerAdapter.error({
-        where: 'PrismaUserRepository',
-        message: `Error deleting phone for user with ID: ${userId}. Error: ${error}`,
       });
       return false;
     }
@@ -158,17 +98,25 @@ export class PrismaUserRepository implements UserRepository {
     return user ? UserMapper.toDomain(user) : null;
   }
 
-  public async findUserByCpf(cpf: string): Promise<User | null> {
-    const user = await this.prisma.user.findUnique({
-      where: { cpf },
+  public async findTopUsers(limit: number): Promise<User[]> {
+    const users = await this.prisma.user.findMany({
+      orderBy: {
+        monthlyPoints: "desc",
+      },
+      take: limit,
     });
-    return user ? UserMapper.toDomain(user) : null;
+
+    return users.map((user) => UserMapper.toDomain(user));
   }
 
-  public async findUserByPhone(phone: string): Promise<User | null> {
-    const user = await this.prisma.user.findUnique({
-      where: { phone },
+  public async findAllTimeTopUsers(limit: number): Promise<User[]> {
+    const users = await this.prisma.user.findMany({
+      orderBy: {
+        allPoints: "desc",
+      },
+      take: limit,
     });
-    return user ? UserMapper.toDomain(user) : null;
+
+    return users.map((user) => UserMapper.toDomain(user));
   }
 }
