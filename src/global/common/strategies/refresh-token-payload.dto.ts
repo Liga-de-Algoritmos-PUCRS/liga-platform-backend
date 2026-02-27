@@ -1,12 +1,12 @@
-import { IsEnum, IsNotEmpty, IsNumber, IsString } from "class-validator";
-import { Role } from "@/modules/User/domain/user.entity";
+import { IsEnum, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { Role } from '@/modules/User/domain/user.entity';
 
 export class RefreshTokenPayload {
   @IsString()
   @IsNotEmpty()
   sub: string;
 
-  @IsEnum(["USER", "ADMIN"])
+  @IsEnum(['USER', 'ADMIN'])
   @IsNotEmpty()
   userRole: Role;
 

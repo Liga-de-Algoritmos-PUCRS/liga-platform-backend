@@ -1,51 +1,51 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { Role, Semester, Course } from "@/modules/User/domain/user.entity";
+import { ApiProperty } from '@nestjs/swagger';
+import { Role, Semester, Course } from '@/modules/User/domain/user.entity';
 
 export abstract class UserResponseDTO {
   @ApiProperty({
-    description: "User ID",
-    example: "123e4567-e89b-12d3-a456-426614174000",
+    description: 'User ID',
+    example: '123e4567-e89b-12d3-a456-426614174000',
     required: true,
     type: String,
   })
   id: string;
 
   @ApiProperty({
-    description: "User name",
-    example: "Guilherme Cassol",
+    description: 'User name',
+    example: 'Guilherme Cassol',
     required: true,
     type: String,
   })
   name: string;
 
   @ApiProperty({
-    description: "User email",
-    example: "guilhemecassol@gmail.com",
+    description: 'User email',
+    example: 'guilhemecassol@gmail.com',
     required: true,
     type: String,
   })
   email: string;
 
   @ApiProperty({
-    description: "User creation date",
-    example: "2023-10-05T14:48:00.000Z",
+    description: 'User creation date',
+    example: '2023-10-05T14:48:00.000Z',
     required: true,
     type: Date,
-    format: "date-time",
+    format: 'date-time',
   })
   createdAt: Date;
 
   @ApiProperty({
-    description: "User role",
-    example: "USER",
+    description: 'User role',
+    example: 'USER',
     required: true,
-    enum: ["USER", "ADMIN"],
+    enum: ['USER', 'ADMIN'],
   })
   role: Role;
 
   @ApiProperty({
-    description: "User avatar URL",
-    example: "https://example.com/avatar.jpg",
+    description: 'User avatar URL',
+    example: 'https://example.com/avatar.jpg',
     required: false,
     type: String,
     nullable: true,
@@ -53,8 +53,8 @@ export abstract class UserResponseDTO {
   avatarUrl: string | null; // Adicione aqui
 
   @ApiProperty({
-    description: "User banner URL",
-    example: "https://example.com/banner.jpg",
+    description: 'User banner URL',
+    example: 'https://example.com/banner.jpg',
     required: false,
     type: String,
     nullable: true,
@@ -62,35 +62,35 @@ export abstract class UserResponseDTO {
   bannerUrl: string | null; // Adicione aqui
 
   @ApiProperty({
-    description: "User course",
-    example: "SOFTWARE_ENGINEERING",
+    description: 'User course',
+    example: 'SOFTWARE_ENGINEERING',
     required: false,
     enum: [
-      "SOFTWARE_ENGINEERING",
-      "DATA_SCIENCE",
-      "COMPUTING_SCIENCE",
-      "INFORMATION_SYSTEMS",
-      "COMPUTING_ENGINEERING",
+      'SOFTWARE_ENGINEERING',
+      'DATA_SCIENCE',
+      'COMPUTING_SCIENCE',
+      'INFORMATION_SYSTEMS',
+      'COMPUTING_ENGINEERING',
     ],
   })
   course?: Course;
 
   @ApiProperty({
-    description: "User semester",
-    example: "SIXTH",
+    description: 'User semester',
+    example: 'SIXTH',
     required: false,
     enum: [
-      "FIRST",
-      "SECOND",
-      "THIRD",
-      "FOURTH",
-      "FIFTH",
-      "SIXTH",
-      "SEVENTH",
-      "EIGHTH",
-      "NINTH",
-      "TENTH",
-      "GRADUATED",
+      'FIRST',
+      'SECOND',
+      'THIRD',
+      'FOURTH',
+      'FIFTH',
+      'SIXTH',
+      'SEVENTH',
+      'EIGHTH',
+      'NINTH',
+      'TENTH',
+      'GRADUATED',
     ],
   })
   semester?: Semester;

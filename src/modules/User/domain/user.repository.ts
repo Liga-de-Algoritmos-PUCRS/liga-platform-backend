@@ -1,5 +1,5 @@
-import { Injectable } from "@nestjs/common";
-import { User } from "@/modules/User/domain/user.entity";
+import { Injectable } from '@nestjs/common';
+import { User } from '@/modules/User/domain/user.entity';
 
 @Injectable()
 export abstract class UserRepository {
@@ -12,8 +12,5 @@ export abstract class UserRepository {
   public abstract findUserByEmail(email: string): Promise<User | null>;
   public abstract findAllTimeTopUsers(limit: number): Promise<User[]>;
   public abstract findMonthlyTopUsers(limit: number): Promise<User[]>;
-  public abstract incrementUserPoints(
-    userId: string,
-    points: number,
-  ): Promise<void>;
+  public abstract incrementUserPoints(userId: string, points: number): Promise<void>;
 }

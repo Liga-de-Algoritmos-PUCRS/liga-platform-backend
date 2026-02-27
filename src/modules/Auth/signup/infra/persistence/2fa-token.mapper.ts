@@ -1,8 +1,5 @@
-import { Token2FA as PrismaToken2FA } from "@prisma/client";
-import {
-  Token2Fa,
-  UserInfo2Fa,
-} from "@/modules/Auth/signup/domain/2fa-token.entity";
+import { Token2FA as PrismaToken2FA } from '@prisma/client';
+import { Token2Fa, UserInfo2Fa } from '@/modules/Auth/signup/domain/2fa-token.entity';
 
 export class Token2FAMapper {
   static toDomain(prismaToken2FA: PrismaToken2FA): Token2Fa {

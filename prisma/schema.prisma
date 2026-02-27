@@ -51,7 +51,7 @@ model Submission{
   problemId     String   @map("problem_id")
   pointsEarned  Int      @map("points_earned")
   attempts      Int      @default(0)
-  isFinished     Boolean  @default(false) @map("is_finished")
+  isFinished    Boolean  @default(false) @map("is_finished")
   finishedAt    DateTime? @map("finished_at")
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   problem       Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
@@ -93,8 +93,8 @@ model Token2FA {
   createdAt     DateTime @default(now()) @map("created_at")
   isRevoked     Boolean  @default(false) @map("is_revoked")
   userEmail     String   @map("user_email")
-  userName      String  @map("user_name")
-  userPassword  String  @map("usage_password")
+  userName      String   @map("user_name")
+  userPassword  String   @map("usage_password")
 
   @@map("token2fa")
 }

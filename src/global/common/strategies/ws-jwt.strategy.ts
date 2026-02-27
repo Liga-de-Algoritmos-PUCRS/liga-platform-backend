@@ -1,21 +1,21 @@
-import { Injectable } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
-import { PassportStrategy } from "@nestjs/passport";
-import { ExtractJwt, Strategy } from "passport-jwt";
-import { Socket } from "socket.io";
-import { Env } from "@/global/env.schema";
-import { ExceptionsAdapter } from "@/infrastructure/Exceptions/exceptions.adapter";
-import { UserRepository } from "@/modules/User/domain/user.repository";
-import { RefreshTokenPayload } from "@/global/common/strategies/refresh-token-payload.dto";
+import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { PassportStrategy } from '@nestjs/passport';
+import { ExtractJwt, Strategy } from 'passport-jwt';
+import { Socket } from 'socket.io';
+import { Env } from '@/global/env.schema';
+import { ExceptionsAdapter } from '@/infrastructure/Exceptions/exceptions.adapter';
+import { UserRepository } from '@/modules/User/domain/user.repository';
+import { RefreshTokenPayload } from '@/global/common/strategies/refresh-token-payload.dto';
 
 @Injectable()
-export class WsJwtStrategy extends PassportStrategy(Strategy, "ws-jwt") {
+export class WsJwtStrategy extends PassportStrategy(Strategy, 'ws-jwt') {
   constructor(
     private readonly UserRepository: UserRepository,
     private readonly ExceptionsAdapter: ExceptionsAdapter,
     private readonly ConfigService: ConfigService<Env, true>,
   ) {
-    const secret = ConfigService.get<string>("ACCESS_TOKEN_SECRET", {
+    const secret = ConfigService.get<string>('ACCESS_TOKEN_SECRET', {
       infer: true,
     });
 
@@ -24,7 +24,7 @@ export class WsJwtStrategy extends PassportStrategy(Strategy, "ws-jwt") {
         (client: Socket) => {
           const authHeader = client.handshake.headers.authorization;
           if (!authHeader) return null;
-          return authHeader.split(" ")[1];
+          return authHeader.split(' ')[1];
         },
       ]),
       ignoreExpiration: false,
@@ -37,7 +37,7 @@ export class WsJwtStrategy extends PassportStrategy(Strategy, "ws-jwt") {
     const user = await this.UserRepository.findUserById(accountId);
     if (!user) {
       throw this.ExceptionsAdapter.unauthorized({
-        message: "User not found with the provided ID",
+        message: 'User not found with the provided ID',
       });
     }
 

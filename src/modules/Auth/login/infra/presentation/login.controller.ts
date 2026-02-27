@@ -1,24 +1,24 @@
-import { Body, Controller, Post, Req, Res, UseGuards } from "@nestjs/common";
-import { ApiTags } from "@nestjs/swagger";
-import { Response } from "express";
-import { Public } from "@/global/common/decorators/public.decorator";
-import { RefreshTokenGuard } from "@/global/common/guards/refresh-token.guard";
+import { Body, Controller, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import { Response } from 'express';
+import { Public } from '@/global/common/decorators/public.decorator';
+import { RefreshTokenGuard } from '@/global/common/guards/refresh-token.guard';
 import {
   LoginDecorator,
   LoginRequestDTO,
   LogoutDecorator,
   RefreshTokenDecorator,
-} from "@/modules/Auth/login/application/dtos/login.dto";
-import { LoginService } from "@/modules/Auth/login/application/services/login.service";
-import { RefreshTokenService } from "@/modules/Auth/login/application/services/refresh-tokens.service";
-import { LogoutService } from "@/modules/Auth/login/application/services/logout.service";
-import { RefreshTokenPayload } from "@/global/common/strategies/refresh-token-payload.dto";
-import { LoginResponseInterface } from "@/modules/Auth/login/application/dtos/refreshToken";
-import { SetAuthCookiesService } from "../../application/services/set-auth-cookies.service";
-import { ClearAuthCookiesService } from "../../application/services/clear-auth-cookie.service";
+} from '@/modules/Auth/login/application/dtos/login.dto';
+import { LoginService } from '@/modules/Auth/login/application/services/login.service';
+import { RefreshTokenService } from '@/modules/Auth/login/application/services/refresh-tokens.service';
+import { LogoutService } from '@/modules/Auth/login/application/services/logout.service';
+import { RefreshTokenPayload } from '@/global/common/strategies/refresh-token-payload.dto';
+import { LoginResponseInterface } from '@/modules/Auth/login/application/dtos/refreshToken';
+import { SetAuthCookiesService } from '../../application/services/set-auth-cookies.service';
+import { ClearAuthCookiesService } from '../../application/services/clear-auth-cookie.service';
 
-@Controller("auth")
-@ApiTags("Login")
+@Controller('auth')
+@ApiTags('Login')
 export class LoginController {
   constructor(
     private readonly LoginService: LoginService,
@@ -30,13 +30,9 @@ export class LoginController {
 
   @LoginDecorator
   @Public()
-  @Post("login")
-  async login(
-    @Body() loginRequest: LoginRequestDTO,
-    @Res({ passthrough: true }) res: Response,
-  ) {
-    const loginResponse: LoginResponseInterface =
-      await this.LoginService.execute(loginRequest);
+  @Post('login')
+  async login(@Body() loginRequest: LoginRequestDTO, @Res({ passthrough: true }) res: Response) {
+    const loginResponse: LoginResponseInterface = await this.LoginService.execute(loginRequest);
     const { accessToken, refreshToken } = loginResponse;
     this.SetAuthCookiesService.execute(res, refreshToken);
 
@@ -48,13 +44,15 @@ export class LoginController {
   @RefreshTokenDecorator
   @Public()
   @UseGuards(RefreshTokenGuard)
-  @Post("refresh")
+  @Post('refresh')
   async refreshTokens(@Req() token, @Res({ passthrough: true }) res: Response) {
     const information: RefreshTokenPayload = token.user;
     const accountId = information.sub;
     const oldRefreshToken = information.refreshToken;
-    const { accessToken, refreshToken } =
-      await this.RefreshTokenService.execute(accountId, oldRefreshToken);
+    const { accessToken, refreshToken } = await this.RefreshTokenService.execute(
+      accountId,
+      oldRefreshToken,
+    );
 
     this.SetAuthCookiesService.execute(res, refreshToken);
     return { accessToken };
@@ -63,13 +61,10 @@ export class LoginController {
   @UseGuards(RefreshTokenGuard)
   @LogoutDecorator
   @Public()
-  @Post("logout")
-  async logout(
-    @Req() token: RefreshTokenPayload,
-    @Res({ passthrough: true }) res: Response,
-  ) {
+  @Post('logout')
+  async logout(@Req() token: RefreshTokenPayload, @Res({ passthrough: true }) res: Response) {
     this.ClearAuthCookiesService.execute(res);
     await this.LogoutService.execute(token.sub);
-    return { message: "Logged out successfully" };
+    return { message: 'Logged out successfully' };
   }
 }

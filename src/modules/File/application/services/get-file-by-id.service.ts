@@ -1,13 +1,10 @@
-import { Injectable } from "@nestjs/common";
-import { FileRepository } from "@/modules/File/domain/file.repository";
-import { BucketAdapter } from "@/infrastructure/Bucket/bucket.adapter";
-import { ExceptionsAdapter } from "@/infrastructure/Exceptions/exceptions.adapter";
-import { File } from "@/modules/File/domain/file.entity";
-import {
-  FileExceptions,
-  UserExceptions,
-} from "@/infrastructure/Exceptions/exceptions.types";
-import { UserRepository } from "@/modules/User/domain/user.repository";
+import { Injectable } from '@nestjs/common';
+import { FileRepository } from '@/modules/File/domain/file.repository';
+import { BucketAdapter } from '@/infrastructure/Bucket/bucket.adapter';
+import { ExceptionsAdapter } from '@/infrastructure/Exceptions/exceptions.adapter';
+import { File } from '@/modules/File/domain/file.entity';
+import { FileExceptions, UserExceptions } from '@/infrastructure/Exceptions/exceptions.types';
+import { UserRepository } from '@/modules/User/domain/user.repository';
 
 @Injectable()
 export class GetFileByIdService {
@@ -22,27 +19,27 @@ export class GetFileByIdService {
     const file = await this.FileRepository.getFileById(id);
     if (!file) {
       throw this.Exception.notFound({
-        message: "File not found",
+        message: 'File not found',
         internalKey: FileExceptions.FILE_NOT_FOUND,
       });
     }
     if (file.deleted) {
       throw this.Exception.badRequest({
-        message: "File already deleted",
+        message: 'File already deleted',
         internalKey: FileExceptions.FILE_ALREADY_DELETED,
       });
     }
     const author = await this.UserRepository.findUserById(file.authorId);
     if (!author) {
       throw this.Exception.notFound({
-        message: "Author not found",
+        message: 'Author not found',
         internalKey: UserExceptions.USER_NOT_FOUND,
       });
     }
     const authorNegociations = await this.UserRepository.findUserById(userId);
     if (!authorNegociations) {
       throw this.Exception.notFound({
-        message: "User not found",
+        message: 'User not found',
         internalKey: UserExceptions.USER_NOT_FOUND,
       });
     }

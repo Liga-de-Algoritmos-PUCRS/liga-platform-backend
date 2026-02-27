@@ -1,17 +1,13 @@
-import { createParamDecorator, ExecutionContext } from "@nestjs/common";
-import { Role } from "@/modules/User/domain/user.entity";
-import { RefreshTokenPayload } from "@/global/common/strategies/refresh-token-payload.dto";
+import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import { Role } from '@/modules/User/domain/user.entity';
+import { RefreshTokenPayload } from '@/global/common/strategies/refresh-token-payload.dto';
 
 export const GetUser = createParamDecorator(
   (data: keyof GetUserInterface, ctx: ExecutionContext) => {
-    const request: { user: RefreshTokenPayload } = ctx
-      .switchToHttp()
-      .getRequest();
+    const request: { user: RefreshTokenPayload } = ctx.switchToHttp().getRequest();
 
     if (!request.user) {
-      throw new Error(
-        "User not found in request. Ensure an authentication guard is in place.",
-      );
+      throw new Error('User not found in request. Ensure an authentication guard is in place.');
     }
 
     const interceptedUser = request.user;

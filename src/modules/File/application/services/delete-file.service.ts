@@ -1,10 +1,10 @@
-import { Injectable } from "@nestjs/common";
-import { FileRepository } from "@/modules/File/domain/file.repository";
-import { BucketAdapter } from "@/infrastructure/Bucket/bucket.adapter";
-import { ExceptionsAdapter } from "@/infrastructure/Exceptions/exceptions.adapter";
-import { FileExceptions } from "@/infrastructure/Exceptions/exceptions.types";
-import { TransactionAdapter } from "@/infrastructure/Database/Transaction/transaction.adapter";
-import { LoggerAdapter } from "@/infrastructure/Logger/logger.adapter";
+import { Injectable } from '@nestjs/common';
+import { FileRepository } from '@/modules/File/domain/file.repository';
+import { BucketAdapter } from '@/infrastructure/Bucket/bucket.adapter';
+import { ExceptionsAdapter } from '@/infrastructure/Exceptions/exceptions.adapter';
+import { FileExceptions } from '@/infrastructure/Exceptions/exceptions.types';
+import { TransactionAdapter } from '@/infrastructure/Database/Transaction/transaction.adapter';
+import { LoggerAdapter } from '@/infrastructure/Logger/logger.adapter';
 
 @Injectable()
 export class DeleteFileService {
@@ -21,13 +21,13 @@ export class DeleteFileService {
 
     if (!file) {
       throw this.Exception.notFound({
-        message: "No file found",
+        message: 'No file found',
         internalKey: FileExceptions.FILE_NOT_FOUND,
       });
     }
     if (file.deleted) {
       throw this.Exception.badRequest({
-        message: "File already deleted",
+        message: 'File already deleted',
         internalKey: FileExceptions.FILE_ALREADY_DELETED,
       });
     }
@@ -37,11 +37,11 @@ export class DeleteFileService {
         await this.BucketAdapter.deleteFile(file.fileUrl);
       } catch (error) {
         this.LoggerAdapter.error({
-          where: "DeleteFileService",
+          where: 'DeleteFileService',
           message: `Error deleting file from storage for file ID: ${id}, URL: ${file.fileUrl}. Error: ${error}`,
         });
         throw this.Exception.internalServerError({
-          message: "Failed to delete file from storage",
+          message: 'Failed to delete file from storage',
           internalKey: FileExceptions.FILE_UPLOAD_FAILED,
         });
       }

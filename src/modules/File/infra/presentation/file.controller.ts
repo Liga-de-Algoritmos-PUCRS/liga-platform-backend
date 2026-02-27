@@ -9,30 +9,30 @@ import {
   UseInterceptors,
   UploadedFiles,
   UseGuards,
-} from "@nestjs/common";
-import { ApiTags } from "@nestjs/swagger";
-import { FilesInterceptor } from "@nestjs/platform-express";
-import { JwtAuthGuard } from "@/global/common/guards/jwt-auth.guard";
-import { GetUser } from "@/global/common/decorators/get-user.decorator";
-import { UpdateFileDTO } from "@/modules/File/application/dtos/update-file.dto";
-import { ConvertToCreateFileDTO } from "@/modules/File/application/dtos/create-file.dto";
+} from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { JwtAuthGuard } from '@/global/common/guards/jwt-auth.guard';
+import { GetUser } from '@/global/common/decorators/get-user.decorator';
+import { UpdateFileDTO } from '@/modules/File/application/dtos/update-file.dto';
+import { ConvertToCreateFileDTO } from '@/modules/File/application/dtos/create-file.dto';
 import {
   CreateFileDecorator,
   GetFileByAuthorIdDecorator,
   GetFileByIdDecorator,
   UpdateFileDecorator,
   DeleteFileDecorator,
-} from "@/modules/File/application/dtos/file.decorators";
-import { FileReponseDTO } from "@/modules/File/application/dtos/response-file.dto";
-import { CreateFileService } from "@/modules/File/application/services/create-file.service";
-import { UpdateFileService } from "@/modules/File/application/services/update-file.service";
-import { DeleteFileService } from "@/modules/File/application/services/delete-file.service";
-import { GetFileByIdService } from "@/modules/File/application/services/get-file-by-id.service";
-import { GetFilesByAuthorIdService } from "@/modules/File/application/services/get-file-by-author-id.service";
+} from '@/modules/File/application/dtos/file.decorators';
+import { FileReponseDTO } from '@/modules/File/application/dtos/response-file.dto';
+import { CreateFileService } from '@/modules/File/application/services/create-file.service';
+import { UpdateFileService } from '@/modules/File/application/services/update-file.service';
+import { DeleteFileService } from '@/modules/File/application/services/delete-file.service';
+import { GetFileByIdService } from '@/modules/File/application/services/get-file-by-id.service';
+import { GetFilesByAuthorIdService } from '@/modules/File/application/services/get-file-by-author-id.service';
 
-@ApiTags("File")
+@ApiTags('File')
 @UseGuards(JwtAuthGuard)
-@Controller("file")
+@Controller('file')
 export class FileController {
   constructor(
     private readonly CreateFileService: CreateFileService,
@@ -43,10 +43,8 @@ export class FileController {
   ) {}
 
   @CreateFileDecorator
-  @UseInterceptors(
-    FilesInterceptor("files", 10, { limits: { fileSize: 100 * 1024 * 1024 } }),
-  )
-  @Post("")
+  @UseInterceptors(FilesInterceptor('files', 10, { limits: { fileSize: 100 * 1024 * 1024 } }))
+  @Post('')
   async create(
     @UploadedFiles() files: Array<Express.Multer.File>,
     @GetUser() user,
@@ -59,38 +57,29 @@ export class FileController {
   }
 
   @GetFileByIdDecorator
-  @Get(":id")
-  async getFileById(
-    @Param("id") id: string,
-    @GetUser() user,
-  ): Promise<FileReponseDTO | null> {
+  @Get(':id')
+  async getFileById(@Param('id') id: string, @GetUser() user): Promise<FileReponseDTO | null> {
     return await this.GetFileByIdService.execute(id, String(user.id));
   }
 
   @GetFileByAuthorIdDecorator
-  @Get("user/:userId")
+  @Get('user/:userId')
   async getFilesByAuthorId(
-    @Param("userId") userId: string,
+    @Param('userId') userId: string,
     @GetUser() user,
   ): Promise<FileReponseDTO[]> {
-    return await this.GetFilesByAuthorIdService.execute(
-      userId,
-      String(user.id),
-    );
+    return await this.GetFilesByAuthorIdService.execute(userId, String(user.id));
   }
 
   @UpdateFileDecorator
-  @Patch("")
-  async updateFile(
-    @GetUser() user,
-    @Body() file: UpdateFileDTO,
-  ): Promise<FileReponseDTO> {
+  @Patch('')
+  async updateFile(@GetUser() user, @Body() file: UpdateFileDTO): Promise<FileReponseDTO> {
     return await this.UpdateFileService.execute(file, String(user.id));
   }
 
   @DeleteFileDecorator
-  @Delete(":id")
-  async deleteFile(@Param("id") id: string): Promise<void> {
+  @Delete(':id')
+  async deleteFile(@Param('id') id: string): Promise<void> {
     return await this.DeleteFileService.execute(id);
   }
 }

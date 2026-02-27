@@ -1,22 +1,22 @@
-import { Injectable } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
-import { PassportStrategy } from "@nestjs/passport";
-import { ExtractJwt, Strategy } from "passport-jwt";
-import { RefreshTokenPayload } from "@/global/common/strategies/refresh-token-payload.dto";
-import { Env } from "@/global/env.schema";
-import { ExceptionsAdapter } from "@/infrastructure/Exceptions/exceptions.adapter";
-import { UserRepository } from "@/modules/User/domain/user.repository";
-import { LoggerAdapter } from "@/infrastructure/Logger/logger.adapter";
+import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { PassportStrategy } from '@nestjs/passport';
+import { ExtractJwt, Strategy } from 'passport-jwt';
+import { RefreshTokenPayload } from '@/global/common/strategies/refresh-token-payload.dto';
+import { Env } from '@/global/env.schema';
+import { ExceptionsAdapter } from '@/infrastructure/Exceptions/exceptions.adapter';
+import { UserRepository } from '@/modules/User/domain/user.repository';
+import { LoggerAdapter } from '@/infrastructure/Logger/logger.adapter';
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy, "jwt") {
+export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(
     private readonly LogggerAdapter: LoggerAdapter,
     private readonly UserRepository: UserRepository,
     private readonly ExceptionsAdapter: ExceptionsAdapter,
     private readonly ConfigService: ConfigService<Env, true>,
   ) {
-    const secret = ConfigService.get<string>("ACCESS_TOKEN_SECRET", {
+    const secret = ConfigService.get<string>('ACCESS_TOKEN_SECRET', {
       infer: true,
     });
 
@@ -32,11 +32,11 @@ export class JwtStrategy extends PassportStrategy(Strategy, "jwt") {
     const user = await this.UserRepository.findUserById(accountId);
     if (!user) {
       this.LogggerAdapter.verbose({
-        where: "JWT Strategy  -Validate",
+        where: 'JWT Strategy  -Validate',
         message: `User not found with ID: ${accountId}, throwing unauthorized`,
       });
       throw this.ExceptionsAdapter.unauthorized({
-        message: "User not found with the provided ID",
+        message: 'User not found with the provided ID',
       });
     }
 

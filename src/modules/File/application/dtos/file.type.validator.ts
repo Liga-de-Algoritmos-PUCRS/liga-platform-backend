@@ -2,9 +2,9 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
   ValidationArguments,
-} from "class-validator";
+} from 'class-validator';
 
-@ValidatorConstraint({ name: "fileType", async: false })
+@ValidatorConstraint({ name: 'fileType', async: false })
 export class FileTypeValidator implements ValidatorConstraintInterface {
   validate(file, args: ValidationArguments) {
     if (!file) {
@@ -22,12 +22,12 @@ export class FileTypeValidator implements ValidatorConstraintInterface {
   defaultMessage(args: ValidationArguments) {
     const allowedExtensions = args.constraints.map((type) => {
       //eslint-disable-next-line @typescript-eslint/no-unsafe-call
-      const parts = type.split("/");
+      const parts = type.split('/');
       const subType = parts[1] as string;
-      if (subType.includes("document")) return "docx";
-      if (subType.includes("sheet")) return "xlsx";
+      if (subType.includes('document')) return 'docx';
+      if (subType.includes('sheet')) return 'xlsx';
       return subType;
     });
-    return `Tipo de arquivo inválido. Tipos permitidos: ${allowedExtensions.join(", ")}.`;
+    return `Tipo de arquivo inválido. Tipos permitidos: ${allowedExtensions.join(', ')}.`;
   }
 }

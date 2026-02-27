@@ -1,10 +1,10 @@
-import { Injectable } from "@nestjs/common";
-import { User } from "@/modules/User/domain/user.entity";
-import { UserMapper } from "@/modules/User/infra/persistence/user.mapper";
-import { UserRepository } from "@/modules/User/domain/user.repository";
-import { PrismaService } from "@/infrastructure/Database/prisma.service";
-import { LoggerAdapter } from "@/infrastructure/Logger/logger.adapter";
-import { ExceptionsAdapter } from "@/infrastructure/Exceptions/exceptions.adapter";
+import { Injectable } from '@nestjs/common';
+import { User } from '@/modules/User/domain/user.entity';
+import { UserMapper } from '@/modules/User/infra/persistence/user.mapper';
+import { UserRepository } from '@/modules/User/domain/user.repository';
+import { PrismaService } from '@/infrastructure/Database/prisma.service';
+import { LoggerAdapter } from '@/infrastructure/Logger/logger.adapter';
+import { ExceptionsAdapter } from '@/infrastructure/Exceptions/exceptions.adapter';
 
 @Injectable()
 export class PrismaUserRepository implements UserRepository {
@@ -24,7 +24,7 @@ export class PrismaUserRepository implements UserRepository {
 
       if (createdUser) {
         this.LoggerAdapter.log({
-          where: "UserRepository.CreateUser",
+          where: 'UserRepository.CreateUser',
           message: `New user in database: ${JSON.stringify(createdUser)}`,
         });
 
@@ -76,7 +76,7 @@ export class PrismaUserRepository implements UserRepository {
       return true;
     } catch (error) {
       this.LoggerAdapter.error({
-        where: "PrismaUserRepository",
+        where: 'PrismaUserRepository',
         message: `Error deleting user with ID: ${id}. Error: ${error}`,
       });
       return false;
@@ -101,7 +101,7 @@ export class PrismaUserRepository implements UserRepository {
   public async findMonthlyTopUsers(limit: number): Promise<User[]> {
     const users = await this.prisma.user.findMany({
       orderBy: {
-        monthlyPoints: "desc",
+        monthlyPoints: 'desc',
       },
       take: limit,
     });
@@ -112,7 +112,7 @@ export class PrismaUserRepository implements UserRepository {
   public async findAllTimeTopUsers(limit: number): Promise<User[]> {
     const users = await this.prisma.user.findMany({
       orderBy: {
-        allPoints: "desc",
+        allPoints: 'desc',
       },
       take: limit,
     });
@@ -120,10 +120,7 @@ export class PrismaUserRepository implements UserRepository {
     return users.map((user) => UserMapper.toDomain(user));
   }
 
-  public async incrementUserPoints(
-    userId: string,
-    points: number,
-  ): Promise<void> {
+  public async incrementUserPoints(userId: string, points: number): Promise<void> {
     await this.prisma.user.update({
       where: { id: userId },
       data: {

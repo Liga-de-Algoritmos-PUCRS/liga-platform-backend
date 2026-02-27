@@ -1,5 +1,5 @@
-import { RefreshToken as PrismaRefreshToken } from "@prisma/client";
-import { RefreshToken } from "@/modules/Auth/login/domain/refresh-token.entity";
+import { RefreshToken as PrismaRefreshToken } from '@prisma/client';
+import { RefreshToken } from '@/modules/Auth/login/domain/refresh-token.entity';
 
 export class RefreshTokenMapper {
   static toDomain(refreshToken: PrismaRefreshToken): RefreshToken {

@@ -1,6 +1,6 @@
-import { File } from "./file.entity";
-import { FileInterface } from "@/modules/File/domain/file.entity";
-import { Injectable } from "@nestjs/common";
+import { File } from './file.entity';
+import { FileInterface } from '@/modules/File/domain/file.entity';
+import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export abstract class FileRepository {

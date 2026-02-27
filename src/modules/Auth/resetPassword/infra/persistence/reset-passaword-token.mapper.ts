@@ -1,5 +1,5 @@
-import { ResetPasswordToken as PrismaResetPasswordToken } from "@prisma/client";
-import { ResetPasswordToken } from "@/modules/Auth/resetPassword/domain/reset-password-token.entity";
+import { ResetPasswordToken as PrismaResetPasswordToken } from '@prisma/client';
+import { ResetPasswordToken } from '@/modules/Auth/resetPassword/domain/reset-password-token.entity';
 
 export class ResetPasswordTokenMapper {
   static toDomain(PrismaToken: PrismaResetPasswordToken): ResetPasswordToken {
@@ -16,9 +16,7 @@ export class ResetPasswordTokenMapper {
     return Token;
   }
 
-  static toPersistence(
-    ResetPasswordToken: ResetPasswordToken,
-  ): PrismaResetPasswordToken {
+  static toPersistence(ResetPasswordToken: ResetPasswordToken): PrismaResetPasswordToken {
     return {
       id: ResetPasswordToken.id,
       token: ResetPasswordToken.token,

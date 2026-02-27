@@ -1,10 +1,5 @@
-import {
-  User,
-  Role,
-  Semester,
-  Course,
-} from "@/modules/User/domain/user.entity";
-import { User as PrismaUser, RoleEnum as PrismaRole } from "@prisma/client";
+import { User, Role, Semester, Course } from '@/modules/User/domain/user.entity';
+import { User as PrismaUser, RoleEnum as PrismaRole } from '@prisma/client';
 
 export class UserMapper {
   static toDomain(user: PrismaUser): User {

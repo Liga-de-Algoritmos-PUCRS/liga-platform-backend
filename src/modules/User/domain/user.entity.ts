@@ -1,25 +1,25 @@
-import { createId } from "@paralleldrive/cuid2";
+import { createId } from '@paralleldrive/cuid2';
 
-export type Role = "USER" | "ADMIN";
+export type Role = 'USER' | 'ADMIN';
 export type Course =
-  | "SOFTWARE_ENGINEERING"
-  | "DATA_SCIENCE"
-  | "COMPUTING_SCIENCE"
-  | "INFORMATION_SYSTEMS"
-  | "COMPUTING_ENGINEERING";
+  | 'SOFTWARE_ENGINEERING'
+  | 'DATA_SCIENCE'
+  | 'COMPUTING_SCIENCE'
+  | 'INFORMATION_SYSTEMS'
+  | 'COMPUTING_ENGINEERING';
 
 export type Semester =
-  | "FIRST"
-  | "SECOND"
-  | "THIRD"
-  | "FOURTH"
-  | "FIFTH"
-  | "SIXTH"
-  | "SEVENTH"
-  | "EIGHTH"
-  | "NINTH"
-  | "TENTH"
-  | "GRADUATED";
+  | 'FIRST'
+  | 'SECOND'
+  | 'THIRD'
+  | 'FOURTH'
+  | 'FIFTH'
+  | 'SIXTH'
+  | 'SEVENTH'
+  | 'EIGHTH'
+  | 'NINTH'
+  | 'TENTH'
+  | 'GRADUATED';
 export interface UserInterface {
   name: string;
   email: string;

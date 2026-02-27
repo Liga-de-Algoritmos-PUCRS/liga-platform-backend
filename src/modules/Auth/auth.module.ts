@@ -1,25 +1,25 @@
-import { Module } from "@nestjs/common";
-import { LoginController } from "@/modules/Auth/login/infra/presentation/login.controller";
-import { JwtModule } from "@nestjs/jwt";
-import { JwtStrategy } from "@/global/common/strategies/jwt.strategy";
-import { PassportModule } from "@nestjs/passport";
-import { RefreshTokenStrategy } from "@/global/common/strategies/refresh-token.strategy";
-import { WsJwtStrategy } from "@/global/common/strategies/ws-jwt.strategy";
-import { LoginService } from "@/modules/Auth/login/application/services/login.service";
-import { RefreshTokenService } from "@/modules/Auth/login/application/services/refresh-tokens.service";
-import { SignupService } from "@/modules/Auth/signup/application/services/signup.service";
-import { ValidateSignupService } from "@/modules/Auth/signup/application/services/validate.signup.service";
-import { StringValue } from "ms";
-import { CryptographyModule } from "@/infrastructure/Criptography/criptography.module";
-import { SendEmailModule } from "@/infrastructure/SendEmail/sendEmail.module";
-import { RequestResetPasswordService } from "@/modules/Auth/resetPassword/application/services/request-reset-password.service";
-import { IsValidateResetPasswordService } from "@/modules/Auth/resetPassword/application/services/validate-reset-password.service";
-import { ResetPasswordService } from "@/modules/Auth/resetPassword/application/services/reset-password.service";
-import { LogoutService } from "@/modules/Auth/login/application/services/logout.service";
-import { SignupController } from "@/modules/Auth/signup/infra/presentation/signup.controller";
-import { ResetPasswordController } from "@/modules/Auth/resetPassword/infra/presentation/reset-password.controller";
-import { ClearAuthCookiesService } from "@/modules/Auth/login/application/services/clear-auth-cookie.service";
-import { SetAuthCookiesService } from "@/modules/Auth/login/application/services/set-auth-cookies.service";
+import { Module } from '@nestjs/common';
+import { LoginController } from '@/modules/Auth/login/infra/presentation/login.controller';
+import { JwtModule } from '@nestjs/jwt';
+import { JwtStrategy } from '@/global/common/strategies/jwt.strategy';
+import { PassportModule } from '@nestjs/passport';
+import { RefreshTokenStrategy } from '@/global/common/strategies/refresh-token.strategy';
+import { WsJwtStrategy } from '@/global/common/strategies/ws-jwt.strategy';
+import { LoginService } from '@/modules/Auth/login/application/services/login.service';
+import { RefreshTokenService } from '@/modules/Auth/login/application/services/refresh-tokens.service';
+import { SignupService } from '@/modules/Auth/signup/application/services/signup.service';
+import { ValidateSignupService } from '@/modules/Auth/signup/application/services/validate.signup.service';
+import { StringValue } from 'ms';
+import { CryptographyModule } from '@/infrastructure/Criptography/criptography.module';
+import { SendEmailModule } from '@/infrastructure/SendEmail/sendEmail.module';
+import { RequestResetPasswordService } from '@/modules/Auth/resetPassword/application/services/request-reset-password.service';
+import { IsValidateResetPasswordService } from '@/modules/Auth/resetPassword/application/services/validate-reset-password.service';
+import { ResetPasswordService } from '@/modules/Auth/resetPassword/application/services/reset-password.service';
+import { LogoutService } from '@/modules/Auth/login/application/services/logout.service';
+import { SignupController } from '@/modules/Auth/signup/infra/presentation/signup.controller';
+import { ResetPasswordController } from '@/modules/Auth/resetPassword/infra/presentation/reset-password.controller';
+import { ClearAuthCookiesService } from '@/modules/Auth/login/application/services/clear-auth-cookie.service';
+import { SetAuthCookiesService } from '@/modules/Auth/login/application/services/set-auth-cookies.service';
 
 @Module({
   imports: [

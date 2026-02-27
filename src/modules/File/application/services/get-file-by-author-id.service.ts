@@ -1,10 +1,10 @@
-import { Injectable } from "@nestjs/common";
-import { FileRepository } from "@/modules/File/domain/file.repository";
-import { BucketAdapter } from "@/infrastructure/Bucket/bucket.adapter";
-import { ExceptionsAdapter } from "@/infrastructure/Exceptions/exceptions.adapter";
-import { File } from "@/modules/File/domain/file.entity";
-import { UserRepository } from "@/modules/User/domain/user.repository";
-import { UserExceptions } from "@/infrastructure/Exceptions/exceptions.types";
+import { Injectable } from '@nestjs/common';
+import { FileRepository } from '@/modules/File/domain/file.repository';
+import { BucketAdapter } from '@/infrastructure/Bucket/bucket.adapter';
+import { ExceptionsAdapter } from '@/infrastructure/Exceptions/exceptions.adapter';
+import { File } from '@/modules/File/domain/file.entity';
+import { UserRepository } from '@/modules/User/domain/user.repository';
+import { UserExceptions } from '@/infrastructure/Exceptions/exceptions.types';
 
 @Injectable()
 export class GetFilesByAuthorIdService {
@@ -25,7 +25,7 @@ export class GetFilesByAuthorIdService {
     const author = await this.userRepository.findUserById(authorId);
     if (!author) {
       throw this.exception.notFound({
-        message: "Author not found",
+        message: 'Author not found',
         internalKey: UserExceptions.USER_NOT_ALLOWED,
       });
     }
@@ -34,9 +34,7 @@ export class GetFilesByAuthorIdService {
 
     filteredFiles.forEach((file) => {
       if (file.fileUrl) {
-        file.fileUrl = this.bucketAdapter.getSignedUrlForInternalRead(
-          file.fileUrl,
-        );
+        file.fileUrl = this.bucketAdapter.getSignedUrlForInternalRead(file.fileUrl);
       }
     });
 

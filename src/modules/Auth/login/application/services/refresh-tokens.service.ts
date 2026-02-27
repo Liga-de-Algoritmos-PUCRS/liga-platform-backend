@@ -1,20 +1,17 @@
-import { Injectable } from "@nestjs/common";
-import { TokensResponseInterface } from "@/modules/Auth/login/application/dtos/refreshToken";
-import { RefreshToken } from "@/modules/Auth/login/domain/refresh-token.entity";
-import { RefreshTokenRepository } from "@/modules/Auth/login/domain/refresh-token.repository";
-import { UserRepository } from "@/modules/User/domain/user.repository";
-import { ExceptionsAdapter } from "@/infrastructure/Exceptions/exceptions.adapter";
-import { CryptographyAdapter } from "@/infrastructure/Criptography/cryptography.adapter";
-import { JwtService } from "@nestjs/jwt";
-import { StringValue } from "ms";
-import * as ms from "ms";
-import { ConfigService } from "@nestjs/config";
-import { Env } from "@/global/env.schema";
-import {
-  UserExceptions,
-  TokenExceptions,
-} from "@/infrastructure/Exceptions/exceptions.types";
-import { Role } from "@/modules/User/domain/user.entity";
+import { Injectable } from '@nestjs/common';
+import { TokensResponseInterface } from '@/modules/Auth/login/application/dtos/refreshToken';
+import { RefreshToken } from '@/modules/Auth/login/domain/refresh-token.entity';
+import { RefreshTokenRepository } from '@/modules/Auth/login/domain/refresh-token.repository';
+import { UserRepository } from '@/modules/User/domain/user.repository';
+import { ExceptionsAdapter } from '@/infrastructure/Exceptions/exceptions.adapter';
+import { CryptographyAdapter } from '@/infrastructure/Criptography/cryptography.adapter';
+import { JwtService } from '@nestjs/jwt';
+import { StringValue } from 'ms';
+import * as ms from 'ms';
+import { ConfigService } from '@nestjs/config';
+import { Env } from '@/global/env.schema';
+import { UserExceptions, TokenExceptions } from '@/infrastructure/Exceptions/exceptions.types';
+import { Role } from '@/modules/User/domain/user.entity';
 
 @Injectable()
 export class RefreshTokenService {
@@ -27,25 +24,20 @@ export class RefreshTokenService {
     private readonly configService: ConfigService<Env, true>,
   ) {}
 
-  async execute(
-    userId: string,
-    oldRefreshToken: string,
-  ): Promise<TokensResponseInterface> {
+  async execute(userId: string, oldRefreshToken: string): Promise<TokensResponseInterface> {
     const user = await this.userRepository.findUserById(userId);
     if (!user) {
       throw this.exceptionsAdapter.notFound({
-        message: "User not found",
+        message: 'User not found',
         internalKey: UserExceptions.USER_NOT_FOUND,
       });
     }
 
     const userRefreshToken =
-      await this.refreshTokenRepository.findValidRefreshTokenByAccountId(
-        userId,
-      );
+      await this.refreshTokenRepository.findValidRefreshTokenByAccountId(userId);
     if (!userRefreshToken) {
       throw this.exceptionsAdapter.unauthorized({
-        message: "No valid refresh token found for user",
+        message: 'No valid refresh token found for user',
         internalKey: TokenExceptions.TOKEN_INVALID,
       });
     }
@@ -56,18 +48,14 @@ export class RefreshTokenService {
     });
 
     if (!verifyToken) {
-      await this.refreshTokenRepository.revokeAllRefreshTokensByAccountId(
-        userId,
-      );
+      await this.refreshTokenRepository.revokeAllRefreshTokensByAccountId(userId);
       throw this.exceptionsAdapter.unauthorized({
-        message: "Invalid refresh token",
+        message: 'Invalid refresh token',
         internalKey: TokenExceptions.TOKEN_INVALID,
       });
     }
 
-    await this.refreshTokenRepository.revokeRefreshTokenById(
-      userRefreshToken.id,
-    );
+    await this.refreshTokenRepository.revokeRefreshTokenById(userRefreshToken.id);
 
     return this.generateNewTokens({
       accountId: user.id,
@@ -75,9 +63,7 @@ export class RefreshTokenService {
     });
   }
 
-  private async generateNewTokens(
-    tokenParams: TokenParams,
-  ): Promise<TokensResponseInterface> {
+  private async generateNewTokens(tokenParams: TokenParams): Promise<TokensResponseInterface> {
     const payload = {
       sub: tokenParams.accountId,
       userRole: tokenParams.userRole,
@@ -85,16 +71,12 @@ export class RefreshTokenService {
 
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload, {
-        secret: this.configService.get<string>("ACCESS_TOKEN_SECRET"),
-        expiresIn: this.configService.get<string>(
-          "ACCESS_TOKEN_EXPIRATION",
-        ) as StringValue,
+        secret: this.configService.get<string>('ACCESS_TOKEN_SECRET'),
+        expiresIn: this.configService.get<string>('ACCESS_TOKEN_EXPIRATION') as StringValue,
       }),
       this.jwtService.signAsync(payload, {
-        secret: this.configService.get<string>("REFRESH_TOKEN_SECRET"),
-        expiresIn: this.configService.get<string>(
-          "REFRESH_TOKEN_EXPIRATION",
-        ) as StringValue,
+        secret: this.configService.get<string>('REFRESH_TOKEN_SECRET'),
+        expiresIn: this.configService.get<string>('REFRESH_TOKEN_EXPIRATION') as StringValue,
       }),
     ]);
 
@@ -103,9 +85,7 @@ export class RefreshTokenService {
       hashSalt: 8,
     });
 
-    const expireInString = this.configService.get<string>(
-      "REFRESH_TOKEN_EXPIRATION",
-    );
+    const expireInString = this.configService.get<string>('REFRESH_TOKEN_EXPIRATION');
     const expireInMs = ms(expireInString as StringValue);
     const expiresAt = new Date(Date.now() + expireInMs);
 

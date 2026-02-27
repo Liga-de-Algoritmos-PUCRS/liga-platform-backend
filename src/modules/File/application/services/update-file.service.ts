@@ -1,14 +1,11 @@
-import { Injectable } from "@nestjs/common";
-import { FileRepository } from "@/modules/File/domain/file.repository";
-import { File } from "../../domain/file.entity";
-import { UpdateFileDTO } from "../dtos/update-file.dto";
-import { BucketAdapter } from "@/infrastructure/Bucket/bucket.adapter";
-import { ExceptionsAdapter } from "@/infrastructure/Exceptions/exceptions.adapter";
-import {
-  FileExceptions,
-  UserExceptions,
-} from "@/infrastructure/Exceptions/exceptions.types";
-import { TransactionAdapter } from "@/infrastructure/Database/Transaction/transaction.adapter";
+import { Injectable } from '@nestjs/common';
+import { FileRepository } from '@/modules/File/domain/file.repository';
+import { File } from '../../domain/file.entity';
+import { UpdateFileDTO } from '../dtos/update-file.dto';
+import { BucketAdapter } from '@/infrastructure/Bucket/bucket.adapter';
+import { ExceptionsAdapter } from '@/infrastructure/Exceptions/exceptions.adapter';
+import { FileExceptions, UserExceptions } from '@/infrastructure/Exceptions/exceptions.types';
+import { TransactionAdapter } from '@/infrastructure/Database/Transaction/transaction.adapter';
 
 @Injectable()
 export class UpdateFileService {
@@ -23,19 +20,19 @@ export class UpdateFileService {
     const existingFile = await this.FileRepository.getFileById(file.id);
     if (!existingFile) {
       throw this.Exception.notFound({
-        message: "No file found",
+        message: 'No file found',
         internalKey: FileExceptions.FILE_NOT_FOUND,
       });
     }
     if (existingFile.deleted) {
       throw this.Exception.badRequest({
-        message: "File already deleted",
+        message: 'File already deleted',
         internalKey: FileExceptions.FILE_ALREADY_DELETED,
       });
     }
     if (existingFile.authorId !== authorId) {
       throw this.Exception.forbidden({
-        message: "You do not have permission to update this file",
+        message: 'You do not have permission to update this file',
         internalKey: UserExceptions.USER_NOT_ALLOWED,
       });
     }
@@ -49,14 +46,9 @@ export class UpdateFileService {
     };
 
     return await this.TransactionAdapter.transaction(async () => {
-      const fileUrl = await this.FileRepository.updateFile(
-        updatedFile,
-        file.id,
-      );
+      const fileUrl = await this.FileRepository.updateFile(updatedFile, file.id);
 
-      fileUrl.fileUrl = this.BucketAdapter.getSignedUrlForInternalRead(
-        fileUrl.fileUrl,
-      );
+      fileUrl.fileUrl = this.BucketAdapter.getSignedUrlForInternalRead(fileUrl.fileUrl);
       return fileUrl;
     });
   }
