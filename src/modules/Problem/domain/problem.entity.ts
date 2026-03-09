@@ -12,6 +12,8 @@ export interface ProblemInterface {
   bannerUrl?: string | null;
   createdAt?: Date;
   updatedAt?: Date;
+  resolved?: number;
+  submissions?: number;
 }
 
 export class Problem {
@@ -25,6 +27,8 @@ export class Problem {
   updatedAt?: Date;
   bannerUrl?: string | null;
   createdAt: Date;
+  resolved: number;
+  submissions: number;
 
   constructor(problemInterface: ProblemInterface, id?: string) {
     this.id = id ?? createId();
@@ -37,6 +41,8 @@ export class Problem {
     this.bannerUrl = problemInterface.bannerUrl || null;
     this.createdAt = new Date();
     this.updatedAt = problemInterface.updatedAt;
+    this.resolved = problemInterface.resolved ?? 0;
+    this.submissions = problemInterface.submissions ?? 0;
   }
 
   public toJSON() {
@@ -49,6 +55,8 @@ export class Problem {
       points: this.points,
       bannerUrl: this.bannerUrl,
       createdAt: this.createdAt,
+      resolved: this.resolved,
+      submissions: this.submissions,
     };
   }
 }

@@ -1,10 +1,10 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { CreateProblemService } from '@/modules/Problem/application/service/create-problem.service';
-import { GetProblemByIdService } from '@/modules/Problem/application/service/get-problem-by-id.service';
-import { GetAllProblemsService } from '@/modules/Problem/application/service/get-all-problens.service';
-import { DeleteProblemService } from '@/modules/Problem/application/service/delete-problem.service';
-import { UpdateProblemService } from '@/modules/Problem/application/service/update-problem.service';
+import { CreateProblemService } from '@/modules/Problem/application/services/create-problem.service';
+import { GetProblemByIdService } from '@/modules/Problem/application/services/get-problem-by-id.service';
+import { GetAllProblemsService } from '@/modules/Problem/application/services/get-all-problens.service';
+import { DeleteProblemService } from '@/modules/Problem/application/services/delete-problem.service';
+import { UpdateProblemService } from '@/modules/Problem/application/services/update-problem.service';
 import { UpdateProblemDTO } from '@/modules/Problem/application/dtos/update-problem.dto';
 import { ProblemResponseDTO } from '@/modules/Problem/application/dtos/problem.response';
 import { Public } from '@/global/common/decorators/public.decorator';

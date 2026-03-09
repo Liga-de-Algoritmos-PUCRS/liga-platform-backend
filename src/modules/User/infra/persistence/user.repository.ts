@@ -134,6 +134,20 @@ export class PrismaUserRepository implements UserRepository {
     });
   }
 
+  public async decrementUserPoints(userId: string, points: number): Promise<void> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        monthlyPoints: {
+          decrement: points,
+        },
+        allPoints: {
+          decrement: points,
+        },
+      },
+    });
+  }
+
   public async resetAllMonthlyPoints(): Promise<void> {
     this.LoggerAdapter.log({
       where: 'PrismaUserRepository',
@@ -142,6 +156,28 @@ export class PrismaUserRepository implements UserRepository {
     await this.prisma.user.updateMany({
       data: {
         monthlyPoints: 0,
+      },
+    });
+  }
+
+  public async incrementUserSubmissions(userId: string): Promise<void> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        submissionsNumber: {
+          increment: 1,
+        },
+      },
+    });
+  }
+
+  public async incrementUserProblemsResolved(userId: string): Promise<void> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        problemsResolved: {
+          increment: 1,
+        },
       },
     });
   }

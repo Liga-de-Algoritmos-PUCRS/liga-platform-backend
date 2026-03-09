@@ -8,4 +8,5 @@ export abstract class ProblemRepository {
   public abstract getProblems(): Promise<Problem[]>;
   public abstract updateProblem(problem: Problem): Promise<Problem>;
   public abstract deleteProblem(id: string): Promise<boolean>;
+  public abstract incrementProblemSubmissions(id: string, correct: boolean): Promise<Problem>;
 }
