@@ -34,10 +34,9 @@ export class GetFilesByAuthorIdService {
 
     filteredFiles.forEach((file) => {
       if (file.fileUrl) {
-        file.fileUrl = this.bucketAdapter.getSignedUrlForInternalRead(file.fileUrl);
+        file.fileUrl = this.bucketAdapter.getFileUrl(file.fileUrl);
       }
     });
-
     return filteredFiles;
   }
 }

@@ -1,0 +1,52 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: liga-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: liga_db
+    volumes:
+      - postgres-liga-data:/var/lib/postgresql/data
+    networks:
+      - liga
+    ports:
+      - '5432:5432'
+
+  api:
+    container_name: gimel-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    command: sh -c "npx prisma migrate deploy && npm run start:prod"
+    depends_on:
+      - postgres
+    networks:
+      - liga
+
+  nginx:
+    image: nginx:latest
+    container_name: liga-nginx
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      - api
+    networks:
+      - liga
+
+volumes:
+  postgres-liga-data:
+    driver: local
+
+networks:
+  liga:
+    driver: bridge

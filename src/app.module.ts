@@ -14,6 +14,8 @@ import { envSchema } from '@/global/env.schema';
 import { JwtAuthGuard } from '@/global/common/guards/jwt-auth.guard';
 import { LoggerModule } from '@/infrastructure/Logger/logger.module';
 import { LoggerInterceptor } from '@/infrastructure/Logger/services/logger.interceptor';
+import { SubmitModule } from '@/modules/Submit/submit.module';
+import { ProblemModule } from '@/modules/Problem/problem.module';
 
 @Module({
   imports: [
@@ -41,6 +43,8 @@ import { LoggerInterceptor } from '@/infrastructure/Logger/services/logger.inter
     UserModule,
     FileModule,
     BucketModule,
+    SubmitModule,
+    ProblemModule,
   ],
   controllers: [],
   providers: [

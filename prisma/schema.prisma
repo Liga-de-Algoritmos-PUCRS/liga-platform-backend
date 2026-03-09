@@ -17,7 +17,9 @@ model User {
   bannerUrl           String?            @map("banner_url")
   allPoints           Int                @default(0) @map("all_points")
   monthlyPoints       Int                @default(0) @map("monthly_points")
-  historicalSubmissions Int                @default(0) @map("historical_submissions")
+  historicalSubmissions Int              @default(0) @map("historical_submissions")
+  submissionsNumber   Int                @default(0) @map("submissions_number")
+  problemsResolved    Int                @default(0) @map("problems_resolved")
   course              CourseEnum?
   semester            Semester_enum?
   role                RoleEnum           @default(USER)
@@ -40,6 +42,8 @@ model Problem {
   bannerUrl   String?  @map("banner_url")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime? @updatedAt @map("updated_at")
+  resolved    Int      @default(0) @map("resolved")
+  submits     Int      @default(0) @map("submits")
   submissions  Submission[]
 
   @@map("problems")
@@ -51,8 +55,10 @@ model Submission{
   problemId     String   @map("problem_id")
   pointsEarned  Int      @map("points_earned")
   attempts      Int      @default(0)
+  createdAt     DateTime @default(now()) @map("created_at")
   isFinished    Boolean  @default(false) @map("is_finished")
   finishedAt    DateTime? @map("finished_at")
+  updatedAt     DateTime? @updatedAt @map("updated_at")
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   problem       Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
 

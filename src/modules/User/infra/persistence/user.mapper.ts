@@ -17,6 +17,8 @@ export class UserMapper {
         historycalSubmissions: user.historicalSubmissions,
         semester: user.semester as Semester,
         course: user.course as Course,
+        submissions: user.submissionsNumber,
+        problemsResolved: user.problemsResolved,
       },
       user.id,
     );
@@ -38,6 +40,8 @@ export class UserMapper {
       historicalSubmissions: user.historycalSubmissions ?? 0,
       course: user.course ?? null,
       semester: user.semester ?? null,
+      submissionsNumber: user.submissions ?? 0,
+      problemsResolved: user.problemsResolved ?? 0,
     };
   }
 }

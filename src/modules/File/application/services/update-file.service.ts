@@ -48,7 +48,7 @@ export class UpdateFileService {
     return await this.TransactionAdapter.transaction(async () => {
       const fileUrl = await this.FileRepository.updateFile(updatedFile, file.id);
 
-      fileUrl.fileUrl = this.BucketAdapter.getSignedUrlForInternalRead(fileUrl.fileUrl);
+      fileUrl.fileUrl = this.BucketAdapter.getFileUrl(fileUrl.fileUrl);
       return fileUrl;
     });
   }

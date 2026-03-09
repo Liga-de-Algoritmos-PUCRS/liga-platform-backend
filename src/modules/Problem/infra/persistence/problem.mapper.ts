@@ -13,6 +13,8 @@ export class ProblemMapper {
         points: problem.points,
         bannerUrl: problem.bannerUrl || null,
         createdAt: problem.createdAt,
+        submissions: problem.submits,
+        resolved: problem.resolved,
       },
       problem.id,
     );
@@ -31,6 +33,8 @@ export class ProblemMapper {
       points: problem.points,
       bannerUrl: problem.bannerUrl || null,
       updatedAt: problem.updatedAt || null,
+      resolved: problem.resolved,
+      submits: problem.submissions,
     };
   }
 }

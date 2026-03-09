@@ -1,7 +1,7 @@
 {
-  "name": "bee-crm-backend",
+  "name": "liga-platform-backend",
   "version": "1.0.0",
-  "description": "Template para aplicações backend Nestjs da Oryzalabs",
+  "description": "Template para aplicações backend Nestjs da Liga de Algoritmos",
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\"",
@@ -23,14 +23,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Oryza-Labs/oryza-nestjs-template.git"
+    "url": "git+https://github.com/LigaAlgoritmos/liga-platform-backend.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Oryza-Labs/oryza-nestjs-template/issues"
+    "url": "https://github.com/LigaAlgoritmos/liga-platform-backend/issues"
   },
-  "homepage": "https://github.com/Oryza-Labs/oryza-nestjs-template#readme",
+  "homepage": "https://github.com/LigaAlgoritmos/liga-platform-backend#readme",
   "dependencies": {
     "@aws-sdk/client-bedrock-agent": "^3.982.0",
     "@aws-sdk/client-bedrock-agent-runtime": "^3.982.0",

@@ -33,6 +33,8 @@ export interface UserInterface {
   historycalSubmissions?: number;
   monthlyPoints?: number;
   allTimePoints?: number;
+  submissions?: number;
+  problemsResolved?: number;
 }
 
 export class User {
@@ -49,6 +51,8 @@ export class User {
   monthlyPoints?: number;
   allTimePoints?: number;
   historycalSubmissions?: number;
+  submissions: number;
+  problemsResolved: number;
 
   constructor(user: UserInterface, id?: string) {
     this.id = id ?? createId();
@@ -63,6 +67,8 @@ export class User {
     this.semester = user.semester;
     this.monthlyPoints = user.monthlyPoints ?? 0;
     this.allTimePoints = user.allTimePoints ?? 0;
+    this.submissions = user.submissions ?? 0;
+    this.problemsResolved = user.problemsResolved ?? 0;
     this.historycalSubmissions = user.historycalSubmissions ?? 0;
   }
 
@@ -77,6 +83,11 @@ export class User {
       avatarUrl: this.avatarUrl,
       course: this.course,
       semester: this.semester,
+      monthlyPoints: this.monthlyPoints,
+      allTimePoints: this.allTimePoints,
+      historycalSubmissions: this.historycalSubmissions,
+      submissions: this.submissions,
+      problemsResolved: this.problemsResolved,
     };
   }
 }

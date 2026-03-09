@@ -14,6 +14,8 @@ import { TransactionAdapter } from './Transaction/transaction.adapter';
 import { PrismaTransactionIntegration } from './Transaction/transaction.service';
 import { ProblemRepository } from '@/modules/Problem/domain/problem.repository';
 import { PrismaProblemRepository } from '@/modules/Problem/infra/persistence/problem.repository';
+import { SubmitRepository } from '@/modules/Submit/domain/submit.repository';
+import { PrismaSubmitRepository } from '@/modules/Submit/infra/persistence/submit.repository';
 
 @Global()
 @Module({
@@ -49,11 +51,17 @@ import { PrismaProblemRepository } from '@/modules/Problem/infra/persistence/pro
       provide: TransactionAdapter,
       useClass: PrismaTransactionIntegration,
     },
+    {
+      provide: SubmitRepository,
+      useClass: PrismaSubmitRepository,
+    },
   ],
   exports: [
     UserRepository,
     RefreshTokenRepository,
     FileRepository,
+    SubmitRepository,
+    ProblemRepository,
     Token2FARepository,
     ResetPasswordTokenRepository,
     TransactionAdapter,

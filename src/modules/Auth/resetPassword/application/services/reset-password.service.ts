@@ -87,6 +87,7 @@ export class ResetPasswordService {
           monthlyPoints: user.monthlyPoints,
           allTimePoints: user.allTimePoints,
           historycalSubmissions: user.historycalSubmissions,
+          problemsResolved: user.problemsResolved,
         },
         user.id,
       ),
