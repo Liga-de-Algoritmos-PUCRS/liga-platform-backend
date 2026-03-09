@@ -27,10 +27,15 @@ export class SignupService {
       });
     }
 
+    if (!signupRequest.email.includes('pucrs')) {
+      throw this.ExceptionsAdapter.badRequest({
+        message: 'This email is not from PUCRS',
+      });
+    }
+
     if (!this.isSafetyPassword(signupRequest.password)) {
       throw this.ExceptionsAdapter.badRequest({
         message: 'Your password is not strong enough',
-        internalKey: UserExceptions.USER_NOT_SAFETY_PASSWORD,
       });
     }
 

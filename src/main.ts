@@ -83,6 +83,10 @@ async function bootstrap() {
         },
       }),
     );
+
+    app.getHttpAdapter().get('/api-json', (_req, res: Response) => {
+      res.json(document);
+    });
   }
 
   function getCors(): string[] {

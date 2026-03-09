@@ -50,7 +50,7 @@ export abstract class UserResponseDTO {
     type: String,
     nullable: true,
   })
-  avatarUrl: string | null; // Adicione aqui
+  avatarUrl: string | null;
 
   @ApiProperty({
     description: 'User banner URL',
@@ -59,7 +59,7 @@ export abstract class UserResponseDTO {
     type: String,
     nullable: true,
   })
-  bannerUrl: string | null; // Adicione aqui
+  bannerUrl: string | null;
 
   @ApiProperty({
     description: 'User course',
