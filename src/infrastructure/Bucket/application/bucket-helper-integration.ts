@@ -17,10 +17,8 @@ export class BucketHelperIntegration {
     const secretAccessKey = this.ConfigService.get<string>('BUCKET_SECRET_ACCESS_KEY');
     const region = this.ConfigService.get<string>('BUCKET_REGION');
     const bucketName = this.ConfigService.get<string>('BUCKET_NAME');
-    const endpoint = this.ConfigService.get<string>('BUCKET_ENDPOINT');
-    const fileDomainPrefix = this.ConfigService.get<string>('CLOUDFRONT_ASSET_DOMAIN');
 
-    if (!accessKeyId || !secretAccessKey || !region || !bucketName || !fileDomainPrefix) {
+    if (!accessKeyId || !secretAccessKey || !region || !bucketName) {
       throw this.ExceptionsAdapter.internalServerError({
         message: 'Bucket environment variables missing',
       });
@@ -28,31 +26,16 @@ export class BucketHelperIntegration {
 
     this.bucketName = bucketName;
     this.bucketRegion = region;
-    this.fileDomainPrefix = fileDomainPrefix;
 
-    if (endpoint) {
-      this.bucketEndpoint = endpoint;
-      const s3ClientConfig = {
-        endpoint: endpoint,
-        region: region,
-        credentials: {
-          accessKeyId: accessKeyId,
-          secretAccessKey: secretAccessKey,
-        },
-        forcePathStyle: true,
-      };
-      this.s3Client = new S3Client(s3ClientConfig);
-    } else {
-      const s3ClientConfig = {
-        region: region,
-        credentials: {
-          accessKeyId: accessKeyId,
-          secretAccessKey: secretAccessKey,
-        },
-        forcePathStyle: true,
-      };
-      this.s3Client = new S3Client(s3ClientConfig);
-    }
+    const s3ClientConfig = {
+      region: region,
+      credentials: {
+        accessKeyId: accessKeyId,
+        secretAccessKey: secretAccessKey,
+      },
+      forcePathStyle: true,
+    };
+    this.s3Client = new S3Client(s3ClientConfig);
   }
 
   getFileKey(fileUrl: string): string {

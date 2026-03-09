@@ -43,9 +43,7 @@ export class GetFileByIdService {
         internalKey: UserExceptions.USER_NOT_FOUND,
       });
     }
-
-    file.fileUrl = this.BucketAdapter.getSignedUrlForInternalRead(file.fileUrl);
-
+    file.fileUrl = this.BucketAdapter.getFileUrl(file.fileUrl);
     return file;
   }
 }

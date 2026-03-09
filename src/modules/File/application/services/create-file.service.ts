@@ -61,7 +61,7 @@ export class CreateFileService {
             internalKey: FileExceptions.FILE_UPLOAD_FAILED,
           });
         }
-        createdFile.fileUrl = this.BucketAdapter.getFileUrl(key);
+        createdFile.fileUrl = this.BucketAdapter.getFileUrl(createdFile.fileUrl);
 
         return createdFile;
       });
