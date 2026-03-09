@@ -11,6 +11,8 @@ services:
       - postgres-liga-data:/var/lib/postgresql/data
     networks:
       - liga
+    ports:
+      - '5432:5432'
 
   api:
     container_name: gimel-api
