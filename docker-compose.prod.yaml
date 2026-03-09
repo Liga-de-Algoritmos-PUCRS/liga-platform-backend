@@ -1,0 +1,36 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: liga-db
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: liga_db
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres-liga-data:/var/lib/postgresql/data
+    networks:
+      - liga
+
+  api:
+    container_name: gimel-api
+    build: .
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    env_file:
+      - .env
+    command: sh -c "npx prisma migrate deploy && npm run start:prod"
+    depends_on:
+      - postgres
+    networks:
+      - liga
+
+volumes:
+  postgres-liga-data:
+    driver: local
+
+networks:
+  liga:
+    driver: bridge
