@@ -19,7 +19,7 @@ export class SendEmailAccountCreatedService extends SendEmailHelperIntegration {
   }
 
   async execute(email: string, password: string, name?: string): Promise<void> {
-    const subject = 'Sua conta no Bee CRM foi criada';
+    const subject = 'Sua conta no Liga de Algoritmos foi criada';
     const bodyHtml = this.loadTemplate(email, password, name);
 
     const command = new SendEmailCommand({
