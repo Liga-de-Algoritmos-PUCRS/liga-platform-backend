@@ -24,6 +24,14 @@ export class DeleteUserService {
       });
     }
 
+    if (user.role === 'ADMIN') {
+      this.LoggerAdapter.log({
+        message: `Deleting user with id: ${deleteUserid}`,
+        where: 'DeleteUserService',
+      });
+      return await this.userRepository.deleteUser(deleteUserid);
+    }
+
     const isPasswordValid = await this.cryptographyAdapter.compare({
       plainText: password,
       cryptographedText: user.password,

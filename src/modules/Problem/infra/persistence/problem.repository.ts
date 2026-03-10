@@ -128,7 +128,7 @@ export class PrismaProblemRepository implements ProblemRepository {
       if (problem) {
         this.LoggerAdapter.log({
           where: 'ProblemRepository.IncrementProblemSubmissions',
-          message: `Incremented problem submissions in database: ${JSON.stringify(problem)}`,
+          message: `Incremented problem submissions in database: ${problem.id}`,
         });
 
         return ProblemMapper.toDomain(problem);
