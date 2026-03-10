@@ -51,6 +51,7 @@ export class Problem {
       title: this.title,
       description: this.description,
       difficulty: this.difficulty,
+      answer: this.answer,
       input: this.input,
       points: this.points,
       bannerUrl: this.bannerUrl,

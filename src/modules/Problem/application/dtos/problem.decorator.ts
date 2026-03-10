@@ -80,6 +80,27 @@ export const GetProblemByIdDecorator = applyDecorators(
   }),
 );
 
+export const GetAdminProblemByIdDecorator = applyDecorators(
+  ApiOperation({
+    summary: 'Get problem by ID',
+    description: 'This endpoint retrieves a problem by its ID.',
+  }),
+  ApiOkResponse({
+    description: 'Problem retrieved successfully.',
+    type: ProblemResponseDTO,
+  }),
+  ApiNotFoundResponse({
+    description: 'Problem not found. The problem with the specified ID does not exist.',
+  }),
+  ApiBadRequestResponse({
+    description: 'Bad request. The input data is invalid or missing.',
+  }),
+  ApiInternalServerErrorResponse({
+    description:
+      'Internal server error. An unexpected error occurred while processing the request.',
+  }),
+);
+
 export const DeleteProblemDecorator = applyDecorators(
   ApiOperation({
     summary: 'Delete a problem',

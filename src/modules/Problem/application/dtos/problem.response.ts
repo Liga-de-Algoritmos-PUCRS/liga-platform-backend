@@ -82,4 +82,20 @@ export class ProblemResponseDTO {
     type: String,
   })
   createdAt: Date;
+
+  @ApiProperty({
+    description: 'Number of users who have resolved the problem',
+    example: 10,
+    required: true,
+    type: Number,
+  })
+  resolved: number;
+
+  @ApiProperty({
+    description: 'Number of submissions for the problem',
+    example: 100,
+    required: true,
+    type: Number,
+  })
+  submissions: number;
 }

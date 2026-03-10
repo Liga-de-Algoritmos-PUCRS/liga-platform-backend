@@ -20,6 +20,10 @@ export class GetAllProblemsService {
         message: `Retrieved all problems from database. Count: ${problems.length}`,
       });
 
+      for (const problem of problems) {
+        problem.answer = '';
+      }
+
       return problems;
     } catch (error) {
       throw this.ExceptionsAdapter.internalServerError({
