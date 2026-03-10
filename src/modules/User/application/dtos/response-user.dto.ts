@@ -118,4 +118,20 @@ export abstract class UserResponseDTO {
     type: Number,
   })
   allTimePoints?: number;
+
+  @ApiProperty({
+    description: "User's all-time submission",
+    example: 1200,
+    required: false,
+    type: Number,
+  })
+  submissions?: number;
+
+  @ApiProperty({
+    description: 'Problems resolve by an user',
+    example: 1200,
+    required: false,
+    type: Number,
+  })
+  problemsResolved?: number;
 }

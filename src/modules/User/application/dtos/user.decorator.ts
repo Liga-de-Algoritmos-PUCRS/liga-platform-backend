@@ -86,6 +86,24 @@ export const GetUserDecorator = applyDecorators(
   }),
 );
 
+export const GetUserInformations = applyDecorators(
+  ApiOperation({
+    summary: 'Get a user',
+    description: 'This endpoint retrieves a user by their unique ID.',
+  }),
+  ApiOkResponse({
+    description: 'User retrieved successfully.',
+    type: UserResponseDTO,
+  }),
+  ApiNotFoundResponse({
+    description: 'User not found. The user with the specified ID does not exist.',
+  }),
+  ApiInternalServerErrorResponse({
+    description:
+      'Internal server error. An unexpected error occurred while processing the request.',
+  }),
+);
+
 export const DeleteUserDecorator = applyDecorators(
   ApiOperation({
     summary: 'Delete a user',

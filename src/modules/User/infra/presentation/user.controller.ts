@@ -14,6 +14,7 @@ import {
   GetTopUsersDecorator,
   GetMonthlyTopUsersDecorator,
   ResetUserPointsDecorator,
+  GetUserInformations,
 } from '../../application/dtos/user.decorator';
 import { UserResponseDTO } from '@/modules/User/application/dtos/response-user.dto';
 import { GetTopUserService } from '@/modules/User/application/services/get-top-user.service';
@@ -41,6 +42,12 @@ export class UserController {
   @Get(':id')
   async getUserById(@Param('id') id: string): Promise<UserResponseDTO> {
     return await this.GetUser.execute(id);
+  }
+
+  @GetUserInformations
+  @Get('me/:id')
+  async getMe(@GetUser() user): Promise<UserResponseDTO> {
+    return await this.GetUser.execute(String(user.id));
   }
 
   @GetAllUsersDecorator
