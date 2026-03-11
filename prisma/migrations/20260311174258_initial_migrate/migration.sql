@@ -45,6 +45,8 @@ CREATE TABLE "problems" (
     "updated_at" TIMESTAMP(3),
     "resolved" INTEGER NOT NULL DEFAULT 0,
     "submits" INTEGER NOT NULL DEFAULT 0,
+    "archived" BOOLEAN NOT NULL DEFAULT false,
+    "fixed" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "problems_pkey" PRIMARY KEY ("id")
 );
