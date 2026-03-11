@@ -5,6 +5,9 @@ import { GetProblemByIdService } from '@/modules/Problem/application/services/ge
 import { GetAllProblemsService } from '@/modules/Problem/application/services/get-all-problens.service';
 import { DeleteProblemService } from '@/modules/Problem/application/services/delete-problem.service';
 import { UpdateProblemService } from '@/modules/Problem/application/services/update-problem.service';
+import { GetAdminProblemByIdService } from '@/modules/Problem/application/services/get-admin-problem-by-id.service';
+import { GetAllAdminProblemsService } from '@/modules/Problem/application/services/get-all-admin-problems.service';
+
 import { UpdateProblemDTO } from '@/modules/Problem/application/dtos/update-problem.dto';
 import { ProblemResponseDTO } from '@/modules/Problem/application/dtos/problem.response';
 import { Public } from '@/global/common/decorators/public.decorator';
@@ -16,6 +19,8 @@ import {
   GetAllProblemsDecorator,
   UpdateProblemDecorator,
   DeleteProblemDecorator,
+  GetAdminProblemByIdDecorator,
+  GetAllAdminProblemsDecorator,
 } from '@/modules/Problem/application/dtos/problem.decorator';
 import { IsAdmin } from '@/global/common/decorators/is-admin-decorator';
 
@@ -25,10 +30,19 @@ export class ProblemController {
   constructor(
     private readonly CreateProblemService: CreateProblemService,
     private readonly GetProblemByIdService: GetProblemByIdService,
+    private readonly GetAllAdminProblemsService: GetAllAdminProblemsService,
     private readonly UpdateProblemService: UpdateProblemService,
     private readonly GetAllProblemsService: GetAllProblemsService,
     private readonly DeleteProblemService: DeleteProblemService,
+    private readonly GetAdminProblemByIdService: GetAdminProblemByIdService,
   ) {}
+
+  @IsAdmin()
+  @GetAdminProblemByIdDecorator
+  @Get(':id/admin')
+  async getAdminProblemById(@Param('id') id: string, @GetUser() user): Promise<ProblemResponseDTO> {
+    return await this.GetAdminProblemByIdService.execute(id, String(user.id));
+  }
 
   @Public()
   @GetProblemByIdDecorator
@@ -42,6 +56,13 @@ export class ProblemController {
   @Get()
   async getAllProblems(): Promise<ProblemResponseDTO[]> {
     return await this.GetAllProblemsService.execute();
+  }
+
+  @IsAdmin()
+  @GetAllAdminProblemsDecorator
+  @Get(':id/admin/all')
+  async getAllAdminProblems(@Param('id') id: string): Promise<ProblemResponseDTO[]> {
+    return await this.GetAllAdminProblemsService.execute(id);
   }
 
   @IsAdmin()

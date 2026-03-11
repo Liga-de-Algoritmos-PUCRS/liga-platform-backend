@@ -59,7 +59,39 @@ export const GetAllProblemsDecorator = applyDecorators(
   }),
 );
 
+export const GetAllAdminProblemsDecorator = applyDecorators(
+  ApiOperation({
+    summary: 'List all problems',
+    description: 'This endpoint retrieves a list of all problems in the system.',
+  }),
+  ApiOkResponse({
+    description: 'List of problems retrieved successfully.',
+    type: [ProblemResponseDTO],
+  }),
+);
+
 export const GetProblemByIdDecorator = applyDecorators(
+  ApiOperation({
+    summary: 'Get problem by ID',
+    description: 'This endpoint retrieves a problem by its ID.',
+  }),
+  ApiOkResponse({
+    description: 'Problem retrieved successfully.',
+    type: ProblemResponseDTO,
+  }),
+  ApiNotFoundResponse({
+    description: 'Problem not found. The problem with the specified ID does not exist.',
+  }),
+  ApiBadRequestResponse({
+    description: 'Bad request. The input data is invalid or missing.',
+  }),
+  ApiInternalServerErrorResponse({
+    description:
+      'Internal server error. An unexpected error occurred while processing the request.',
+  }),
+);
+
+export const GetAdminProblemByIdDecorator = applyDecorators(
   ApiOperation({
     summary: 'Get problem by ID',
     description: 'This endpoint retrieves a problem by its ID.',

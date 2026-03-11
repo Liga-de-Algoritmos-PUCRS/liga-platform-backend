@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Difficulty } from '@/modules/Problem/domain/problem.entity';
-import { IsIn, IsOptional, IsString } from 'class-validator';
+import { IsIn, IsOptional, IsString, IsNumber, IsBoolean } from 'class-validator';
 
 export class CreateProblemDTO {
   @ApiProperty({
@@ -19,6 +19,7 @@ export class CreateProblemDTO {
     required: true,
     type: String,
   })
+  @IsString()
   description: string;
 
   @ApiProperty({
@@ -55,6 +56,7 @@ export class CreateProblemDTO {
     required: true,
     type: Number,
   })
+  @IsNumber()
   points: number;
 
   @ApiProperty({
@@ -66,4 +68,22 @@ export class CreateProblemDTO {
   @IsOptional()
   @IsString()
   bannerUrl: string | null;
+
+  @ApiProperty({
+    description: 'Problem archived',
+    example: false,
+    required: false,
+    type: Boolean,
+  })
+  @IsBoolean()
+  archived?: boolean;
+
+  @ApiProperty({
+    description: 'Problem fixed',
+    example: false,
+    required: false,
+    type: Boolean,
+  })
+  @IsBoolean()
+  fixed?: boolean;
 }

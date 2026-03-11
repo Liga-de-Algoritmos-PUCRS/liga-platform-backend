@@ -33,6 +33,8 @@ export class CreateProblemService {
       points: createProblemDTO.points,
       createdAt: new Date(),
       updatedAt: new Date(),
+      fixed: createProblemDTO.fixed,
+      archived: createProblemDTO.archived,
     });
 
     const createdProblem = await this.ProblemRepository.createProblem(problem);

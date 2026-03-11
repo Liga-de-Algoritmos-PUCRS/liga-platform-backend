@@ -43,7 +43,7 @@ export const GetSubmitByUserIdDecorator = applyDecorators(
     summary: 'Get Submit by User ID',
     description: 'This endpoint allows you to get a submit by its user ID',
   }),
-  ApiOkResponse({ description: 'Submit retrieved successfully', type: SubmitResponseDTO }),
+  ApiOkResponse({ description: 'Submit retrieved successfully', type: [SubmitResponseDTO] }),
   ApiNotFoundResponse({
     description: 'Submit not found. The submit with the specified ID does not exist.',
   }),

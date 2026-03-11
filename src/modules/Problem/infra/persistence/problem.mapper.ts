@@ -15,6 +15,8 @@ export class ProblemMapper {
         createdAt: problem.createdAt,
         submissions: problem.submits,
         resolved: problem.resolved,
+        fixed: problem.fixed,
+        archived: problem.archived,
       },
       problem.id,
     );
@@ -35,6 +37,8 @@ export class ProblemMapper {
       updatedAt: problem.updatedAt || null,
       resolved: problem.resolved,
       submits: problem.submissions,
+      fixed: problem.fixed,
+      archived: problem.archived,
     };
   }
 }

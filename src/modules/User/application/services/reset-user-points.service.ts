@@ -20,9 +20,9 @@ export class ResetUserPointsService {
       });
     }
 
-    if (existingUser.role === 'ADMIN') {
+    if (existingUser.role !== 'ADMIN') {
       throw this.ExceptionsAdapter.forbidden({
-        message: 'Admins cannot have their points reset',
+        message: 'Only admins can reset user points',
       });
     }
 

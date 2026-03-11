@@ -14,6 +14,8 @@ export interface ProblemInterface {
   updatedAt?: Date;
   resolved?: number;
   submissions?: number;
+  fixed?: boolean;
+  archived?: boolean;
 }
 
 export class Problem {
@@ -29,6 +31,8 @@ export class Problem {
   createdAt: Date;
   resolved: number;
   submissions: number;
+  fixed: boolean;
+  archived: boolean;
 
   constructor(problemInterface: ProblemInterface, id?: string) {
     this.id = id ?? createId();
@@ -43,6 +47,8 @@ export class Problem {
     this.updatedAt = problemInterface.updatedAt;
     this.resolved = problemInterface.resolved ?? 0;
     this.submissions = problemInterface.submissions ?? 0;
+    this.fixed = problemInterface.fixed ?? false;
+    this.archived = problemInterface.archived ?? false;
   }
 
   public toJSON() {
@@ -51,12 +57,15 @@ export class Problem {
       title: this.title,
       description: this.description,
       difficulty: this.difficulty,
+      answer: this.answer,
       input: this.input,
       points: this.points,
       bannerUrl: this.bannerUrl,
       createdAt: this.createdAt,
       resolved: this.resolved,
       submissions: this.submissions,
+      fixed: this.fixed,
+      archived: this.archived,
     };
   }
 }

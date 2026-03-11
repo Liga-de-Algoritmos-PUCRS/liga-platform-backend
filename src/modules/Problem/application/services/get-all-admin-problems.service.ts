@@ -4,25 +4,21 @@ import { ExceptionsAdapter } from '@/infrastructure/Exceptions/exceptions.adapte
 import { LoggerAdapter } from '@/infrastructure/Logger/logger.adapter';
 
 @Injectable()
-export class GetAllProblemsService {
+export class GetAllAdminProblemsService {
   constructor(
     private readonly ProblemRepository: ProblemRepository,
     private readonly ExceptionsAdapter: ExceptionsAdapter,
     private readonly LoggerAdapter: LoggerAdapter,
   ) {}
 
-  public async execute() {
+  public async execute(id: string) {
     try {
-      const problems = await this.ProblemRepository.getProblems();
+      const problems = await this.ProblemRepository.getProblemsWithArchived();
 
       this.LoggerAdapter.log({
         where: 'GetAllProblemsService.Execute',
-        message: `Retrieved all problems from database. Count: ${problems.length}`,
+        message: `Retrieved all problems from database. Count: ${problems.length}, id: ${id}`,
       });
-
-      for (const problem of problems) {
-        problem.answer = '';
-      }
 
       return problems;
     } catch (error) {
