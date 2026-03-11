@@ -6,6 +6,7 @@ import { GetAllProblemsService } from '@/modules/Problem/application/services/ge
 import { DeleteProblemService } from '@/modules/Problem/application/services/delete-problem.service';
 import { UpdateProblemService } from '@/modules/Problem/application/services/update-problem.service';
 import { GetAdminProblemByIdService } from '@/modules/Problem/application/services/get-admin-problem-by-id.service';
+import { GetAllAdminProblemsService } from '@/modules/Problem/application/services/get-all-admin-problems.service';
 
 @Module({
   controllers: [ProblemController],
@@ -16,6 +17,7 @@ import { GetAdminProblemByIdService } from '@/modules/Problem/application/servic
     UpdateProblemService,
     DeleteProblemService,
     GetAdminProblemByIdService,
+    GetAllAdminProblemsService,
   ],
 })
 export class ProblemModule {}

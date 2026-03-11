@@ -54,6 +54,19 @@ export class PrismaProblemRepository implements ProblemRepository {
   }
 
   public async getProblems(): Promise<Problem[]> {
+    const problems = await this.Prisma.problem.findMany({
+      where: {
+        archived: false,
+      },
+    });
+    this.LoggerAdapter.log({
+      where: 'ProblemRepository.GetProblems',
+      message: `Retrieved all problems from database. Count: ${problems.length}`,
+    });
+    return problems.map((problem) => ProblemMapper.toDomain(problem));
+  }
+
+  public async getProblemsWithArchived(): Promise<Problem[]> {
     const problems = await this.Prisma.problem.findMany();
     this.LoggerAdapter.log({
       where: 'ProblemRepository.GetProblems',

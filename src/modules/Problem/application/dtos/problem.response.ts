@@ -98,4 +98,20 @@ export class ProblemResponseDTO {
     type: Number,
   })
   submissions: number;
+
+  @ApiProperty({
+    description: 'Problem fixed',
+    example: false,
+    required: true,
+    type: Boolean,
+  })
+  fixed: boolean;
+
+  @ApiProperty({
+    description: 'Problem archived',
+    example: false,
+    required: false,
+    type: Boolean,
+  })
+  archived?: boolean;
 }

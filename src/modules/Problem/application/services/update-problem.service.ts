@@ -41,6 +41,8 @@ export class UpdateProblemService {
     existingProblem.answer = updateProblemDTO.answer ?? existingProblem.answer;
     existingProblem.bannerUrl = updateProblemDTO.bannerUrl ?? existingProblem.bannerUrl;
     existingProblem.points = updateProblemDTO.points ?? existingProblem.points;
+    existingProblem.archived = updateProblemDTO.archived ?? existingProblem.archived;
+    existingProblem.fixed = updateProblemDTO.fixed ?? existingProblem.fixed;
     existingProblem.updatedAt = new Date();
 
     const updatedProblem = await this.ProblemRepository.updateProblem(existingProblem);
