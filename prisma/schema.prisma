@@ -82,6 +82,7 @@ model File {
   @@map("files")
 }
 
+
 model RefreshToken {
   id        String   @id @default(uuid())
   token     String   @unique
@@ -118,7 +119,6 @@ model ResetPasswordToken {
 
   @@map("reset_password_tokens")
 }
-
 
 
 enum RoleEnum {
