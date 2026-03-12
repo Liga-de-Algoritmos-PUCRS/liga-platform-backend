@@ -4,6 +4,7 @@ import { SendEmailService } from '@/infrastructure/SendEmail/application/sendEma
 import { SendEmail2FAService } from '@/infrastructure/SendEmail/application/send-email-2fa.service';
 import { SendEmailResetPasswordService } from '@/infrastructure/SendEmail/application/send-email-reset-password.service';
 import { SendEmailWelcomeService } from '@/infrastructure/SendEmail/application/send-email-welcome.service';
+import { SendBugReportEmailService } from '@/infrastructure/SendEmail/application/send-bug-reporter-.service';
 import { SendEmailHelperIntegration } from '@/infrastructure/SendEmail/application/send-email-Helper-integration';
 import { SendEmailPasswordChangedService } from '@/infrastructure/SendEmail/application/send-email-password-changed.service';
 import { SendEmailAccountCreatedService } from '@/infrastructure/SendEmail/application/send-email-account-created.service';
@@ -16,6 +17,7 @@ import { SendEmailAccountCreatedService } from '@/infrastructure/SendEmail/appli
     SendEmailPasswordChangedService,
     SendEmailHelperIntegration,
     SendEmailAccountCreatedService,
+    SendBugReportEmailService,
     {
       provide: SendEmailAdapter,
       useClass: SendEmailService,

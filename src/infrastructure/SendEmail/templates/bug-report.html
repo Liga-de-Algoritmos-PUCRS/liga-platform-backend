@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Bem-vindo à Liga de Algoritmos</title>
+    <title>Novo Relato de Bug - Liga de Algoritmos</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Nunito+Sans:opsz,wght@6..12,400;600;700&display=swap"
       rel="stylesheet"
@@ -33,16 +33,35 @@
       .content {
         padding: 40px 32px;
       }
-      .cta-button {
-        display: inline-block;
-        background-color: #7d157d;
-        color: #ffffff !important;
-        padding: 14px 32px;
+      .report-box {
+        background-color: #f9fafb;
+        border: 1px solid #e5e7eb;
         border-radius: 8px;
-        text-decoration: none;
-        font-weight: 600;
-        margin: 24px 0;
-        box-shadow: 0 4px 6px -1px rgba(125, 21, 125, 0.3);
+        padding: 20px;
+        margin-top: 24px;
+      }
+      .label {
+        font-size: 12px;
+        font-weight: 700;
+        color: #7d157d;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 4px;
+      }
+      .value {
+        font-size: 15px;
+        color: #1f2937;
+        margin-bottom: 16px;
+      }
+      .description {
+        background-color: #ffffff;
+        border: 1px solid #f3f4f6;
+        padding: 16px;
+        border-radius: 6px;
+        white-space: pre-wrap;
+        color: #4b5563;
+        font-size: 14px;
+        line-height: 1.6;
       }
       .footer {
         padding: 24px;
@@ -53,7 +72,7 @@
       }
       h1 {
         margin: 0;
-        font-size: 26px;
+        font-size: 24px;
         font-weight: 700;
       }
       p {
@@ -69,26 +88,25 @@
           <td align="center">
             <div class="container">
               <div class="hero">
-                <h1>Sua jornada começa agora! 🚀</h1>
+                <h1>Novo Bug Reportado 🐞</h1>
               </div>
 
-              <div class="content" style="text-align: center">
-                <p style="text-align: left">Olá <strong>{{USER}}</strong>,</p>
-                <p style="text-align: left">
-                  Seja muito bem-vindo(a) à <strong>Liga de Algoritmos da PUCRS</strong>! Sua conta
-                  foi criada com sucesso.
-                </p>
-                <p style="text-align: left">
-                  Estamos prontos para explorar e desenvolver novas soluções com você.
+              <div class="content">
+                <p>
+                  Um novo problema foi reportado através da plataforma. Abaixo estão os detalhes
+                  enviados pelo usuário:
                 </p>
 
-                <a href="https://www.ligadealgoritmos.com" class="cta-button"
-                  >Acessar a Plataforma</a
-                >
+                <div class="report-box">
+                  <div class="label">Nome do Reportador</div>
+                  <div class="value"><strong>{{NAME}}</strong></div>
 
-                <p style="font-size: 14px; text-align: left; margin-top: 20px">
-                  Dúvidas? Nossa equipe está sempre à disposição.
-                </p>
+                  <div class="label">Email de Contato</div>
+                  <div class="value">{{EMAIL}}</div>
+
+                  <div class="label">Descrição do Problema</div>
+                  <div class="description">{{DESCRIPTION}}</div>
+                </div>
               </div>
 
               <div class="footer">

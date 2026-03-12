@@ -16,7 +16,7 @@ import { LoggerModule } from '@/infrastructure/Logger/logger.module';
 import { LoggerInterceptor } from '@/infrastructure/Logger/services/logger.interceptor';
 import { SubmitModule } from '@/modules/Submit/submit.module';
 import { ProblemModule } from '@/modules/Problem/problem.module';
-
+import { ReportBugModule } from '@/modules/ReportBug/report.module';
 @Module({
   imports: [
     EventEmitterModule.forRoot({
@@ -45,6 +45,7 @@ import { ProblemModule } from '@/modules/Problem/problem.module';
     BucketModule,
     SubmitModule,
     ProblemModule,
+    ReportBugModule,
   ],
   controllers: [],
   providers: [

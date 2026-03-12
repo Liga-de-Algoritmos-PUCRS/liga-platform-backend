@@ -3,6 +3,7 @@ import { SendEmailAdapter } from '../sendEmail.adapter';
 import { SendEmail2FAService } from '@/infrastructure/SendEmail/application/send-email-2fa.service';
 import { SendEmailResetPasswordService } from '@/infrastructure/SendEmail/application/send-email-reset-password.service';
 import { SendEmailWelcomeService } from '@/infrastructure/SendEmail/application/send-email-welcome.service';
+import { SendBugReportEmailService } from '@/infrastructure/SendEmail/application/send-bug-reporter-.service';
 import { SendEmailPasswordChangedService } from '@/infrastructure/SendEmail/application/send-email-password-changed.service';
 import { SendEmailAccountCreatedService } from '@/infrastructure/SendEmail/application/send-email-account-created.service';
 @Injectable()
@@ -13,6 +14,7 @@ export class SendEmailService implements SendEmailAdapter {
     private readonly SendEmailWelcomeService: SendEmailWelcomeService,
     private readonly SendEmailPasswordChangedService: SendEmailPasswordChangedService,
     private readonly SendEmailAccountCreatedService: SendEmailAccountCreatedService,
+    private readonly SendEmailBugReportService: SendBugReportEmailService,
   ) {}
 
   async sendEmail2FA(email: string, code: string, name?: string): Promise<void> {
@@ -33,5 +35,13 @@ export class SendEmailService implements SendEmailAdapter {
 
   async sendEmailAccountCreated(email: string, password: string, name?: string): Promise<void> {
     return await this.SendEmailAccountCreatedService.execute(email, password, name);
+  }
+
+  async sendEmailBugReport(
+    reporteremail: string,
+    name: string,
+    description: string,
+  ): Promise<void> {
+    return await this.SendEmailBugReportService.execute(reporteremail, name, description);
   }
 }
