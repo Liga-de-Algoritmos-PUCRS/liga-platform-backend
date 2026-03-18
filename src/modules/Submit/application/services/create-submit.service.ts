@@ -46,6 +46,7 @@ export class CreateSubmitService {
       createSubmitDTO.problemId,
       userId,
     );
+
     if (submit) {
       if (submit.isFinished) {
         throw this.ExceptionsAdapter.badRequest({
@@ -96,7 +97,13 @@ export class CreateSubmitService {
     }
 
     const createdSubmit = await this.TransactionAdapter.transaction(async () => {
-      await this.UserRepository.incrementUserPoints(user.id, newSubmit.pointsEarned);
+      if (newSubmit.isFinished) {
+        await this.UserRepository.incrementUserPoints(user.id, newSubmit.pointsEarned);
+        await this.UserRepository.incrementUserProblemsResolved(user.id);
+        await this.ProblemRepository.incrementProblemSubmissions(createSubmitDTO.problemId, true);
+      } else {
+        await this.ProblemRepository.incrementProblemSubmissions(createSubmitDTO.problemId, false);
+      }
       return await this.SubmitRepository.createSubmit(newSubmit);
     });
 
