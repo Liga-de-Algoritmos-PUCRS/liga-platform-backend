@@ -97,13 +97,13 @@ export class CreateSubmitService {
     }
 
     const createdSubmit = await this.TransactionAdapter.transaction(async () => {
+      await this.UserRepository.incrementUserSubmissions(user.id);
       if (newSubmit.isFinished) {
         await this.UserRepository.incrementUserPoints(user.id, newSubmit.pointsEarned);
         await this.UserRepository.incrementUserProblemsResolved(user.id);
         await this.ProblemRepository.incrementProblemSubmissions(createSubmitDTO.problemId, true);
       } else {
         await this.ProblemRepository.incrementProblemSubmissions(createSubmitDTO.problemId, false);
-        await this.UserRepository.incrementUserSubmissions(user.id);
       }
       return await this.SubmitRepository.createSubmit(newSubmit);
     });
