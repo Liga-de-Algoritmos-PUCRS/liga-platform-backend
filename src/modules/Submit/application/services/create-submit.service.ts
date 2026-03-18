@@ -103,6 +103,7 @@ export class CreateSubmitService {
         await this.ProblemRepository.incrementProblemSubmissions(createSubmitDTO.problemId, true);
       } else {
         await this.ProblemRepository.incrementProblemSubmissions(createSubmitDTO.problemId, false);
+        await this.UserRepository.incrementUserSubmissions(user.id);
       }
       return await this.SubmitRepository.createSubmit(newSubmit);
     });
