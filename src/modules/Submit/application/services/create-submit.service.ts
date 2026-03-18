@@ -63,21 +63,15 @@ export class CreateSubmitService {
 
       submit.pointsEarned = problem.points - submit.attempts;
 
-      await this.TransactionAdapter.transaction(async () => {
-        await this.UserRepository.incrementUserSubmissions(user.id);
-        await this.SubmitRepository.updateSubmit(submit.id, submit);
-        if (submit.isFinished) {
-          await this.UserRepository.incrementUserProblemsResolved(user.id);
-          await this.UserRepository.incrementUserPoints(user.id, submit.pointsEarned);
-          await this.ProblemRepository.incrementProblemSubmissions(createSubmitDTO.problemId, true);
-        } else {
-          await this.ProblemRepository.incrementProblemSubmissions(
-            createSubmitDTO.problemId,
-            false,
-          );
-        }
-      });
-
+      await this.UserRepository.incrementUserSubmissions(user.id);
+      await this.SubmitRepository.updateSubmit(submit.id, submit);
+      if (submit.isFinished) {
+        await this.UserRepository.incrementUserProblemsResolved(user.id);
+        await this.UserRepository.incrementUserPoints(user.id, submit.pointsEarned);
+        await this.ProblemRepository.incrementProblemSubmissions(createSubmitDTO.problemId, true);
+      } else {
+        await this.ProblemRepository.incrementProblemSubmissions(createSubmitDTO.problemId, false);
+      }
       this.LoggerAdapter.log({
         message: `User ${user.name} finished problem ${problem.title}`,
         where: 'CreateSubmitService',
