@@ -124,27 +124,40 @@ export class PrismaProblemRepository implements ProblemRepository {
 
   public async incrementProblemSubmissions(id: string, correct: boolean): Promise<Problem> {
     try {
-      const problem = await this.Prisma.problem.update({
-        where: { id },
-        data: {
-          submits: {
-            increment: 1,
-          },
-          resolved: correct
-            ? {
+      let problem: Problem;
+      if (correct) {
+        problem = ProblemMapper.toDomain(
+          await this.Prisma.problem.update({
+            where: { id },
+            data: {
+              submits: {
                 increment: 1,
-              }
-            : undefined,
-        },
-      });
-
+              },
+              resolved: {
+                increment: 1,
+              },
+            },
+          }),
+        );
+      } else {
+        problem = ProblemMapper.toDomain(
+          await this.Prisma.problem.update({
+            where: { id },
+            data: {
+              submits: {
+                increment: 1,
+              },
+            },
+          }),
+        );
+      }
       if (problem) {
         this.LoggerAdapter.log({
           where: 'ProblemRepository.IncrementProblemSubmissions',
           message: `Incremented problem submissions in database: ${problem.id}`,
         });
 
-        return ProblemMapper.toDomain(problem);
+        return problem;
       } else {
         throw this.ExceptionsAdapter.internalServerError({
           message: `[problem.repository].incrementProblemSubmissions --> Problem was not incremented in database with id: ${id}`,
