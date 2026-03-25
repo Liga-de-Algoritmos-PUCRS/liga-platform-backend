@@ -62,7 +62,7 @@ export class CreateSubmitService {
         submit.finishedAt = new Date();
       }
 
-      submit.pointsEarned = problem.points - submit.attempts;
+      submit.pointsEarned = problem.points;
 
       await this.UserRepository.incrementUserSubmissions(user.id);
       await this.SubmitRepository.updateSubmit(submit.id, submit);
