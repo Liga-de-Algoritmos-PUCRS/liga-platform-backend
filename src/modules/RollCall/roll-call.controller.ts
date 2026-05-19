@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, UseGuards, Delete } from '@nestjs/common';
 import { RollCallService } from './roll-call.service';
 import { CreateRollCallDto } from './dto/create-roll-call.dto';
 import { AttendRollCallDto } from './dto/attend-roll-call.dto';
@@ -59,4 +59,11 @@ export class RollCallController {
   updateAttendance(@Param('id') id: string, @Body() updateAttendanceDto: UpdateAttendanceDto) {
     return this.rollCallService.updateAttendance(id, updateAttendanceDto);
   }
+
+  @Delete(':id')
+  @IsAdmin()
+  remove(@Param('id') id: string) {
+    return this.rollCallService.remove(id);
+  }
 }
+

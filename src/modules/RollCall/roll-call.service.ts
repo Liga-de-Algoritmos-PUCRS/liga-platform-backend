@@ -249,4 +249,18 @@ export class RollCallService {
       }),
     };
   }
+
+  async remove(id: string) {
+    const rollCall = await this.prisma.rollCall.findUnique({ where: { id } });
+    if (!rollCall) {
+      throw new NotFoundException('Roll call not found');
+    }
+
+    await this.prisma.rollCall.delete({
+      where: { id },
+    });
+
+    return { message: 'Roll call deleted successfully' };
+  }
 }
+
