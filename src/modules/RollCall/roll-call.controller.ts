@@ -6,20 +6,22 @@ import { UpdateAttendanceDto } from './dto/update-attendance.dto';
 import { JwtAuthGuard } from '@/global/common/guards/jwt-auth.guard';
 import { GetUser } from '@/global/common/decorators/get-user.decorator';
 import { ApiTags } from '@nestjs/swagger';
+import { IsAdmin } from '@/global/common/decorators/is-admin-decorator';
 
 @ApiTags('RollCall')
 @UseGuards(JwtAuthGuard)
 @Controller('roll-calls')
 export class RollCallController {
-  constructor(private readonly rollCallService: RollCallService) {}
+  constructor(private readonly rollCallService: RollCallService) { }
 
   @Post()
+  @IsAdmin()
   create(@Body() createRollCallDto: CreateRollCallDto) {
-    // Ideally this should check for Admin role, but adding it based on standard guards
     return this.rollCallService.create(createRollCallDto);
   }
 
   @Get()
+  @IsAdmin()
   findAll() {
     return this.rollCallService.findAll();
   }
@@ -35,11 +37,13 @@ export class RollCallController {
   }
 
   @Get(':id')
+  @IsAdmin()
   findOne(@Param('id') id: string) {
     return this.rollCallService.findOne(id);
   }
 
   @Get(':id/qr-code')
+  @IsAdmin()
   generateQrCode(@Param('id') id: string) {
     return this.rollCallService.generateQrCode(id);
   }
