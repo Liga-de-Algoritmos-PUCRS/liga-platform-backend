@@ -27,6 +27,7 @@ export class RollCallController {
   }
 
   @Get('overview')
+  @IsAdmin()
   getOverview() {
     return this.rollCallService.getOverview();
   }
