@@ -55,6 +55,7 @@ export class RollCallController {
   }
 
   @Patch(':id/attendance')
+  @IsAdmin()
   updateAttendance(@Param('id') id: string, @Body() updateAttendanceDto: UpdateAttendanceDto) {
     return this.rollCallService.updateAttendance(id, updateAttendanceDto);
   }
