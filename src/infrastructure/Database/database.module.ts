@@ -16,6 +16,8 @@ import { ProblemRepository } from '@/modules/Problem/domain/problem.repository';
 import { PrismaProblemRepository } from '@/modules/Problem/infra/persistence/problem.repository';
 import { SubmitRepository } from '@/modules/Submit/domain/submit.repository';
 import { PrismaSubmitRepository } from '@/modules/Submit/infra/persistence/submit.repository';
+import { RollCallRepository } from '@/modules/RollCall/domain/roll-call.repository';
+import { PrismaRollCallRepository } from '@/modules/RollCall/infra/persistence/roll-call.repository';
 
 @Global()
 @Module({
@@ -55,6 +57,10 @@ import { PrismaSubmitRepository } from '@/modules/Submit/infra/persistence/submi
       provide: SubmitRepository,
       useClass: PrismaSubmitRepository,
     },
+    {
+      provide: RollCallRepository,
+      useClass: PrismaRollCallRepository,
+    },
   ],
   exports: [
     UserRepository,
@@ -66,6 +72,7 @@ import { PrismaSubmitRepository } from '@/modules/Submit/infra/persistence/submi
     ResetPasswordTokenRepository,
     TransactionAdapter,
     PrismaService,
+    RollCallRepository,
   ],
 })
 export class DatabaseModule {}
