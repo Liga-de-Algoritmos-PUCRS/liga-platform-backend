@@ -182,6 +182,6 @@ model Attendance {
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   rollCall RollCall @relation(fields: [rollCallId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, rollCallId])
+  @@unique([userId, rollCallId], name: "userRollCall")
   @@map("attendances")
 }
