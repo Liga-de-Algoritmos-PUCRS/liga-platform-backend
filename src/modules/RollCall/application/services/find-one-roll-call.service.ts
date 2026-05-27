@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { RollCallRepository } from '../../domain/roll-call.repository';
 import { UserRepository } from '@/modules/User/domain/user.repository';
 import { ExceptionsAdapter } from '@/infrastructure/Exceptions/exceptions.adapter';
-import { RollCall } from '../../domain/roll-call.entity';
 
 export interface RollCallDetail {
   id: string;

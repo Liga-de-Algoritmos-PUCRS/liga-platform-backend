@@ -7,7 +7,6 @@ import { RollCall } from '@/modules/RollCall/domain/roll-call.entity';
 import { Attendance } from '@/modules/RollCall/domain/attendance.entity';
 import { RollCallMapper } from './roll-call.mapper';
 import { AttendanceMapper } from './attendance.mapper';
-import { randomUUID } from 'crypto';
 
 @Injectable()
 export class PrismaRollCallRepository implements RollCallRepository {
@@ -39,7 +38,7 @@ export class PrismaRollCallRepository implements RollCallRepository {
 
   async findAllRollCallsSimple(): Promise<RollCall[]> {
     const rows = await this.prisma.rollCall.findMany({ orderBy: { date: 'asc' } });
-    return rows.map(RollCallMapper.toDomain);
+    return rows.map((r) => RollCallMapper.toDomain(r));
   }
 
   async findById(id: string): Promise<RollCall | null> {
@@ -75,14 +74,14 @@ export class PrismaRollCallRepository implements RollCallRepository {
 
   async findAttendance(userId: string, rollCallId: string): Promise<Attendance | null> {
     const row = await this.prisma.attendance.findUnique({
-      where: { userId_rollCallId: { userId, rollCallId } },
+      where: { userId_rollCallId: { userId, rollCallId } }, // eslint-disable-line @typescript-eslint/naming-convention
     });
     return row ? AttendanceMapper.toDomain(row) : null;
   }
 
   async upsertAttendance(userId: string, rollCallId: string): Promise<void> {
     await this.prisma.attendance.upsert({
-      where: { userId_rollCallId: { userId, rollCallId } },
+      where: { userId_rollCallId: { userId, rollCallId } }, // eslint-disable-line @typescript-eslint/naming-convention
       update: {},
       create: { userId, rollCallId },
     });
@@ -91,7 +90,7 @@ export class PrismaRollCallRepository implements RollCallRepository {
   async deleteAttendance(userId: string, rollCallId: string): Promise<void> {
     try {
       await this.prisma.attendance.delete({
-        where: { userId_rollCallId: { userId, rollCallId } },
+        where: { userId_rollCallId: { userId, rollCallId } }, // eslint-disable-line @typescript-eslint/naming-convention
       });
     } catch {
       // attendance did not exist — safe to ignore
@@ -121,6 +120,6 @@ export class PrismaRollCallRepository implements RollCallRepository {
 
   async findAllAttendances(): Promise<Attendance[]> {
     const rows = await this.prisma.attendance.findMany();
-    return rows.map(AttendanceMapper.toDomain);
+    return rows.map((r) => AttendanceMapper.toDomain(r));
   }
 }
