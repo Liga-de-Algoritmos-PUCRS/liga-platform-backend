@@ -15,6 +15,17 @@ import { UpdateAttendanceService } from '../../application/services/update-atten
 import { GetMyAttendancesService } from '../../application/services/get-my-attendances.service';
 import { GetOverviewService } from '../../application/services/get-overview.service';
 import { RemoveRollCallService } from '../../application/services/remove-roll-call.service';
+import {
+  AttendRollCallDecorator,
+  CreateRollCallDecorator,
+  FindAllRollCallsDecorator,
+  FindOneRollCallDecorator,
+  GenerateQrCodeDecorator,
+  GetMyAttendancesDecorator,
+  GetOverviewDecorator,
+  RemoveRollCallDecorator,
+  UpdateAttendanceDecorator,
+} from './roll-call.decorator';
 
 @ApiTags('RollCall')
 @UseGuards(JwtAuthGuard)
@@ -32,52 +43,61 @@ export class RollCallController {
     private readonly removeRollCallService: RemoveRollCallService,
   ) {}
 
+  @CreateRollCallDecorator
   @Post()
   @IsAdmin()
   create(@Body() dto: CreateRollCallDto) {
     return this.createRollCallService.execute(new Date(dto.date));
   }
 
+  @FindAllRollCallsDecorator
   @Get()
   @IsAdmin()
   findAll() {
     return this.findAllRollCallsService.execute();
   }
 
+  @GetOverviewDecorator
   @Get('overview')
   @IsAdmin()
   getOverview() {
     return this.getOverviewService.execute();
   }
 
+  @GetMyAttendancesDecorator
   @Get('my-attendances')
   getMyAttendances(@GetUser() user) {
     return this.getMyAttendancesService.execute(String(user.id));
   }
 
+  @FindOneRollCallDecorator
   @Get(':id')
   @IsAdmin()
   findOne(@Param('id') id: string) {
     return this.findOneRollCallService.execute(id);
   }
 
+  @GenerateQrCodeDecorator
   @Get(':id/qr-code')
   @IsAdmin()
   generateQrCode(@Param('id') id: string) {
     return this.generateQrCodeService.execute(id);
   }
 
+  @AttendRollCallDecorator
   @Post('attend')
   attend(@GetUser() user, @Body() dto: AttendRollCallDto) {
-    return this.attendRollCallService.execute(String(user.id), dto.uuid);
+    return this.attendRollCallService.execute({ userId: String(user.id), qrCode: dto.uuid });
   }
 
+  @UpdateAttendanceDecorator
   @Patch(':id/attendance')
   @IsAdmin()
   updateAttendance(@Param('id') id: string, @Body() dto: UpdateAttendanceDto) {
-    return this.updateAttendanceService.execute(id, dto.userId, dto.isPresent);
+    return this.updateAttendanceService.execute({ rollCallId: id, userId: dto.userId, isPresent: dto.isPresent });
   }
 
+  @RemoveRollCallDecorator
   @Delete(':id')
   @IsAdmin()
   remove(@Param('id') id: string) {
