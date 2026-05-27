@@ -6,8 +6,8 @@ export class RollCallMapper {
     return new RollCall(
       {
         date: prismaRollCall.date,
-        currentQrCode: prismaRollCall.currentQrCode,
-        qrCodeExpiresAt: prismaRollCall.qrCodeExpiresAt,
+        currentQrCode: prismaRollCall.currentQrCode ?? undefined,
+        qrCodeExpiresAt: prismaRollCall.qrCodeExpiresAt ?? undefined,
         createdAt: prismaRollCall.createdAt,
         updatedAt: prismaRollCall.updatedAt,
       },
@@ -19,8 +19,8 @@ export class RollCallMapper {
     return {
       id: rollCall.id,
       date: rollCall.date,
-      currentQrCode: rollCall.currentQrCode,
-      qrCodeExpiresAt: rollCall.qrCodeExpiresAt,
+      currentQrCode: rollCall.currentQrCode ?? null,
+      qrCodeExpiresAt: rollCall.qrCodeExpiresAt ?? null,
       createdAt: rollCall.createdAt,
       updatedAt: rollCall.updatedAt,
     };

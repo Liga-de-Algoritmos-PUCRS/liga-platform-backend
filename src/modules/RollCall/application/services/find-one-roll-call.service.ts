@@ -1,28 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { RollCallRepository } from '../../domain/roll-call.repository';
+import { RollCallDetail } from '../../domain/roll-call.entity';
 import { UserRepository } from '@/modules/User/domain/user.repository';
 import { ExceptionsAdapter } from '@/infrastructure/Exceptions/exceptions.adapter';
-
-export interface RollCallDetail {
-  id: string;
-  date: Date;
-  currentQrCode: string | null;
-  qrCodeExpiresAt: Date | null;
-  createdAt: Date;
-  updatedAt: Date;
-  totalUsers: number;
-  totalPresent: number;
-  totalAbsent: number;
-  users: Array<{
-    id: string;
-    name: string;
-    email: string;
-    avatarUrl: string | null;
-    course?: string;
-    semester?: string;
-    isPresent: boolean;
-  }>;
-}
 
 @Injectable()
 export class FindOneRollCallService {
