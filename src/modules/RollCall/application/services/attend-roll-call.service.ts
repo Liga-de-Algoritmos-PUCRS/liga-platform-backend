@@ -2,6 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { RollCallRepository } from '../../domain/roll-call.repository';
 import { ExceptionsAdapter } from '@/infrastructure/Exceptions/exceptions.adapter';
 
+export interface AttendRollCallInput {
+  userId: string;
+  qrCode: string;
+}
+
 @Injectable()
 export class AttendRollCallService {
   constructor(
@@ -9,7 +14,7 @@ export class AttendRollCallService {
     private readonly exceptionsAdapter: ExceptionsAdapter,
   ) {}
 
-  async execute(userId: string, qrCode: string): Promise<{ message: string }> {
+  async execute({ userId, qrCode }: AttendRollCallInput): Promise<{ message: string }> {
     const rollCall = await this.rollCallRepository.findByQrCode(qrCode);
 
     if (!rollCall) {

@@ -3,6 +3,12 @@ import { RollCallRepository } from '../../domain/roll-call.repository';
 import { UserRepository } from '@/modules/User/domain/user.repository';
 import { ExceptionsAdapter } from '@/infrastructure/Exceptions/exceptions.adapter';
 
+export interface UpdateAttendanceInput {
+  rollCallId: string;
+  userId: string;
+  isPresent: boolean;
+}
+
 @Injectable()
 export class UpdateAttendanceService {
   constructor(
@@ -11,11 +17,7 @@ export class UpdateAttendanceService {
     private readonly exceptionsAdapter: ExceptionsAdapter,
   ) {}
 
-  async execute(
-    rollCallId: string,
-    userId: string,
-    isPresent: boolean,
-  ): Promise<{ message: string }> {
+  async execute({ rollCallId, userId, isPresent }: UpdateAttendanceInput): Promise<{ message: string }> {
     const [rollCall, user] = await Promise.all([
       this.rollCallRepository.findById(rollCallId),
       this.userRepository.findUserById(userId),
