@@ -74,14 +74,14 @@ export class PrismaRollCallRepository implements RollCallRepository {
 
   async findAttendance(userId: string, rollCallId: string): Promise<Attendance | null> {
     const row = await this.prisma.attendance.findUnique({
-      where: { userId_rollCallId: { userId, rollCallId } }, // eslint-disable-line @typescript-eslint/naming-convention
+      where: { userRollCall: { userId, rollCallId } },
     });
     return row ? AttendanceMapper.toDomain(row) : null;
   }
 
   async upsertAttendance(userId: string, rollCallId: string): Promise<void> {
     await this.prisma.attendance.upsert({
-      where: { userId_rollCallId: { userId, rollCallId } }, // eslint-disable-line @typescript-eslint/naming-convention
+      where: { userRollCall: { userId, rollCallId } },
       update: {},
       create: { userId, rollCallId },
     });
@@ -90,7 +90,7 @@ export class PrismaRollCallRepository implements RollCallRepository {
   async deleteAttendance(userId: string, rollCallId: string): Promise<void> {
     try {
       await this.prisma.attendance.delete({
-        where: { userId_rollCallId: { userId, rollCallId } }, // eslint-disable-line @typescript-eslint/naming-convention
+        where: { userRollCall: { userId, rollCallId } },
       });
     } catch {
       // attendance did not exist — safe to ignore
