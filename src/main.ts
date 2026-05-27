@@ -28,7 +28,14 @@ async function bootstrap() {
   const whitelist = getCors();
 
   app.enableCors({
-    origin: whitelist,
+    origin: (origin, callback) => {
+      if (!origin || whitelist.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        console.error(`[CORS] Origem "${origin}" RECUSADA.`);
+        callback(new Error('Não permitido pelo CORS'));
+      }
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'],
