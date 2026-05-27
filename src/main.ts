@@ -28,7 +28,7 @@ async function bootstrap() {
   const whitelist = getCors();
 
   app.enableCors({
-    origin: true,
+    origin: whitelist,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'],
