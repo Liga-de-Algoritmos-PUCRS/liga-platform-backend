@@ -19,7 +19,10 @@ export class PrismaRollCallRepository implements RollCallRepository {
 
   async createRollCall(date: Date): Promise<RollCall> {
     const created = await this.prisma.rollCall.create({ data: { date } });
-    this.loggerAdapter.log({ where: 'PrismaRollCallRepository.createRollCall', message: `Created roll call id=${created.id}` });
+    this.loggerAdapter.log({
+      where: 'PrismaRollCallRepository.createRollCall',
+      message: `Created roll call id=${created.id}`,
+    });
     return RollCallMapper.toDomain(created);
   }
 
@@ -59,7 +62,10 @@ export class PrismaRollCallRepository implements RollCallRepository {
 
   async deleteRollCall(id: string): Promise<void> {
     await this.prisma.rollCall.delete({ where: { id } });
-    this.loggerAdapter.log({ where: 'PrismaRollCallRepository.deleteRollCall', message: `Deleted roll call id=${id}` });
+    this.loggerAdapter.log({
+      where: 'PrismaRollCallRepository.deleteRollCall',
+      message: `Deleted roll call id=${id}`,
+    });
   }
 
   async createAttendance(userId: string, rollCallId: string): Promise<Attendance> {
