@@ -17,7 +17,11 @@ export class UpdateAttendanceService {
     private readonly exceptionsAdapter: ExceptionsAdapter,
   ) {}
 
-  async execute({ rollCallId, userId, isPresent }: UpdateAttendanceInput): Promise<{ message: string }> {
+  async execute({
+    rollCallId,
+    userId,
+    isPresent,
+  }: UpdateAttendanceInput): Promise<{ message: string }> {
     const [rollCall, user] = await Promise.all([
       this.rollCallRepository.findById(rollCallId),
       this.userRepository.findUserById(userId),

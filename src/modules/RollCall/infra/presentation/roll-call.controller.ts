@@ -94,7 +94,11 @@ export class RollCallController {
   @Patch(':id/attendance')
   @IsAdmin()
   updateAttendance(@Param('id') id: string, @Body() dto: UpdateAttendanceDto) {
-    return this.updateAttendanceService.execute({ rollCallId: id, userId: dto.userId, isPresent: dto.isPresent });
+    return this.updateAttendanceService.execute({
+      rollCallId: id,
+      userId: dto.userId,
+      isPresent: dto.isPresent,
+    });
   }
 
   @RemoveRollCallDecorator

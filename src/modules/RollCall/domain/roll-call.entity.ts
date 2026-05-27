@@ -37,5 +37,9 @@ export interface RollCallDetail {
   totalUsers: number;
   totalPresent: number;
   totalAbsent: number;
-  users: Array<Pick<User, 'id' | 'name' | 'email' | 'avatarUrl' | 'course' | 'semester'> & { isPresent: boolean }>;
+  users: Array<
+    Pick<User, 'id' | 'name' | 'email' | 'avatarUrl' | 'course' | 'semester'> & {
+      isPresent: boolean;
+    }
+  >;
 }

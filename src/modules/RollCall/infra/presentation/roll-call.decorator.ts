@@ -26,7 +26,8 @@ export const CreateRollCallDecorator = applyDecorators(
 export const FindAllRollCallsDecorator = applyDecorators(
   ApiOperation({
     summary: 'Listar chamadas',
-    description: 'Retorna todas as chamadas com o total de presenças de cada uma. Acesso restrito a administradores.',
+    description:
+      'Retorna todas as chamadas com o total de presenças de cada uma. Acesso restrito a administradores.',
   }),
   ApiOkResponse({ description: 'Lista de chamadas retornada com sucesso.' }),
   ApiForbiddenResponse({ description: 'Acesso restrito a administradores.' }),
@@ -37,7 +38,8 @@ export const FindAllRollCallsDecorator = applyDecorators(
 export const GetOverviewDecorator = applyDecorators(
   ApiOperation({
     summary: 'Visão geral de frequência',
-    description: 'Retorna estatísticas de presença de todos os usuários em todas as chamadas. Acesso restrito a administradores.',
+    description:
+      'Retorna estatísticas de presença de todos os usuários em todas as chamadas. Acesso restrito a administradores.',
   }),
   ApiOkResponse({ description: 'Visão geral retornada com sucesso.' }),
   ApiForbiddenResponse({ description: 'Acesso restrito a administradores.' }),
@@ -58,7 +60,8 @@ export const GetMyAttendancesDecorator = applyDecorators(
 export const FindOneRollCallDecorator = applyDecorators(
   ApiOperation({
     summary: 'Detalhes de uma chamada',
-    description: 'Retorna os detalhes de uma chamada específica com a lista de presença de todos os usuários. Acesso restrito a administradores.',
+    description:
+      'Retorna os detalhes de uma chamada específica com a lista de presença de todos os usuários. Acesso restrito a administradores.',
   }),
   ApiOkResponse({ description: 'Chamada retornada com sucesso.' }),
   ApiNotFoundResponse({ description: 'Chamada não encontrada.' }),
@@ -70,7 +73,8 @@ export const FindOneRollCallDecorator = applyDecorators(
 export const GenerateQrCodeDecorator = applyDecorators(
   ApiOperation({
     summary: 'Gerar QR Code',
-    description: 'Gera um QR Code com expiração de 15 segundos para a chamada informada. Acesso restrito a administradores.',
+    description:
+      'Gera um QR Code com expiração de 15 segundos para a chamada informada. Acesso restrito a administradores.',
   }),
   ApiOkResponse({ description: 'QR Code gerado com sucesso.' }),
   ApiNotFoundResponse({ description: 'Chamada não encontrada.' }),
@@ -93,7 +97,8 @@ export const AttendRollCallDecorator = applyDecorators(
 export const UpdateAttendanceDecorator = applyDecorators(
   ApiOperation({
     summary: 'Atualizar presença manualmente',
-    description: 'Permite que um administrador marque ou desmarque a presença de um usuário em uma chamada.',
+    description:
+      'Permite que um administrador marque ou desmarque a presença de um usuário em uma chamada.',
   }),
   ApiOkResponse({ description: 'Presença atualizada com sucesso.' }),
   ApiNotFoundResponse({ description: 'Chamada ou usuário não encontrado.' }),
@@ -105,7 +110,8 @@ export const UpdateAttendanceDecorator = applyDecorators(
 export const RemoveRollCallDecorator = applyDecorators(
   ApiOperation({
     summary: 'Remover chamada',
-    description: 'Remove uma chamada e todas as presenças associadas. Acesso restrito a administradores.',
+    description:
+      'Remove uma chamada e todas as presenças associadas. Acesso restrito a administradores.',
   }),
   ApiOkResponse({ description: 'Chamada removida com sucesso.' }),
   ApiNoContentResponse({ description: 'Chamada removida.' }),
