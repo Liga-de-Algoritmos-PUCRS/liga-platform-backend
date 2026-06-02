@@ -114,7 +114,6 @@ export const RemoveRollCallDecorator = applyDecorators(
       'Remove uma chamada e todas as presenças associadas. Acesso restrito a administradores.',
   }),
   ApiOkResponse({ description: 'Chamada removida com sucesso.' }),
-  ApiNoContentResponse({ description: 'Chamada removida.' }),
   ApiNotFoundResponse({ description: 'Chamada não encontrada.' }),
   ApiForbiddenResponse({ description: 'Acesso restrito a administradores.' }),
   ApiUnauthorizedResponse({ description: 'Não autenticado.' }),
