@@ -183,5 +183,6 @@ model Attendance {
   rollCall RollCall @relation(fields: [rollCallId], references: [id], onDelete: Cascade)
 
   @@unique([userId, rollCallId], name: "userRollCall")
+  @@index([rollCallId])
   @@map("attendances")
 }

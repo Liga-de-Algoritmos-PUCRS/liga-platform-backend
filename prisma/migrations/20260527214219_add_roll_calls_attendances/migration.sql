@@ -26,6 +26,9 @@ CREATE UNIQUE INDEX "roll_calls_current_qr_code_key" ON "roll_calls"("current_qr
 -- CreateIndex
 CREATE UNIQUE INDEX "attendances_user_id_roll_call_id_key" ON "attendances"("user_id", "roll_call_id");
 
+-- CreateIndex
+CREATE INDEX "attendances_roll_call_id_idx" ON "attendances"("roll_call_id");
+
 -- AddForeignKey
 ALTER TABLE "attendances" ADD CONSTRAINT "attendances_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
