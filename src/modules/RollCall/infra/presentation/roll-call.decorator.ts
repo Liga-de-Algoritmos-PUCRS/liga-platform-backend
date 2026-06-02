@@ -9,6 +9,7 @@ import {
   ApiForbiddenResponse,
   ApiInternalServerErrorResponse,
 } from '@nestjs/swagger';
+import { RollCallSummaryResponseDto } from '../../application/dtos/roll-call-summary.response.dto';
 
 export const CreateRollCallDecorator = applyDecorators(
   ApiOperation({
@@ -28,7 +29,10 @@ export const FindAllRollCallsDecorator = applyDecorators(
     description:
       'Retorna todas as chamadas com o total de presenças de cada uma. Acesso restrito a administradores.',
   }),
-  ApiOkResponse({ description: 'Lista de chamadas retornada com sucesso.' }),
+  ApiOkResponse({
+    description: 'Lista de chamadas retornada com sucesso.',
+    type: [RollCallSummaryResponseDto],
+  }),
   ApiForbiddenResponse({ description: 'Acesso restrito a administradores.' }),
   ApiUnauthorizedResponse({ description: 'Não autenticado.' }),
   ApiInternalServerErrorResponse({ description: 'Erro interno.' }),

@@ -2,10 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { RollCall } from './roll-call.entity';
 import { Attendance } from './attendance.entity';
 
+export type RollCallSummary = { id: string; date: Date; _count: { attendances: number } };
+
 @Injectable()
 export abstract class RollCallRepository {
   abstract createRollCall(date: Date): Promise<RollCall>;
-  abstract findAllRollCalls(): Promise<Array<{ rollCall: RollCall; attendanceCount: number }>>;
+  abstract findAllRollCalls(): Promise<RollCallSummary[]>;
   abstract findAllRollCallsSimple(): Promise<RollCall[]>;
   abstract findById(id: string): Promise<RollCall | null>;
   abstract findByQrCode(code: string): Promise<RollCall | null>;

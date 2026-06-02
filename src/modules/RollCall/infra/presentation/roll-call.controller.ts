@@ -5,6 +5,7 @@ import { IsAdmin } from '@/global/common/decorators/is-admin-decorator';
 import { CreateRollCallDto } from '../../application/dtos/create-roll-call.dto';
 import { AttendRollCallDto } from '../../application/dtos/attend-roll-call.dto';
 import { UpdateAttendanceDto } from '../../application/dtos/update-attendance.dto';
+import { RollCallSummaryResponseDto } from '../../application/dtos/roll-call-summary.response.dto';
 import { CreateRollCallService } from '../../application/services/create-roll-call.service';
 import { FindAllRollCallsService } from '../../application/services/find-all-roll-calls.service';
 import { FindOneRollCallService } from '../../application/services/find-one-roll-call.service';
@@ -51,7 +52,7 @@ export class RollCallController {
   @FindAllRollCallsDecorator
   @Get()
   @IsAdmin()
-  findAll() {
+  findAll(): Promise<RollCallSummaryResponseDto[]> {
     return this.findAllRollCallsService.execute();
   }
 

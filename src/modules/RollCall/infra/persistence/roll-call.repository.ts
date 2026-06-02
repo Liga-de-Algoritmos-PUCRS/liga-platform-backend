@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/infrastructure/Database/prisma.service';
 import { LoggerAdapter } from '@/infrastructure/Logger/logger.adapter';
-import { RollCallRepository } from '@/modules/RollCall/domain/roll-call.repository';
+import {
+  RollCallRepository,
+  RollCallSummary,
+} from '@/modules/RollCall/domain/roll-call.repository';
 import { RollCall } from '@/modules/RollCall/domain/roll-call.entity';
 import { Attendance } from '@/modules/RollCall/domain/attendance.entity';
 import { RollCallMapper } from './roll-call.mapper';
@@ -23,14 +26,15 @@ export class PrismaRollCallRepository implements RollCallRepository {
     return RollCallMapper.toDomain(created);
   }
 
-  async findAllRollCalls(): Promise<Array<{ rollCall: RollCall; attendanceCount: number }>> {
+  async findAllRollCalls(): Promise<RollCallSummary[]> {
     const rows = await this.prisma.rollCall.findMany({
       orderBy: { date: 'desc' },
       include: { _count: { select: { attendances: true } } },
     });
     return rows.map((r) => ({
-      rollCall: RollCallMapper.toDomain(r),
-      attendanceCount: r._count.attendances,
+      id: r.id,
+      date: r.date,
+      _count: { attendances: r._count.attendances },
     }));
   }
 
