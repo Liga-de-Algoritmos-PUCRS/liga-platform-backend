@@ -28,7 +28,6 @@ import {
 } from './roll-call.decorator';
 
 @ApiTags('RollCall')
-@UseGuards(JwtAuthGuard)
 @Controller('roll-calls')
 export class RollCallController {
   constructor(
