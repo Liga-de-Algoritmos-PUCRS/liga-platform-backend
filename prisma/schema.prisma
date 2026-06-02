@@ -7,81 +7,81 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {  
-  id                  String             @id @default(uuid())
-  name                String
-  email               String             @unique
-  password            String
-  createdAt           DateTime           @default(now()) @map("created_at")
-  avatarUrl           String?            @map("avatar_url")
-  bannerUrl           String?            @map("banner_url")
-  allPoints           Int                @default(0) @map("all_points")
-  monthlyPoints       Int                @default(0) @map("monthly_points")
-  historicalSubmissions Int              @default(0) @map("historical_submissions")
-  submissionsNumber   Int                @default(0) @map("submissions_number")
-  problemsResolved    Int                @default(0) @map("problems_resolved")
-  course              CourseEnum?
-  semester            Semester_enum?
-  role                RoleEnum           @default(USER)
-  files               File[]             @relation("UserFiles")
-  resetPasswordTokens ResetPasswordToken[]
-  refreshTokens       RefreshToken[]
-  submissions         Submission[]
+model User {
+  id                    String               @id @default(uuid())
+  name                  String
+  email                 String               @unique
+  password              String
+  createdAt             DateTime             @default(now()) @map("created_at")
+  avatarUrl             String?              @map("avatar_url")
+  bannerUrl             String?              @map("banner_url")
+  allPoints             Int                  @default(0) @map("all_points")
+  monthlyPoints         Int                  @default(0) @map("monthly_points")
+  historicalSubmissions Int                  @default(0) @map("historical_submissions")
+  submissionsNumber     Int                  @default(0) @map("submissions_number")
+  problemsResolved      Int                  @default(0) @map("problems_resolved")
+  course                CourseEnum?
+  semester              Semester_enum?
+  role                  RoleEnum             @default(USER)
+  files                 File[]               @relation("UserFiles")
+  resetPasswordTokens   ResetPasswordToken[]
+  refreshTokens         RefreshToken[]
+  submissions           Submission[]
+  attendances           Attendance[]
 
   @@map("users")
 }
 
 model Problem {
-  id          String   @id @default(uuid())
+  id          String         @id @default(uuid())
   title       String
   description String
   answer      String
   input       String
   points      Int
   difficulty  DifficultyEnum
-  bannerUrl   String?  @map("banner_url")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime? @updatedAt @map("updated_at")
-  resolved    Int      @default(0) @map("resolved")
-  submits     Int      @default(0) @map("submits")
-  archived    Boolean  @default(false) @map("archived")
-  fixed       Boolean  @default(false) @map("fixed")
-  submissions  Submission[]
+  bannerUrl   String?        @map("banner_url")
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime?      @updatedAt @map("updated_at")
+  resolved    Int            @default(0) @map("resolved")
+  submits     Int            @default(0) @map("submits")
+  archived    Boolean        @default(false) @map("archived")
+  fixed       Boolean        @default(false) @map("fixed")
+  submissions Submission[]
 
   @@map("problems")
 }
 
-model Submission{
-  id            String   @id @default(uuid())
-  userId        String   @map("user_id")
-  problemId     String   @map("problem_id")
-  pointsEarned  Int      @map("points_earned")
-  attempts      Int      @default(0)
-  createdAt     DateTime @default(now()) @map("created_at")
-  isFinished    Boolean  @default(false) @map("is_finished")
-  finishedAt    DateTime? @map("finished_at")
-  updatedAt     DateTime? @updatedAt @map("updated_at")
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  problem       Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+model Submission {
+  id           String    @id @default(uuid())
+  userId       String    @map("user_id")
+  problemId    String    @map("problem_id")
+  pointsEarned Int       @map("points_earned")
+  attempts     Int       @default(0)
+  createdAt    DateTime  @default(now()) @map("created_at")
+  isFinished   Boolean   @default(false) @map("is_finished")
+  finishedAt   DateTime? @map("finished_at")
+  updatedAt    DateTime? @updatedAt @map("updated_at")
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem      Problem   @relation(fields: [problemId], references: [id], onDelete: Cascade)
 
   @@map("submissions")
 }
 
 model File {
-  id                 String              @id @default(uuid())
-  name               String
-  size               Int
-  type               String
-  fileUrl            String              @map("file_url")
-  authorId           String              @map("author_id")
-  createdAt          DateTime            @default(now()) @map("created_at")
-  deletedAt          DateTime?           @map("deleted_at")
-  deleted            Boolean             @default(false)
-  author             User                @relation("UserFiles", fields: [authorId], references: [id], onDelete: Cascade)
+  id        String    @id @default(uuid())
+  name      String
+  size      Int
+  type      String
+  fileUrl   String    @map("file_url")
+  authorId  String    @map("author_id")
+  createdAt DateTime  @default(now()) @map("created_at")
+  deletedAt DateTime? @map("deleted_at")
+  deleted   Boolean   @default(false)
+  author    User      @relation("UserFiles", fields: [authorId], references: [id], onDelete: Cascade)
 
   @@map("files")
 }
-
 
 model RefreshToken {
   id        String   @id @default(uuid())
@@ -96,14 +96,14 @@ model RefreshToken {
 }
 
 model Token2FA {
-  id            String   @id @default(uuid())
-  token         String
-  expiresAt     DateTime @map("expires_at")
-  createdAt     DateTime @default(now()) @map("created_at")
-  isRevoked     Boolean  @default(false) @map("is_revoked")
-  userEmail     String   @map("user_email")
-  userName      String   @map("user_name")
-  userPassword  String   @map("usage_password")
+  id           String   @id @default(uuid())
+  token        String
+  expiresAt    DateTime @map("expires_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  isRevoked    Boolean  @default(false) @map("is_revoked")
+  userEmail    String   @map("user_email")
+  userName     String   @map("user_name")
+  userPassword String   @map("usage_password")
 
   @@map("token2fa")
 }
@@ -120,10 +120,10 @@ model ResetPasswordToken {
   @@map("reset_password_tokens")
 }
 
-
 enum RoleEnum {
   ADMIN
   USER
+
   @@map("role_enum")
 }
 
@@ -141,6 +141,7 @@ enum DifficultyEnum {
   EASY
   MEDIUM
   HARD
+
   @@map("difficulty_enum")
 }
 
@@ -156,5 +157,32 @@ enum Semester_enum {
   NINTH
   TENTH
   GRADUATED
+
   @@map("semester_enum")
+}
+
+model RollCall {
+  id              String       @id @default(uuid())
+  date            DateTime
+  currentQrCode   String?      @unique @map("current_qr_code")
+  qrCodeExpiresAt DateTime?    @map("qr_code_expires_at")
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+  attendances     Attendance[]
+
+  @@map("roll_calls")
+}
+
+model Attendance {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  rollCallId String   @map("roll_call_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rollCall RollCall @relation(fields: [rollCallId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, rollCallId], name: "userRollCall")
+  @@index([rollCallId])
+  @@map("attendances")
 }

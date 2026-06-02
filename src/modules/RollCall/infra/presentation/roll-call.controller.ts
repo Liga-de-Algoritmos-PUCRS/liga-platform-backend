@@ -1,0 +1,109 @@
+import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import { GetUser } from '@/global/common/decorators/get-user.decorator';
+import { IsAdmin } from '@/global/common/decorators/is-admin-decorator';
+import { CreateRollCallDto } from '../../application/dtos/create-roll-call.dto';
+import { AttendRollCallDto } from '../../application/dtos/attend-roll-call.dto';
+import { UpdateAttendanceDto } from '../../application/dtos/update-attendance.dto';
+import { RollCallSummaryResponseDto } from '../../application/dtos/roll-call-summary.response.dto';
+import { CreateRollCallService } from '../../application/services/create-roll-call.service';
+import { FindAllRollCallsService } from '../../application/services/find-all-roll-calls.service';
+import { FindOneRollCallService } from '../../application/services/find-one-roll-call.service';
+import { GenerateQrCodeService } from '../../application/services/generate-qr-code.service';
+import { AttendRollCallService } from '../../application/services/attend-roll-call.service';
+import { UpdateAttendanceService } from '../../application/services/update-attendance.service';
+import { GetMyAttendancesService } from '../../application/services/get-my-attendances.service';
+import { GetOverviewService } from '../../application/services/get-overview.service';
+import { RemoveRollCallService } from '../../application/services/remove-roll-call.service';
+import {
+  AttendRollCallDecorator,
+  CreateRollCallDecorator,
+  FindAllRollCallsDecorator,
+  FindOneRollCallDecorator,
+  GenerateQrCodeDecorator,
+  GetMyAttendancesDecorator,
+  GetOverviewDecorator,
+  RemoveRollCallDecorator,
+  UpdateAttendanceDecorator,
+} from './roll-call.decorator';
+
+@ApiTags('RollCall')
+@Controller('roll-calls')
+export class RollCallController {
+  constructor(
+    private readonly createRollCallService: CreateRollCallService,
+    private readonly findAllRollCallsService: FindAllRollCallsService,
+    private readonly findOneRollCallService: FindOneRollCallService,
+    private readonly generateQrCodeService: GenerateQrCodeService,
+    private readonly attendRollCallService: AttendRollCallService,
+    private readonly updateAttendanceService: UpdateAttendanceService,
+    private readonly getMyAttendancesService: GetMyAttendancesService,
+    private readonly getOverviewService: GetOverviewService,
+    private readonly removeRollCallService: RemoveRollCallService,
+  ) {}
+
+  @CreateRollCallDecorator
+  @Post()
+  @IsAdmin()
+  create(@Body() dto: CreateRollCallDto) {
+    return this.createRollCallService.execute(new Date(dto.date));
+  }
+
+  @FindAllRollCallsDecorator
+  @Get()
+  @IsAdmin()
+  findAll(): Promise<RollCallSummaryResponseDto[]> {
+    return this.findAllRollCallsService.execute();
+  }
+
+  @GetOverviewDecorator
+  @Get('overview')
+  @IsAdmin()
+  getOverview() {
+    return this.getOverviewService.execute();
+  }
+
+  @GetMyAttendancesDecorator
+  @Get('my-attendances')
+  getMyAttendances(@GetUser() user) {
+    return this.getMyAttendancesService.execute(String(user.id));
+  }
+
+  @FindOneRollCallDecorator
+  @Get(':id')
+  @IsAdmin()
+  findOne(@Param('id') id: string) {
+    return this.findOneRollCallService.execute(id);
+  }
+
+  @GenerateQrCodeDecorator
+  @Get(':id/qr-code')
+  @IsAdmin()
+  generateQrCode(@Param('id') id: string) {
+    return this.generateQrCodeService.execute(id);
+  }
+
+  @AttendRollCallDecorator
+  @Post('attend')
+  attend(@GetUser() user, @Body() dto: AttendRollCallDto) {
+    return this.attendRollCallService.execute({ userId: String(user.id), qrCode: dto.uuid });
+  }
+
+  @UpdateAttendanceDecorator
+  @Patch(':id/attendance')
+  @IsAdmin()
+  updateAttendance(@Param('id') id: string, @Body() dto: UpdateAttendanceDto) {
+    return this.updateAttendanceService.execute({
+      rollCallId: id,
+      userId: dto.userId,
+      isPresent: dto.isPresent,
+    });
+  }
+
+  @RemoveRollCallDecorator
+  @Delete(':id')
+  @IsAdmin()
+  remove(@Param('id') id: string) {
+    return this.removeRollCallService.execute(id);
+  }
+}
