@@ -37,5 +37,5 @@ export interface RollCallDetail {
   totalUsers: number;
   totalPresent: number;
   totalAbsent: number;
-  users: Array<User & { isPresent: boolean }>;
+  users: Array<ReturnType<User['toJSON']> & { isPresent: boolean }>;
 }
