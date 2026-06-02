@@ -8,7 +8,6 @@ import {
   ApiUnauthorizedResponse,
   ApiForbiddenResponse,
   ApiInternalServerErrorResponse,
-  ApiNoContentResponse,
 } from '@nestjs/swagger';
 
 export const CreateRollCallDecorator = applyDecorators(

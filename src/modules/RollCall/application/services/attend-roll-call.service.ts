@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { RollCallRepository } from '../../domain/roll-call.repository';
 import { ExceptionsAdapter } from '@/infrastructure/Exceptions/exceptions.adapter';
 
@@ -30,7 +31,15 @@ export class AttendRollCallService {
       return { message: 'Attendance already registered' };
     }
 
-    await this.rollCallRepository.createAttendance(userId, rollCall.id);
+    try {
+      await this.rollCallRepository.createAttendance(userId, rollCall.id);
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+        return { message: 'Attendance already registered' };
+      }
+      throw error;
+    }
+
     return { message: 'Attendance registered successfully' };
   }
 }

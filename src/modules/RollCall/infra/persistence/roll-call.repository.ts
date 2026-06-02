@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/infrastructure/Database/prisma.service';
 import { LoggerAdapter } from '@/infrastructure/Logger/logger.adapter';
-import { ExceptionsAdapter } from '@/infrastructure/Exceptions/exceptions.adapter';
 import { RollCallRepository } from '@/modules/RollCall/domain/roll-call.repository';
 import { RollCall } from '@/modules/RollCall/domain/roll-call.entity';
 import { Attendance } from '@/modules/RollCall/domain/attendance.entity';
@@ -13,7 +12,6 @@ export class PrismaRollCallRepository implements RollCallRepository {
   constructor(
     private readonly prisma: PrismaService,
     private readonly loggerAdapter: LoggerAdapter,
-    private readonly exceptionsAdapter: ExceptionsAdapter,
   ) {}
 
   async createRollCall(date: Date): Promise<RollCall> {
@@ -88,13 +86,9 @@ export class PrismaRollCallRepository implements RollCallRepository {
   }
 
   async deleteAttendance(userId: string, rollCallId: string): Promise<void> {
-    try {
-      await this.prisma.attendance.delete({
-        where: { userRollCall: { userId, rollCallId } },
-      });
-    } catch {
-      // attendance did not exist — safe to ignore
-    }
+    await this.prisma.attendance.deleteMany({
+      where: { userId, rollCallId },
+    });
   }
 
   async findUserAttendances(

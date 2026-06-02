@@ -1,6 +1,5 @@
-import { Controller, Get, Post, Body, Patch, Param, UseGuards, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from '@/global/common/guards/jwt-auth.guard';
 import { GetUser } from '@/global/common/decorators/get-user.decorator';
 import { IsAdmin } from '@/global/common/decorators/is-admin-decorator';
 import { CreateRollCallDto } from '../../application/dtos/create-roll-call.dto';

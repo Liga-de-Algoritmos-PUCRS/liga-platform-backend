@@ -37,15 +37,7 @@ export class FindOneRollCallService {
       totalAbsent: allUsers.length - presentSet.size,
       users: allUsers
         .sort((a, b) => a.name.localeCompare(b.name))
-        .map((user) => ({
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          avatarUrl: user.avatarUrl,
-          course: user.course,
-          semester: user.semester,
-          isPresent: presentSet.has(user.id),
-        })),
+        .map((user) => Object.assign(user, { isPresent: presentSet.has(user.id) })),
     };
   }
 }

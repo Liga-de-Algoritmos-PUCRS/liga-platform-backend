@@ -20,8 +20,8 @@ export class RollCall {
   constructor(rollCall: RollCallInterface, id?: string) {
     this.id = id ?? createId();
     this.date = rollCall.date;
-    this.currentQrCode = rollCall.currentQrCode ?? undefined;
-    this.qrCodeExpiresAt = rollCall.qrCodeExpiresAt ?? undefined;
+    this.currentQrCode = rollCall.currentQrCode;
+    this.qrCodeExpiresAt = rollCall.qrCodeExpiresAt;
     this.createdAt = rollCall.createdAt ?? new Date();
     this.updatedAt = rollCall.updatedAt ?? new Date();
   }
@@ -37,9 +37,5 @@ export interface RollCallDetail {
   totalUsers: number;
   totalPresent: number;
   totalAbsent: number;
-  users: Array<
-    Pick<User, 'id' | 'name' | 'email' | 'avatarUrl' | 'course' | 'semester'> & {
-      isPresent: boolean;
-    }
-  >;
+  users: Array<User & { isPresent: boolean }>;
 }
