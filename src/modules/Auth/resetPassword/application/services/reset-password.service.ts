@@ -6,6 +6,7 @@ import { SendEmailAdapter } from '@/infrastructure/SendEmail/sendEmail.adapter';
 import { ResetPasswordTokenRepository } from '@/modules/Auth/resetPassword/domain/reset-password-token.repository';
 import { ResetPasswordDTO } from '@/modules/Auth/resetPassword/application/dtos/reset-password.dto';
 import { CryptographyAdapter } from '@/infrastructure/Criptography/cryptography.adapter';
+import { RefreshTokenRepository } from '@/modules/Auth/login/domain/refresh-token.repository';
 import { UserExceptions, TokenExceptions } from '@/infrastructure/Exceptions/exceptions.types';
 
 @Injectable()
@@ -16,6 +17,7 @@ export class ResetPasswordService {
     private readonly ResetPasswordTokenRepository: ResetPasswordTokenRepository,
     private readonly SendEmailAdapter: SendEmailAdapter,
     private readonly CryptographyAdapter: CryptographyAdapter,
+    private readonly RefreshTokenRepository: RefreshTokenRepository,
   ) {}
 
   async execute(ResetPasswordDTO: ResetPasswordDTO): Promise<void> {
@@ -96,6 +98,9 @@ export class ResetPasswordService {
     await this.SendEmailAdapter.sendEmailPaswordChanged(user.email, user.name);
 
     await this.ResetPasswordTokenRepository.revokeResetPasswordTokenById(findToken.id);
+
+    // Senha trocada: derruba todas as sessões ativas (conta pode ter sido comprometida)
+    await this.RefreshTokenRepository.revokeAllRefreshTokensByAccountId(user.id);
   }
 
   private isSafetyPassword(password: string): boolean {

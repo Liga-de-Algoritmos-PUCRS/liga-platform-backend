@@ -1,17 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { TokensResponseInterface } from '@/modules/Auth/login/application/dtos/refreshToken';
-import { RefreshToken } from '@/modules/Auth/login/domain/refresh-token.entity';
 import { RefreshTokenRepository } from '@/modules/Auth/login/domain/refresh-token.repository';
 import { UserRepository } from '@/modules/User/domain/user.repository';
 import { ExceptionsAdapter } from '@/infrastructure/Exceptions/exceptions.adapter';
 import { CryptographyAdapter } from '@/infrastructure/Criptography/cryptography.adapter';
-import { JwtService } from '@nestjs/jwt';
-import { StringValue } from 'ms';
-import * as ms from 'ms';
-import { ConfigService } from '@nestjs/config';
-import { Env } from '@/global/env.schema';
-import { UserExceptions, TokenExceptions } from '@/infrastructure/Exceptions/exceptions.types';
-import { Role } from '@/modules/User/domain/user.entity';
+import { GenerateTokensService } from '@/modules/Auth/login/application/services/generate-tokens.service';
+import { TokenExceptions } from '@/infrastructure/Exceptions/exceptions.types';
+
+// Janela em que um token já rotacionado ainda é aceito: cobre abas/requisições
+// concorrentes que dispararam o refresh com o mesmo cookie antes de receberem
+// o novo.
+const REFRESH_REUSE_GRACE_MS = 60_000;
 
 @Injectable()
 export class RefreshTokenService {
@@ -19,25 +18,39 @@ export class RefreshTokenService {
     private readonly userRepository: UserRepository,
     private readonly exceptionsAdapter: ExceptionsAdapter,
     private readonly cryptographyAdapter: CryptographyAdapter,
-    private readonly jwtService: JwtService,
     private readonly refreshTokenRepository: RefreshTokenRepository,
-    private readonly configService: ConfigService<Env, true>,
+    private readonly generateTokensService: GenerateTokensService,
   ) {}
 
-  async execute(userId: string, oldRefreshToken: string): Promise<TokensResponseInterface> {
+  async execute(
+    userId: string,
+    jti: string | undefined,
+    oldRefreshToken: string,
+  ): Promise<TokensResponseInterface> {
     const user = await this.userRepository.findUserById(userId);
     if (!user) {
-      throw this.exceptionsAdapter.notFound({
-        message: 'User not found',
-        internalKey: UserExceptions.USER_NOT_FOUND,
+      // 401 em vez de 404: não vaza se a conta existe
+      throw this.exceptionsAdapter.unauthorized({
+        message: 'Invalid refresh token',
+        internalKey: TokenExceptions.TOKEN_INVALID,
       });
     }
 
-    const userRefreshToken =
-      await this.refreshTokenRepository.findValidRefreshTokenByAccountId(userId);
-    if (!userRefreshToken) {
+    if (!jti) {
       throw this.exceptionsAdapter.unauthorized({
-        message: 'No valid refresh token found for user',
+        message: 'Invalid refresh token',
+        internalKey: TokenExceptions.TOKEN_INVALID,
+      });
+    }
+
+    const userRefreshToken = await this.refreshTokenRepository.findRefreshTokenById(jti);
+    if (
+      !userRefreshToken ||
+      userRefreshToken.accountId !== userId ||
+      userRefreshToken.expiresAt.getTime() <= Date.now()
+    ) {
+      throw this.exceptionsAdapter.unauthorized({
+        message: 'Invalid refresh token',
         internalKey: TokenExceptions.TOKEN_INVALID,
       });
     }
@@ -48,62 +61,30 @@ export class RefreshTokenService {
     });
 
     if (!verifyToken) {
-      await this.refreshTokenRepository.revokeAllRefreshTokensByAccountId(userId);
       throw this.exceptionsAdapter.unauthorized({
         message: 'Invalid refresh token',
         internalKey: TokenExceptions.TOKEN_INVALID,
       });
     }
 
-    await this.refreshTokenRepository.revokeRefreshTokenById(userRefreshToken.id);
+    if (userRefreshToken.isRevoked) {
+      const withinGrace =
+        userRefreshToken.revokedAt &&
+        Date.now() - userRefreshToken.revokedAt.getTime() < REFRESH_REUSE_GRACE_MS;
 
-    return this.generateNewTokens({
+      if (!withinGrace) {
+        throw this.exceptionsAdapter.unauthorized({
+          message: 'Invalid refresh token',
+          internalKey: TokenExceptions.TOKEN_INVALID,
+        });
+      }
+    } else {
+      await this.refreshTokenRepository.revokeRefreshTokenById(userRefreshToken.id);
+    }
+
+    return this.generateTokensService.execute({
       accountId: user.id,
       userRole: user.role,
     });
   }
-
-  private async generateNewTokens(tokenParams: TokenParams): Promise<TokensResponseInterface> {
-    const payload = {
-      sub: tokenParams.accountId,
-      userRole: tokenParams.userRole,
-    };
-
-    const [accessToken, refreshToken] = await Promise.all([
-      this.jwtService.signAsync(payload, {
-        secret: this.configService.get<string>('ACCESS_TOKEN_SECRET'),
-        expiresIn: this.configService.get<string>('ACCESS_TOKEN_EXPIRATION') as StringValue,
-      }),
-      this.jwtService.signAsync(payload, {
-        secret: this.configService.get<string>('REFRESH_TOKEN_SECRET'),
-        expiresIn: this.configService.get<string>('REFRESH_TOKEN_EXPIRATION') as StringValue,
-      }),
-    ]);
-
-    const hashedToken = await this.cryptographyAdapter.hash({
-      plainText: refreshToken,
-      hashSalt: 8,
-    });
-
-    const expireInString = this.configService.get<string>('REFRESH_TOKEN_EXPIRATION');
-    const expireInMs = ms(expireInString as StringValue);
-    const expiresAt = new Date(Date.now() + expireInMs);
-
-    const newRefreshToken = new RefreshToken({
-      token: hashedToken,
-      accountId: tokenParams.accountId,
-      expiresAt,
-      isRevoked: false,
-      createdAt: new Date(),
-    });
-
-    await this.refreshTokenRepository.createRefreshToken(newRefreshToken);
-
-    return { accessToken, refreshToken };
-  }
-}
-
-interface TokenParams {
-  accountId: string;
-  userRole: Role;
 }

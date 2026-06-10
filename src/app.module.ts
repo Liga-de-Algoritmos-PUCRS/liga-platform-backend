@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
@@ -37,6 +38,7 @@ import { RollCallModule } from '@/modules/RollCall/roll-call.module';
         limit: 500,
       },
     ]),
+    ScheduleModule.forRoot(),
     ExceptionModule,
     LoggerModule,
     CryptographyModule,

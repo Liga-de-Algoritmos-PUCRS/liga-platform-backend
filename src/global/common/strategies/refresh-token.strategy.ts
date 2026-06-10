@@ -26,6 +26,7 @@ export class RefreshTokenStrategy extends PassportStrategy(Strategy, 'refresh-to
 
     return {
       sub: payload.sub,
+      jti: payload.jti,
       userRole: payload.userRole,
       iat: payload.iat,
       exp: payload.exp,

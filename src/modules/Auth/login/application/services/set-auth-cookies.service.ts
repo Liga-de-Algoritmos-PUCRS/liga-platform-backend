@@ -4,17 +4,13 @@ import { Response } from 'express';
 import * as ms from 'ms';
 import { StringValue } from 'ms';
 import { Env } from '@/global/env.schema';
-import { UserRepository } from '@/modules/User/domain/user.repository';
 
 @Injectable()
 export class SetAuthCookiesService {
-  constructor(
-    private readonly ConfigService: ConfigService<Env, true>,
-    private readonly UserRepository: UserRepository,
-  ) {}
+  constructor(private readonly configService: ConfigService<Env, true>) {}
 
   public execute(res: Response, refreshToken: string): void {
-    const expireInString = this.ConfigService.get<string>('REFRESH_TOKEN_EXPIRATION');
+    const expireInString = this.configService.get<string>('REFRESH_TOKEN_EXPIRATION');
     const expireInMs = ms(expireInString as StringValue);
 
     res.cookie('refreshToken', refreshToken, {

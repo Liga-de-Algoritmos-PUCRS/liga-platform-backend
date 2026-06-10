@@ -10,6 +10,7 @@ export class RefreshTokenMapper {
         createdAt: refreshToken.createdAt,
         expiresAt: refreshToken.expiresAt,
         isRevoked: refreshToken.isRevoked,
+        revokedAt: refreshToken.revokedAt,
       },
       refreshToken.id,
     );
@@ -25,6 +26,7 @@ export class RefreshTokenMapper {
       createdAt: refreshToken.createdAt,
       expiresAt: refreshToken.expiresAt,
       isRevoked: refreshToken.isRevoked,
+      revokedAt: refreshToken.revokedAt,
     };
   }
 }

@@ -20,6 +20,8 @@ import { SignupController } from '@/modules/Auth/signup/infra/presentation/signu
 import { ResetPasswordController } from '@/modules/Auth/resetPassword/infra/presentation/reset-password.controller';
 import { ClearAuthCookiesService } from '@/modules/Auth/login/application/services/clear-auth-cookie.service';
 import { SetAuthCookiesService } from '@/modules/Auth/login/application/services/set-auth-cookies.service';
+import { GenerateTokensService } from '@/modules/Auth/login/application/services/generate-tokens.service';
+import { CleanupRefreshTokensService } from '@/modules/Auth/login/application/services/cleanup-refresh-tokens.service';
 
 @Module({
   imports: [
@@ -40,6 +42,8 @@ import { SetAuthCookiesService } from '@/modules/Auth/login/application/services
     LogoutService,
     ClearAuthCookiesService,
     SetAuthCookiesService,
+    GenerateTokensService,
+    CleanupRefreshTokensService,
     RefreshTokenService,
     JwtStrategy,
     RefreshTokenStrategy,

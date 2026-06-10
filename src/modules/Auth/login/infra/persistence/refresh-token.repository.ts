@@ -15,12 +15,9 @@ export class PrismaRefreshTokenRepository implements RefreshTokenRepository {
     });
   }
 
-  public async findValidRefreshTokenByAccountId(accountId: string): Promise<RefreshToken | null> {
-    const refreshToken = await this.prisma.refreshToken.findFirst({
-      where: {
-        userId: accountId,
-        isRevoked: false,
-      },
+  public async findRefreshTokenById(id: string): Promise<RefreshToken | null> {
+    const refreshToken = await this.prisma.refreshToken.findUnique({
+      where: { id },
     });
 
     return refreshToken ? RefreshTokenMapper.toDomain(refreshToken) : null;
@@ -34,14 +31,25 @@ export class PrismaRefreshTokenRepository implements RefreshTokenRepository {
       },
       data: {
         isRevoked: true,
+        revokedAt: new Date(),
       },
     });
   }
 
   public async revokeRefreshTokenById(id: string): Promise<void> {
-    await this.prisma.refreshToken.update({
+    await this.prisma.refreshToken.updateMany({
       where: { id: id },
-      data: { isRevoked: true },
+      data: { isRevoked: true, revokedAt: new Date() },
     });
+  }
+
+  public async deleteStaleRefreshTokens(now: Date, revokedBefore: Date): Promise<number> {
+    const { count } = await this.prisma.refreshToken.deleteMany({
+      where: {
+        OR: [{ expiresAt: { lt: now } }, { isRevoked: true, revokedAt: { lt: revokedBefore } }],
+      },
+    });
+
+    return count;
   }
 }

@@ -5,7 +5,6 @@ import {
   ApiOperation,
   ApiUnauthorizedResponse,
   ApiProperty,
-  ApiNotFoundResponse,
   ApiOkResponse,
 } from '@nestjs/swagger';
 
@@ -60,13 +59,11 @@ export const LoginDecorator = applyDecorators(
 export const LogoutDecorator = applyDecorators(
   ApiOperation({
     summary: 'User logout',
-    description: 'This endpoint allows a user to log out from the system.',
+    description:
+      'This endpoint logs the user out, revoking the current session and clearing the refresh cookie. Always succeeds, even without a valid cookie.',
   }),
   ApiOkResponse({
     description: 'User logged out successfully.',
-  }),
-  ApiUnauthorizedResponse({
-    description: 'Unauthorized. The user is not authenticated.',
   }),
   ApiInternalServerErrorResponse({
     description:
@@ -83,9 +80,6 @@ export const RefreshTokenDecorator = applyDecorators(
   ApiOkResponse({
     description: 'Access token refreshed successfully.',
     type: LoginResponseDTO,
-  }),
-  ApiNotFoundResponse({
-    description: 'User not found. The user associated with the refresh token does not exist.',
   }),
   ApiUnauthorizedResponse({
     description: 'Unauthorized. The provided refresh token is invalid or expired.',
