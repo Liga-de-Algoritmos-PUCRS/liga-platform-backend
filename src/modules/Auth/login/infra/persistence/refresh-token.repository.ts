@@ -15,15 +15,16 @@ export class PrismaRefreshTokenRepository implements RefreshTokenRepository {
     });
   }
 
-  public async findValidRefreshTokenByAccountId(accountId: string): Promise<RefreshToken | null> {
-    const refreshToken = await this.prisma.refreshToken.findFirst({
+  public async findValidRefreshTokensByAccountId(accountId: string): Promise<RefreshToken[]> {
+    const refreshTokens = await this.prisma.refreshToken.findMany({
       where: {
         userId: accountId,
         isRevoked: false,
+        expiresAt: { gt: new Date() },
       },
     });
 
-    return refreshToken ? RefreshTokenMapper.toDomain(refreshToken) : null;
+    return refreshTokens.map((refreshToken) => RefreshTokenMapper.toDomain(refreshToken));
   }
 
   public async revokeAllRefreshTokensByAccountId(accountId: string): Promise<void> {

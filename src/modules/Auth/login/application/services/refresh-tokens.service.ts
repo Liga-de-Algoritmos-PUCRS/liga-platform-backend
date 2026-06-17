@@ -33,29 +33,30 @@ export class RefreshTokenService {
       });
     }
 
-    const userRefreshToken =
-      await this.refreshTokenRepository.findValidRefreshTokenByAccountId(userId);
-    if (!userRefreshToken) {
+    const userRefreshTokens =
+      await this.refreshTokenRepository.findValidRefreshTokensByAccountId(userId);
+
+    let matchedRefreshToken: RefreshToken | null = null;
+    for (const candidate of userRefreshTokens) {
+      const isMatch = await this.cryptographyAdapter.compare({
+        plainText: oldRefreshToken,
+        cryptographedText: candidate.token,
+      });
+
+      if (isMatch) {
+        matchedRefreshToken = candidate;
+        break;
+      }
+    }
+
+    if (!matchedRefreshToken) {
       throw this.exceptionsAdapter.unauthorized({
         message: 'No valid refresh token found for user',
         internalKey: TokenExceptions.TOKEN_INVALID,
       });
     }
 
-    const verifyToken = await this.cryptographyAdapter.compare({
-      plainText: oldRefreshToken,
-      cryptographedText: userRefreshToken.token,
-    });
-
-    if (!verifyToken) {
-      await this.refreshTokenRepository.revokeAllRefreshTokensByAccountId(userId);
-      throw this.exceptionsAdapter.unauthorized({
-        message: 'Invalid refresh token',
-        internalKey: TokenExceptions.TOKEN_INVALID,
-      });
-    }
-
-    await this.refreshTokenRepository.revokeRefreshTokenById(userRefreshToken.id);
+    await this.refreshTokenRepository.revokeRefreshTokenById(matchedRefreshToken.id);
 
     return this.generateNewTokens({
       accountId: user.id,
