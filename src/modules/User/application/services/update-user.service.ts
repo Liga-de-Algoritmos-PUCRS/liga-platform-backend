@@ -4,6 +4,8 @@ import { User } from '@/modules/User/domain/user.entity';
 import { UpdateUserDTO } from '@/modules/User/application/dtos/update-user.dto';
 import { ExceptionsAdapter } from '@/infrastructure/Exceptions/exceptions.adapter';
 import { UserExceptions } from '@/infrastructure/Exceptions/exceptions.types';
+import { GetUserInterface } from '@/global/common/decorators/get-user.decorator';
+
 @Injectable()
 export class UpdateUserService {
   constructor(
@@ -11,8 +13,20 @@ export class UpdateUserService {
     private readonly exceptionsAdapter: ExceptionsAdapter,
   ) {}
 
-  async execute(id: string, updatedUser: UpdateUserDTO): Promise<User> {
+  async execute(
+    id: string,
+    updatedUser: UpdateUserDTO,
+    requester: GetUserInterface,
+  ): Promise<User> {
     const existingUser = await this.userRepository.findUserById(id);
+
+    if (requester.id !== id) {
+      throw this.exceptionsAdapter.unauthorized({
+        message: 'User unauthorized',
+        internalKey: UserExceptions.USER_NOT_FOUND,
+      });
+    }
+
     if (!existingUser) {
       throw this.exceptionsAdapter.notFound({
         message: 'User not found with the provided ID',

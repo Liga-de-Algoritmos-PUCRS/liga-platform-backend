@@ -5,7 +5,7 @@ import { GetAllUserService } from '@/modules/User/application/services/get-all-u
 import { DeleteUserService } from '@/modules/User/application/services/delete-user.service';
 import { GetUserByIdService } from '@/modules/User/application/services/get-user.service';
 import { UpdateUserDTO } from '@/modules/User/application/dtos/update-user.dto';
-import { GetUser } from '@/global/common/decorators/get-user.decorator';
+import { GetUser, GetUserInterface } from '@/global/common/decorators/get-user.decorator';
 import {
   UpdateUserDecorator,
   GetAllUsersDecorator,
@@ -59,8 +59,12 @@ export class UserController {
 
   @UpdateUserDecorator
   @Patch(':id')
-  async updateUser(@Param('id') id: string, @Body() user: UpdateUserDTO) {
-    return await this.UpdateUserService.execute(id, user);
+  async updateUser(
+    @Param('id') id: string,
+    @Body() user: UpdateUserDTO,
+    @GetUser() requester: GetUserInterface,
+  ) {
+    return await this.UpdateUserService.execute(id, user, requester);
   }
 
   @DeleteUserDecorator
