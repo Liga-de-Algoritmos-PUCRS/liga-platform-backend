@@ -62,9 +62,10 @@ export class LoginController {
   @LogoutDecorator
   @Public()
   @Post('logout')
-  async logout(@Req() token: RefreshTokenPayload, @Res({ passthrough: true }) res: Response) {
+  async logout(@Req() req, @Res({ passthrough: true }) res: Response) {
+    const information: RefreshTokenPayload = req.user;
     this.ClearAuthCookiesService.execute(res);
-    await this.LogoutService.execute(token.sub);
+    await this.LogoutService.execute(information.sub);
     return { message: 'Logged out successfully' };
   }
 }
