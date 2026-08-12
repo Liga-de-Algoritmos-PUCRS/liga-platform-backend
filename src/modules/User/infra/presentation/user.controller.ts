@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/commo
 import { ApiTags } from '@nestjs/swagger';
 import { UpdateUserService } from '@/modules/User/application/services/update-user.service';
 import { GetAllUserService } from '@/modules/User/application/services/get-all-user.service';
+import { GetMembersService } from '@/modules/User/application/services/get-members.service';
 import { DeleteUserService } from '@/modules/User/application/services/delete-user.service';
 import { GetUserByIdService } from '@/modules/User/application/services/get-user.service';
 import { UpdateUserDTO } from '@/modules/User/application/dtos/update-user.dto';
@@ -15,8 +16,10 @@ import {
   GetMonthlyTopUsersDecorator,
   ResetUserPointsDecorator,
   GetUserInformations,
+  GetMembersDecorator,
 } from '../../application/dtos/user.decorator';
 import { UserResponseDTO } from '@/modules/User/application/dtos/response-user.dto';
+import { PublicUserResponseDTO } from '@/modules/User/application/dtos/public-user.response.dto';
 import { GetTopUserService } from '@/modules/User/application/services/get-top-user.service';
 import { GetMonthlyTopUserService } from '@/modules/User/application/services/get-top-monthly-user.service';
 import { ResetUserPointsService } from '@/modules/User/application/services/reset-user-points.service';
@@ -30,6 +33,7 @@ export class UserController {
   constructor(
     private readonly UpdateUserService: UpdateUserService,
     private readonly GetAllUserService: GetAllUserService,
+    private readonly GetMembersService: GetMembersService,
     private readonly GetUser: GetUserByIdService,
     private readonly DeleteUserService: DeleteUserService,
     private readonly GetTopUser: GetTopUserService,
@@ -37,11 +41,22 @@ export class UserController {
     private readonly ResetUserPointsService: ResetUserPointsService,
   ) {}
 
+  // Precisa vir antes de @Get(':id'): 'members' e um unico segmento e seria
+  // capturado por :id se a ordem fosse invertida.
+  @GetMembersDecorator
+  @Get('members')
+  async getMembers(): Promise<PublicUserResponseDTO[]> {
+    return await this.GetMembersService.execute();
+  }
+
   @Public()
   @GetUserDecorator
   @Get(':id')
-  async getUserById(@Param('id') id: string): Promise<UserResponseDTO> {
-    return await this.GetUser.execute(id);
+  async getUserById(@Param('id') id: string): Promise<PublicUserResponseDTO> {
+    const user = await this.GetUser.execute(id);
+    // Rota @Public(): devolve o payload sem email nem role. O mesmo service
+    // atende /user/me/:id, que e o proprio dono e recebe o payload completo.
+    return user.toPublicJSON();
   }
 
   @GetUserInformations
@@ -76,14 +91,14 @@ export class UserController {
   @GetTopUsersDecorator
   @Public()
   @Get('top/all-time')
-  async getTopUsers(): Promise<UserResponseDTO[]> {
+  async getTopUsers(): Promise<PublicUserResponseDTO[]> {
     return await this.GetTopUser.execute();
   }
 
   @GetMonthlyTopUsersDecorator
   @Public()
   @Get('top/monthly')
-  async getMonthlyTopUsers(): Promise<UserResponseDTO[]> {
+  async getMonthlyTopUsers(): Promise<PublicUserResponseDTO[]> {
     return await this.GetMonthlyTopUser.execute();
   }
 

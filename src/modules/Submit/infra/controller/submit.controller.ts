@@ -15,7 +15,7 @@ import {
   DeleteSubmitDecorator,
 } from '@/modules/Submit/application/dtos/submit.decorator';
 import { IsAdmin } from '@/global/common/decorators/is-admin-decorator';
-import { GetUser } from '@/global/common/decorators/get-user.decorator';
+import { GetUser, GetUserInterface } from '@/global/common/decorators/get-user.decorator';
 
 @Controller('submit')
 @ApiTags('Submit')
@@ -35,6 +35,7 @@ export class SubmitController {
   }
 
   @GetSubmitByProblemIdDecorator
+  @IsAdmin()
   @Get(':problemId')
   async getSubmitByProblemId(@Param('problemId') problemId: string): Promise<SubmitResponseDTO[]> {
     return await this.GetSubmitByProblemIdService.execute(problemId);
@@ -42,8 +43,11 @@ export class SubmitController {
 
   @GetSubmitByUserIdDecorator
   @Get('user/:userId')
-  async getSubmitByUserId(@Param('userId') userId: string): Promise<SubmitResponseDTO[]> {
-    return await this.GetSubmitByUserIdService.execute(userId);
+  async getSubmitByUserId(
+    @Param('userId') userId: string,
+    @GetUser() requester: GetUserInterface,
+  ): Promise<SubmitResponseDTO[]> {
+    return await this.GetSubmitByUserIdService.execute(userId, requester);
   }
 
   @GetAllSubmitsDecorator

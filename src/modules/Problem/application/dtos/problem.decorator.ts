@@ -4,6 +4,7 @@ import {
   ApiOkResponse,
   ApiNotFoundResponse,
   ApiBadRequestResponse,
+  ApiForbiddenResponse,
   ApiInternalServerErrorResponse,
   ApiCreatedResponse,
 } from '@nestjs/swagger';
@@ -61,13 +62,15 @@ export const GetAllProblemsDecorator = applyDecorators(
 
 export const GetAllAdminProblemsDecorator = applyDecorators(
   ApiOperation({
-    summary: 'List all problems',
-    description: 'This endpoint retrieves a list of all problems in the system.',
+    summary: 'List all problems (admin)',
+    description:
+      'Admin only. Retrieves every problem, including archived ones, with the `answer` field filled in.',
   }),
   ApiOkResponse({
     description: 'List of problems retrieved successfully.',
     type: [ProblemResponseDTO],
   }),
+  ApiForbiddenResponse({ description: 'Forbidden. This endpoint requires an admin account.' }),
 );
 
 export const GetProblemByIdDecorator = applyDecorators(
@@ -93,13 +96,15 @@ export const GetProblemByIdDecorator = applyDecorators(
 
 export const GetAdminProblemByIdDecorator = applyDecorators(
   ApiOperation({
-    summary: 'Get problem by ID',
-    description: 'This endpoint retrieves a problem by its ID.',
+    summary: 'Get problem by ID (admin)',
+    description:
+      'Admin only. Retrieves a problem by its ID with the `answer` field filled in, which the public route blanks out.',
   }),
   ApiOkResponse({
     description: 'Problem retrieved successfully.',
     type: ProblemResponseDTO,
   }),
+  ApiForbiddenResponse({ description: 'Forbidden. This endpoint requires an admin account.' }),
   ApiNotFoundResponse({
     description: 'Problem not found. The problem with the specified ID does not exist.',
   }),

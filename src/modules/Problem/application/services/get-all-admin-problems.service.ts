@@ -11,13 +11,13 @@ export class GetAllAdminProblemsService {
     private readonly LoggerAdapter: LoggerAdapter,
   ) {}
 
-  public async execute(id: string) {
+  public async execute() {
     try {
       const problems = await this.ProblemRepository.getProblemsWithArchived();
 
       this.LoggerAdapter.log({
-        where: 'GetAllProblemsService.Execute',
-        message: `Retrieved all problems from database. Count: ${problems.length}, id: ${id}`,
+        where: 'GetAllAdminProblemsService.Execute',
+        message: `Retrieved all problems from database. Count: ${problems.length}`,
       });
 
       return problems;

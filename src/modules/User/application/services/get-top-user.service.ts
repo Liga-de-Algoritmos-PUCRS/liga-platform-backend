@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { UserRepository } from '../../domain/user.repository';
-import { User } from '@/modules/User/domain/user.entity';
+import { PublicUser } from '@/modules/User/domain/user.entity';
 import { ExceptionsAdapter } from '@/infrastructure/Exceptions/exceptions.adapter';
 import { LoggerAdapter } from '@/infrastructure/Logger/logger.adapter';
 
@@ -12,7 +12,7 @@ export class GetTopUserService {
     private readonly LoggerAdapter: LoggerAdapter,
   ) {}
 
-  async execute(): Promise<User[]> {
+  async execute(): Promise<PublicUser[]> {
     const topUser = await this.UserRepository.findAllTimeTopUsers(10);
     if (!topUser || topUser.length === 0) {
       throw this.ExceptionsAdapter.notFound({
@@ -23,6 +23,7 @@ export class GetTopUserService {
       where: 'GetTopUserService',
       message: `Top user retrieved successfully`,
     });
-    return topUser;
+    // Ranking e rota @Public(): nao pode devolver email nem role
+    return topUser.map((user) => user.toPublicJSON());
   }
 }

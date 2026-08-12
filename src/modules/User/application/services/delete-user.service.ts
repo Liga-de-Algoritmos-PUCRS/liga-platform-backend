@@ -32,6 +32,16 @@ export class DeleteUserService {
       return await this.userRepository.deleteUser(deleteUserid);
     }
 
+    // A senha conferida abaixo e a de quem pediu, nao a do dono da conta
+    // alvo. Sem esta checagem, qualquer usuario apagava a conta de qualquer
+    // outro bastando informar a propria senha.
+    if (deleteUserid !== userId) {
+      throw this.exceptionsAdapter.forbidden({
+        message: 'User not allowed to delete another account',
+        internalKey: UserExceptions.USER_NOT_ALLOWED,
+      });
+    }
+
     const isPasswordValid = await this.cryptographyAdapter.compare({
       plainText: password,
       cryptographedText: user.password,

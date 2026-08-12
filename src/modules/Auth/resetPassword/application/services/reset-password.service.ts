@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ExceptionsAdapter } from '@/infrastructure/Exceptions/exceptions.adapter';
 import { UserRepository } from '@/modules/User/domain/user.repository';
-import { User } from '@/modules/User/domain/user.entity';
 import { SendEmailAdapter } from '@/infrastructure/SendEmail/sendEmail.adapter';
 import { ResetPasswordTokenRepository } from '@/modules/Auth/resetPassword/domain/reset-password-token.repository';
 import { ResetPasswordDTO } from '@/modules/Auth/resetPassword/application/dtos/reset-password.dto';
@@ -72,26 +71,13 @@ export class ResetPasswordService {
       hashSalt: 8,
     });
 
-    await this.UserRepository.updateUser(
-      new User(
-        {
-          name: user.name,
-          email: user.email,
-          password: hashedPassword,
-          createdAt: user.createdAt,
-          bannerUrl: user.bannerUrl,
-          avatarUrl: user.avatarUrl,
-          role: user.role,
-          course: user.course,
-          semester: user.semester,
-          monthlyPoints: user.monthlyPoints,
-          allTimePoints: user.allTimePoints,
-          historycalSubmissions: user.historycalSubmissions,
-          problemsResolved: user.problemsResolved,
-        },
-        user.id,
-      ),
-    );
+    // Troca a senha na propria entidade em vez de reconstruir o usuario campo
+    // a campo. A copia manual esquecia `submissions`, e como o mapper grava
+    // `submissionsNumber: user.submissions ?? 0`, trocar a senha zerava o
+    // contador de submissoes de quem resetasse.
+    user.password = hashedPassword;
+
+    await this.UserRepository.updateUser(user);
 
     await this.SendEmailAdapter.sendEmailPaswordChanged(user.email, user.name);
 

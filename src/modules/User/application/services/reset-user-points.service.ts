@@ -20,13 +20,11 @@ export class ResetUserPointsService {
       });
     }
 
-    if (existingUser.role !== 'ADMIN') {
-      throw this.ExceptionsAdapter.forbidden({
-        message: 'Only admins can reset user points',
-      });
-    }
-
     await this.UserRepository.resetAllMonthlyPoints();
+
+    // O reset zera o mensal de todo mundo, inclusive de quem pediu. Sem isso a
+    // resposta devolveria a pontuacao lida antes do reset, ou seja, ja obsoleta.
+    existingUser.monthlyPoints = 0;
 
     return existingUser;
   }
