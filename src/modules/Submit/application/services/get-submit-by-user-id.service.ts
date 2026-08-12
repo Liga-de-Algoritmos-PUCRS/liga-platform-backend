@@ -3,6 +3,7 @@ import { ExceptionsAdapter } from '@/infrastructure/Exceptions/exceptions.adapte
 import { LoggerAdapter } from '@/infrastructure/Logger/logger.adapter';
 import { Submit } from '@/modules/Submit/domain/submit.entity';
 import { SubmitRepository } from '@/modules/Submit/domain/submit.repository';
+import { GetUserInterface } from '@/global/common/decorators/get-user.decorator';
 
 @Injectable()
 export class GetSubmitByUserIdService {
@@ -12,7 +13,17 @@ export class GetSubmitByUserIdService {
     private readonly LoggerAdapter: LoggerAdapter,
   ) {}
 
-  public async execute(userId: string): Promise<Submit[]> {
+  public async execute(userId: string, requester: GetUserInterface): Promise<Submit[]> {
+    // Regra de dono, nao de papel: a rota e de qualquer autenticado, mas o
+    // historico de submissoes de um usuario so pode ser lido por ele mesmo ou
+    // por um admin -- que ja tem a listagem completa em GET /submit. Mesma
+    // categoria do delete-user.service, por isso mora aqui e nao num guard.
+    if (requester.userRole !== 'ADMIN' && requester.id !== userId) {
+      throw this.ExceptionsAdapter.forbidden({
+        message: `[getSubmitByUserIdService].execute --> User ${requester.id} is not allowed to read submissions from user ${userId}`,
+      });
+    }
+
     const submit = await this.SubmitRepository.findByUserId(userId);
     if (!submit) {
       this.LoggerAdapter.error({

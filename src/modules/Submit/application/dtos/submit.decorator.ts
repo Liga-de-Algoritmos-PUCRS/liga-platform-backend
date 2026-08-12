@@ -4,6 +4,7 @@ import {
   ApiOkResponse,
   ApiNotFoundResponse,
   ApiBadRequestResponse,
+  ApiForbiddenResponse,
   ApiInternalServerErrorResponse,
   ApiCreatedResponse,
 } from '@nestjs/swagger';
@@ -25,13 +26,14 @@ export const CreateSubmitDecorator = applyDecorators(
 export const GetSubmitByProblemIdDecorator = applyDecorators(
   ApiOperation({
     summary: 'Get Submit by Problem ID',
-    description: 'This endpoint allows you to get a submit by its problem ID',
+    description: 'Admin only. This endpoint allows you to get a submit by its problem ID',
   }),
   ApiOkResponse({ description: 'Submit retrieved successfully', type: SubmitResponseDTO }),
   ApiNotFoundResponse({
     description: 'Submit not found. The submit with the specified ID does not exist.',
   }),
   ApiBadRequestResponse({ description: 'Bad Request. The input data is invalid or missing.' }),
+  ApiForbiddenResponse({ description: 'Forbidden. This endpoint requires an admin account.' }),
   ApiInternalServerErrorResponse({
     description:
       'Internal Server Error. An unexpected error occurred while processing the request.',
@@ -41,13 +43,18 @@ export const GetSubmitByProblemIdDecorator = applyDecorators(
 export const GetSubmitByUserIdDecorator = applyDecorators(
   ApiOperation({
     summary: 'Get Submit by User ID',
-    description: 'This endpoint allows you to get a submit by its user ID',
+    description:
+      'This endpoint allows you to get a submit by its user ID. Only the owner of the submissions or an admin can read them.',
   }),
   ApiOkResponse({ description: 'Submit retrieved successfully', type: [SubmitResponseDTO] }),
   ApiNotFoundResponse({
     description: 'Submit not found. The submit with the specified ID does not exist.',
   }),
   ApiBadRequestResponse({ description: 'Bad Request. The input data is invalid or missing.' }),
+  ApiForbiddenResponse({
+    description:
+      'Forbidden. The submissions belong to another user and the requester is not admin.',
+  }),
   ApiInternalServerErrorResponse({
     description:
       'Internal Server Error. An unexpected error occurred while processing the request.',
@@ -57,10 +64,11 @@ export const GetSubmitByUserIdDecorator = applyDecorators(
 export const GetAllSubmitsDecorator = applyDecorators(
   ApiOperation({
     summary: 'Get All Submits',
-    description: 'This endpoint allows you to get all submits',
+    description: 'Admin only. This endpoint allows you to get all submits',
   }),
   ApiOkResponse({ description: 'Submits retrieved successfully', type: SubmitResponseDTO }),
   ApiBadRequestResponse({ description: 'Bad Request. The input data is invalid or missing.' }),
+  ApiForbiddenResponse({ description: 'Forbidden. This endpoint requires an admin account.' }),
   ApiInternalServerErrorResponse({
     description:
       'Internal Server Error. An unexpected error occurred while processing the request.',
@@ -70,13 +78,14 @@ export const GetAllSubmitsDecorator = applyDecorators(
 export const DeleteSubmitDecorator = applyDecorators(
   ApiOperation({
     summary: 'Delete Submit',
-    description: 'This endpoint allows you to delete a submit',
+    description: 'Admin only. This endpoint allows you to delete a submit',
   }),
   ApiOkResponse({ description: 'Submit deleted successfully' }),
   ApiNotFoundResponse({
     description: 'Submit not found. The submit with the specified ID does not exist.',
   }),
   ApiBadRequestResponse({ description: 'Bad Request. The input data is invalid or missing.' }),
+  ApiForbiddenResponse({ description: 'Forbidden. This endpoint requires an admin account.' }),
   ApiInternalServerErrorResponse({
     description:
       'Internal Server Error. An unexpected error occurred while processing the request.',
