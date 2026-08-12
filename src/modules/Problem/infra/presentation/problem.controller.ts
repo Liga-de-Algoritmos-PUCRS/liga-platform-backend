@@ -9,7 +9,10 @@ import { GetAdminProblemByIdService } from '@/modules/Problem/application/servic
 import { GetAllAdminProblemsService } from '@/modules/Problem/application/services/get-all-admin-problems.service';
 
 import { UpdateProblemDTO } from '@/modules/Problem/application/dtos/update-problem.dto';
-import { ProblemResponseDTO } from '@/modules/Problem/application/dtos/problem.response';
+import {
+  ProblemResponseDTO,
+  PublicProblemResponseDTO,
+} from '@/modules/Problem/application/dtos/problem.response';
 import { Public } from '@/global/common/decorators/public.decorator';
 import { CreateProblemDTO } from '@/modules/Problem/application/dtos/create-problem.dto';
 import {
@@ -56,14 +59,14 @@ export class ProblemController {
   @Public()
   @GetProblemByIdDecorator
   @Get(':id')
-  async getProblemById(@Param('id') id: string): Promise<ProblemResponseDTO> {
+  async getProblemById(@Param('id') id: string): Promise<PublicProblemResponseDTO> {
     return await this.GetProblemByIdService.execute(id);
   }
 
   @Public()
   @GetAllProblemsDecorator
   @Get()
-  async getAllProblems(): Promise<ProblemResponseDTO[]> {
+  async getAllProblems(): Promise<PublicProblemResponseDTO[]> {
     return await this.GetAllProblemsService.execute();
   }
 

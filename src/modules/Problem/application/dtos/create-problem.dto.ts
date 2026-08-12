@@ -1,6 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Difficulty } from '@/modules/Problem/domain/problem.entity';
-import { IsIn, IsOptional, IsString, IsNumber, IsBoolean } from 'class-validator';
+import {
+  Difficulty,
+  DEFAULT_INITIAL_POINTS,
+  DEFAULT_FLOOR_POINTS,
+  DEFAULT_DECREMENT,
+} from '@/modules/Problem/domain/problem.entity';
+import { IsIn, IsOptional, IsString, IsInt, Min, IsBoolean } from 'class-validator';
 
 export class CreateProblemDTO {
   @ApiProperty({
@@ -51,13 +56,50 @@ export class CreateProblemDTO {
   input: string;
 
   @ApiProperty({
-    description: 'Problem points',
-    example: 100,
-    required: true,
+    description:
+      'Current value of the problem: how many points the next solver earns. Optional — defaults to `initialPoints`. When sent, it is clamped to [floorPoints, initialPoints].',
+    example: DEFAULT_INITIAL_POINTS,
+    required: false,
     type: Number,
   })
-  @IsNumber()
-  points: number;
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  points?: number;
+
+  @ApiProperty({
+    description: 'Value the problem starts at, and the ceiling of the current value.',
+    example: DEFAULT_INITIAL_POINTS,
+    required: false,
+    type: Number,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  initialPoints?: number;
+
+  @ApiProperty({
+    description:
+      'Floor of the current value: once it is reached, solving no longer lowers the problem. Must be less than or equal to `initialPoints`.',
+    example: DEFAULT_FLOOR_POINTS,
+    required: false,
+    type: Number,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  floorPoints?: number;
+
+  @ApiProperty({
+    description: 'How much the current value drops for each distinct student who solves it.',
+    example: DEFAULT_DECREMENT,
+    required: false,
+    type: Number,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  decrement?: number;
 
   @ApiProperty({
     description: 'Problem banner URL',

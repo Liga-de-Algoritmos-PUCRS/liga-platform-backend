@@ -24,7 +24,9 @@ export class GetAllProblemsService {
         problem.answer = '';
       }
 
-      return problems;
+      // `toPublicJSON()` deixa de fora os parametros da corrida
+      // (initialPoints/floorPoints/decrement), que so saem por rota admin.
+      return problems.map((problem) => problem.toPublicJSON());
     } catch (error) {
       throw this.ExceptionsAdapter.internalServerError({
         message: `[getAllProblemsService].execute --> Failed to retrieve problems from database | errorText: ${error}`,
