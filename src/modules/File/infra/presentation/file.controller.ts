@@ -8,11 +8,9 @@ import {
   Post,
   UseInterceptors,
   UploadedFiles,
-  UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { JwtAuthGuard } from '@/global/common/guards/jwt-auth.guard';
 import { GetUser } from '@/global/common/decorators/get-user.decorator';
 import { UpdateFileDTO } from '@/modules/File/application/dtos/update-file.dto';
 import { ConvertToCreateFileDTO } from '@/modules/File/application/dtos/create-file.dto';
@@ -30,8 +28,9 @@ import { DeleteFileService } from '@/modules/File/application/services/delete-fi
 import { GetFileByIdService } from '@/modules/File/application/services/get-file-by-id.service';
 import { GetFilesByAuthorIdService } from '@/modules/File/application/services/get-file-by-author-id.service';
 
+// Sem @UseGuards(JwtAuthGuard) aqui: o guard e APP_GUARD global e nenhuma
+// rota deste controller e @Public(), entao repeti-lo so dobrava a verificacao.
 @ApiTags('File')
-@UseGuards(JwtAuthGuard)
 @Controller('file')
 export class FileController {
   constructor(
