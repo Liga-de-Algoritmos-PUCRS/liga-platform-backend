@@ -8,7 +8,7 @@ import {
   ApiInternalServerErrorResponse,
   ApiCreatedResponse,
 } from '@nestjs/swagger';
-import { ProblemResponseDTO } from './problem.response';
+import { ProblemResponseDTO, PublicProblemResponseDTO } from './problem.response';
 
 export const CreateProblemDecorator = applyDecorators(
   ApiOperation({
@@ -56,7 +56,7 @@ export const GetAllProblemsDecorator = applyDecorators(
   }),
   ApiOkResponse({
     description: 'List of problems retrieved successfully.',
-    type: [ProblemResponseDTO],
+    type: [PublicProblemResponseDTO],
   }),
 );
 
@@ -80,7 +80,7 @@ export const GetProblemByIdDecorator = applyDecorators(
   }),
   ApiOkResponse({
     description: 'Problem retrieved successfully.',
-    type: ProblemResponseDTO,
+    type: PublicProblemResponseDTO,
   }),
   ApiNotFoundResponse({
     description: 'Problem not found. The problem with the specified ID does not exist.',

@@ -1,7 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Difficulty } from '@/modules/Problem/domain/problem.entity';
+import {
+  Difficulty,
+  DEFAULT_INITIAL_POINTS,
+  DEFAULT_FLOOR_POINTS,
+  DEFAULT_DECREMENT,
+} from '@/modules/Problem/domain/problem.entity';
 
-export class ProblemResponseDTO {
+/**
+ * Payload de problema sem os parametros da corrida. Usado nas rotas publicas,
+ * que mostram o valor corrente (`points`) mas nao como ele foi configurado.
+ * Espelha `Problem.toPublicJSON()`.
+ */
+export class PublicProblemResponseDTO {
   @ApiProperty({
     description: 'Problem ID',
     example: '123e4567-e89b-12d3-a456-426614174000',
@@ -52,8 +62,8 @@ export class ProblemResponseDTO {
   input: string;
 
   @ApiProperty({
-    description: 'Problem points',
-    example: 100,
+    description: 'Current value of the problem: how many points the next solver earns.',
+    example: DEFAULT_INITIAL_POINTS,
     required: true,
     type: Number,
   })
@@ -114,4 +124,36 @@ export class ProblemResponseDTO {
     type: Boolean,
   })
   archived?: boolean;
+}
+
+/**
+ * Payload completo. Espelha `Problem.toJSON()`: e o publico mais os parametros
+ * da corrida, e por isso so sai por rota admin. Herda de
+ * `PublicProblemResponseDTO` para que os dois nao saiam de sincronia quando um
+ * campo novo aparecer.
+ */
+export class ProblemResponseDTO extends PublicProblemResponseDTO {
+  @ApiProperty({
+    description: 'Value the problem starts at, and the ceiling of the current value.',
+    example: DEFAULT_INITIAL_POINTS,
+    required: true,
+    type: Number,
+  })
+  initialPoints: number;
+
+  @ApiProperty({
+    description: 'Floor of the current value: solving never lowers the problem below it.',
+    example: DEFAULT_FLOOR_POINTS,
+    required: true,
+    type: Number,
+  })
+  floorPoints: number;
+
+  @ApiProperty({
+    description: 'How much the current value drops for each distinct student who solves it.',
+    example: DEFAULT_DECREMENT,
+    required: true,
+    type: Number,
+  })
+  decrement: number;
 }

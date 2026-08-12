@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { Problem } from '@/modules/Problem/domain/problem.entity';
 import { ProblemMapper } from '@/modules/Problem/infra/persistence/problem.mapper';
-import { ProblemRepository } from '@/modules/Problem/domain/problem.repository';
+import { CurrentPoints, ProblemRepository } from '@/modules/Problem/domain/problem.repository';
 import { PrismaService } from '@/infrastructure/Database/prisma.service';
 import { LoggerAdapter } from '@/infrastructure/Logger/logger.adapter';
 import { ExceptionsAdapter } from '@/infrastructure/Exceptions/exceptions.adapter';
+import { Transaction } from '@/infrastructure/Database/Transaction/transaction.adapter';
 
 @Injectable()
 export class PrismaProblemRepository implements ProblemRepository {
@@ -122,51 +123,65 @@ export class PrismaProblemRepository implements ProblemRepository {
     }
   }
 
-  public async incrementProblemSubmissions(id: string, correct: boolean): Promise<Problem> {
-    try {
-      let problem: Problem;
-      if (correct) {
-        problem = ProblemMapper.toDomain(
-          await this.Prisma.problem.update({
-            where: { id },
-            data: {
-              submits: {
-                increment: 1,
-              },
-              resolved: {
-                increment: 1,
-              },
-            },
-          }),
-        );
-      } else {
-        problem = ProblemMapper.toDomain(
-          await this.Prisma.problem.update({
-            where: { id },
-            data: {
-              submits: {
-                increment: 1,
-              },
-            },
-          }),
-        );
-      }
-      if (problem) {
-        this.LoggerAdapter.log({
-          where: 'ProblemRepository.IncrementProblemSubmissions',
-          message: `Incremented problem submissions in database: ${problem.id}`,
-        });
+  public async lockCurrentPoints(id: string, tx: Transaction): Promise<CurrentPoints | null> {
+    const rows = await tx.$queryRaw<
+      { points: number; floor_points: number; decrement: number }[]
+    >`SELECT "points", "floor_points", "decrement" FROM "problems" WHERE "id" = ${id} FOR UPDATE`;
 
-        return problem;
-      } else {
-        throw this.ExceptionsAdapter.internalServerError({
-          message: `[problem.repository].incrementProblemSubmissions --> Problem was not incremented in database with id: ${id}`,
-        });
-      }
-    } catch (error) {
-      throw this.ExceptionsAdapter.internalServerError({
-        message: `[problem.repository].incrementProblemSubmissions --> Problem was not incremented in database with id: ${id} | errorText: ${error}`,
-      });
+    if (rows.length === 0) {
+      return null;
     }
+
+    return {
+      points: rows[0].points,
+      floorPoints: rows[0].floor_points,
+      decrement: rows[0].decrement,
+    };
+  }
+
+  public async applySolve(id: string, points: number, tx?: Transaction): Promise<void> {
+    const client = tx ?? this.Prisma;
+
+    await client.problem.update({
+      where: { id },
+      data: {
+        points,
+        resolved: { increment: 1 },
+        submits: { increment: 1 },
+      },
+    });
+
+    this.LoggerAdapter.log({
+      where: 'ProblemRepository.ApplySolve',
+      message: `Problem ${id} solved by a new user. Current value is now ${points}`,
+    });
+  }
+
+  public async incrementProblemAttempts(id: string, tx?: Transaction): Promise<void> {
+    const client = tx ?? this.Prisma;
+
+    await client.problem.update({
+      where: { id },
+      data: { submits: { increment: 1 } },
+    });
+  }
+
+  public async revertSolve(id: string, tx?: Transaction): Promise<void> {
+    const client = tx ?? this.Prisma;
+
+    // Devolve exatamente um decremento -- que foi o quanto aquele acerto
+    // custou ao problema -- e nao o `pointsEarned` do aluno, que e o valor
+    // corrente inteiro daquele instante e inflaria o problema. `LEAST` e
+    // `GREATEST` mantem os limites no proprio banco.
+    await client.$executeRaw`
+      UPDATE "problems"
+      SET "points" = LEAST("initial_points", "points" + "decrement"),
+          "resolved" = GREATEST(0, "resolved" - 1)
+      WHERE "id" = ${id}`;
+
+    this.LoggerAdapter.log({
+      where: 'ProblemRepository.RevertSolve',
+      message: `Reverted a solve on problem ${id}`,
+    });
   }
 }

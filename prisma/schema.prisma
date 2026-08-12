@@ -33,21 +33,27 @@ model User {
 }
 
 model Problem {
-  id          String         @id @default(uuid())
-  title       String
-  description String
-  answer      String
-  input       String
-  points      Int
-  difficulty  DifficultyEnum
-  bannerUrl   String?        @map("banner_url")
-  createdAt   DateTime       @default(now()) @map("created_at")
-  updatedAt   DateTime?      @updatedAt @map("updated_at")
-  resolved    Int            @default(0) @map("resolved")
-  submits     Int            @default(0) @map("submits")
-  archived    Boolean        @default(false) @map("archived")
-  fixed       Boolean        @default(false) @map("fixed")
-  submissions Submission[]
+  id            String         @id @default(uuid())
+  title         String
+  description   String
+  answer        String
+  input         String
+  // Valor corrente do problema: quanto o proximo aluno a resolver leva.
+  // Cai `decrement` a cada aluno distinto que resolve, com piso em `floorPoints`.
+  points        Int
+  // Parametros da corrida, definidos pelo admin. Visiveis so nas rotas admin.
+  initialPoints Int            @default(100) @map("initial_points")
+  floorPoints   Int            @default(70) @map("floor_points")
+  decrement     Int            @default(5)
+  difficulty    DifficultyEnum
+  bannerUrl     String?        @map("banner_url")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime?      @updatedAt @map("updated_at")
+  resolved      Int            @default(0) @map("resolved")
+  submits       Int            @default(0) @map("submits")
+  archived      Boolean        @default(false) @map("archived")
+  fixed         Boolean        @default(false) @map("fixed")
+  submissions   Submission[]
 
   @@map("problems")
 }
@@ -65,6 +71,9 @@ model Submission {
   user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   problem      Problem   @relation(fields: [problemId], references: [id], onDelete: Cascade)
 
+  // Uma linha por (aluno, problema): e o que impede a mesma pessoa de creditar
+  // pontos varias vezes disparando submissoes em paralelo.
+  @@unique([userId, problemId], name: "userProblem")
   @@map("submissions")
 }
 

@@ -5,9 +5,17 @@ import { ExceptionsAdapter } from '@/infrastructure/Exceptions/exceptions.adapte
 import { LoggerAdapter } from '@/infrastructure/Logger/logger.adapter';
 import { CreateSubmitDTO } from '@/modules/Submit/application/dtos/create-submit.dto';
 import { SubmitRepository } from '@/modules/Submit/domain/submit.repository';
-import { TransactionAdapter } from '@/infrastructure/Database/Transaction/transaction.adapter';
+import {
+  Transaction,
+  TransactionAdapter,
+} from '@/infrastructure/Database/Transaction/transaction.adapter';
 import { UserRepository } from '@/modules/User/domain/user.repository';
 
+/**
+ * Modelo de pontuacao competitiva: o problema vale menos a cada aluno distinto
+ * que o resolve, e o aluno leva o valor corrente do instante do acerto,
+ * congelado. Errar nao custa nada, e cada aluno so pontua uma vez por problema.
+ */
 @Injectable()
 export class CreateSubmitService {
   constructor(
@@ -42,77 +50,106 @@ export class CreateSubmitService {
       });
     }
 
-    const submit = await this.SubmitRepository.findByProblemIdAndUserId(
-      createSubmitDTO.problemId,
-      userId,
+    const solved = createSubmitDTO.answer.trim() === problem.answer.trim();
+
+    const submit = await this.TransactionAdapter.transaction((tx) =>
+      this.register(createSubmitDTO.problemId, userId, solved, tx),
     );
 
-    if (submit) {
-      if (submit.isFinished) {
-        throw this.ExceptionsAdapter.badRequest({
-          message: `User already finished this problem`,
-        });
-      }
-
-      submit.attempts += 1;
-      submit.updatedAt = new Date();
-
-      if (createSubmitDTO.answer === problem.answer) {
-        submit.isFinished = true;
-        submit.finishedAt = new Date();
-      }
-
-      submit.pointsEarned = problem.points - submit.attempts;
-
-      await this.UserRepository.incrementUserSubmissions(user.id);
-      await this.SubmitRepository.updateSubmit(submit.id, submit);
-      if (submit.isFinished) {
-        await this.UserRepository.incrementUserProblemsResolved(user.id);
-        await this.UserRepository.incrementUserPoints(user.id, submit.pointsEarned);
-        await this.ProblemRepository.incrementProblemSubmissions(createSubmitDTO.problemId, true);
-      } else {
-        await this.ProblemRepository.incrementProblemSubmissions(createSubmitDTO.problemId, false);
-      }
-      this.LoggerAdapter.log({
-        message: `User ${user.name} finished problem ${problem.title}`,
-        where: 'CreateSubmitService',
-      });
-
-      return submit;
-    }
-
-    const newSubmit = new Submit({
-      problemId: createSubmitDTO.problemId,
-      userId: userId,
-      pointsEarned: problem.points,
-      attempts: 1,
-      isFinished: false,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-
-    if (createSubmitDTO.answer === problem.answer) {
-      newSubmit.isFinished = true;
-      newSubmit.finishedAt = new Date();
-    }
-
-    const createdSubmit = await this.TransactionAdapter.transaction(async () => {
-      await this.UserRepository.incrementUserSubmissions(user.id);
-      if (newSubmit.isFinished) {
-        await this.UserRepository.incrementUserPoints(user.id, newSubmit.pointsEarned);
-        await this.UserRepository.incrementUserProblemsResolved(user.id);
-        await this.ProblemRepository.incrementProblemSubmissions(createSubmitDTO.problemId, true);
-      } else {
-        await this.ProblemRepository.incrementProblemSubmissions(createSubmitDTO.problemId, false);
-      }
-      return await this.SubmitRepository.createSubmit(newSubmit);
-    });
-
     this.LoggerAdapter.log({
-      message: `User ${user.name} created submit for problem ${problem.title}`,
+      message: solved
+        ? `User ${user.name} solved problem ${problem.title} for ${submit.pointsEarned} points`
+        : `User ${user.name} submitted a wrong answer to problem ${problem.title}`,
       where: 'CreateSubmitService',
     });
 
-    return createdSubmit;
+    return submit;
+  }
+
+  /**
+   * Tudo o que segue roda numa transacao so: ou o aluno pontua, o problema cai
+   * de valor e os contadores sobem juntos, ou nada disso acontece.
+   */
+  private async register(
+    problemId: string,
+    userId: string,
+    solved: boolean,
+    tx: Transaction,
+  ): Promise<Submit> {
+    // A linha do problema e travada ANTES de tocar na submissao, e nao na hora
+    // de creditar. Nao e ordem estetica: o INSERT em `submissions` pega um lock
+    // de chave estrangeira (FOR KEY SHARE) na linha do problema, e pedir o
+    // FOR UPDATE depois disso faz dois alunos acertando ao mesmo tempo
+    // esperarem um pelo outro -- deadlock, que o Postgres resolve matando uma
+    // das transacoes. Travando primeiro, a ordem e sempre problema -> submissao
+    // -> usuario e nao ha ciclo.
+    //
+    // Sem o lock, os dois leriam o mesmo valor corrente e os dois levariam a
+    // pontuacao do primeiro.
+    const current = solved ? await this.ProblemRepository.lockCurrentPoints(problemId, tx) : null;
+    if (solved && !current) {
+      throw this.ExceptionsAdapter.badRequest({
+        message: `[CreateSubmitService].execute --> Problem not found with id: ${problemId}`,
+      });
+    }
+
+    const now = new Date();
+    const inserted = await this.SubmitRepository.insertIfAbsent(
+      new Submit({
+        problemId,
+        userId,
+        // So vira o valor congelado depois que este aluno ganhar o INSERT.
+        pointsEarned: 0,
+        attempts: 1,
+        isFinished: solved,
+        finishedAt: solved ? now : undefined,
+        createdAt: now,
+        updatedAt: now,
+      }),
+      tx,
+    );
+
+    if (!inserted) {
+      // O aluno ja tinha submissao para este problema. Quando ela ja estava
+      // resolvida, nao ha o que contar: e uma segunda tentativa depois do
+      // acerto, ou uma das requisicoes paralelas que perdeu a corrida.
+      const registered = await this.SubmitRepository.registerAttempt(userId, problemId, solved, tx);
+      if (!registered) {
+        throw this.ExceptionsAdapter.conflict({
+          message: `[CreateSubmitService].execute --> User ${userId} already solved problem ${problemId}`,
+        });
+      }
+    }
+
+    await this.UserRepository.incrementUserSubmissions(userId, tx);
+
+    // `current` so existe quando a resposta estava certa: errar nao custa nada
+    // e nao mexe no valor do problema, so conta a tentativa.
+    if (!current) {
+      await this.ProblemRepository.incrementProblemAttempts(problemId, tx);
+      return await this.read(problemId, userId, tx);
+    }
+
+    // Congelado no instante do acerto: quem resolveu antes nao perde nada
+    // quando o problema cair de valor mais tarde.
+    const earned = current.points;
+    const next = Math.max(current.floorPoints, current.points - current.decrement);
+
+    await this.ProblemRepository.applySolve(problemId, next, tx);
+    await this.SubmitRepository.setPointsEarned(userId, problemId, earned, tx);
+    await this.UserRepository.incrementUserPoints(userId, earned, tx);
+    await this.UserRepository.incrementUserProblemsResolved(userId, tx);
+
+    return await this.read(problemId, userId, tx);
+  }
+
+  private async read(problemId: string, userId: string, tx: Transaction): Promise<Submit> {
+    const submit = await this.SubmitRepository.findByProblemIdAndUserId(problemId, userId, tx);
+    if (!submit) {
+      throw this.ExceptionsAdapter.internalServerError({
+        message: `[CreateSubmitService].execute --> Submission vanished for user ${userId} on problem ${problemId}`,
+      });
+    }
+    return submit;
   }
 }

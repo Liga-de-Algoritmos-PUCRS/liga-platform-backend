@@ -25,6 +25,8 @@ export class GetProblemByIdService {
     });
 
     problem.answer = '';
-    return problem;
+    // `toPublicJSON()` deixa de fora os parametros da corrida
+    // (initialPoints/floorPoints/decrement), que so saem por rota admin.
+    return problem.toPublicJSON();
   }
 }

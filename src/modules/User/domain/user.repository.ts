@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { User } from '@/modules/User/domain/user.entity';
+import { Transaction } from '@/infrastructure/Database/Transaction/transaction.adapter';
 
 @Injectable()
 export abstract class UserRepository {
@@ -12,9 +13,18 @@ export abstract class UserRepository {
   public abstract findUserByEmail(email: string): Promise<User | null>;
   public abstract findAllTimeTopUsers(limit: number): Promise<User[]>;
   public abstract findMonthlyTopUsers(limit: number): Promise<User[]>;
-  public abstract incrementUserPoints(userId: string, points: number): Promise<void>;
-  public abstract decrementUserPoints(userId: string, points: number): Promise<void>;
+  public abstract incrementUserPoints(
+    userId: string,
+    points: number,
+    tx?: Transaction,
+  ): Promise<void>;
+  public abstract decrementUserPoints(
+    userId: string,
+    points: number,
+    tx?: Transaction,
+  ): Promise<void>;
   public abstract resetAllMonthlyPoints(): Promise<void>;
-  public abstract incrementUserSubmissions(userId: string): Promise<void>;
-  public abstract incrementUserProblemsResolved(userId: string): Promise<void>;
+  public abstract incrementUserSubmissions(userId: string, tx?: Transaction): Promise<void>;
+  public abstract incrementUserProblemsResolved(userId: string, tx?: Transaction): Promise<void>;
+  public abstract decrementUserProblemsResolved(userId: string, tx?: Transaction): Promise<void>;
 }

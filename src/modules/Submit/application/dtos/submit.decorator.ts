@@ -7,16 +7,21 @@ import {
   ApiForbiddenResponse,
   ApiInternalServerErrorResponse,
   ApiCreatedResponse,
+  ApiConflictResponse,
 } from '@nestjs/swagger';
 import { SubmitResponseDTO } from './submit-response.dto';
 
 export const CreateSubmitDecorator = applyDecorators(
   ApiOperation({
     summary: 'Create Submit',
-    description: 'This endpoint allows you to create a new submit',
+    description:
+      'Submits an answer to a problem. A wrong answer only counts an attempt and costs nothing. A right answer earns the current value of the problem, frozen at that instant, and lowers that value for the next solver. Each student can only solve a given problem once.',
   }),
   ApiCreatedResponse({ description: 'Submit created successfully', type: SubmitResponseDTO }),
   ApiBadRequestResponse({ description: 'Bad Request. The input data is invalid or missing.' }),
+  ApiConflictResponse({
+    description: 'Conflict. The requester has already solved this problem, so nothing is credited.',
+  }),
   ApiInternalServerErrorResponse({
     description:
       'Internal Server Error. An unexpected error occurred while processing the request.',
