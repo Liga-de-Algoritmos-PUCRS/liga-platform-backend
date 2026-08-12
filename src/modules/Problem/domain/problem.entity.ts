@@ -69,7 +69,10 @@ export class Problem {
     this.floorPoints = problemInterface.floorPoints ?? DEFAULT_FLOOR_POINTS;
     this.decrement = problemInterface.decrement ?? DEFAULT_DECREMENT;
     this.bannerUrl = problemInterface.bannerUrl || null;
-    this.createdAt = new Date();
+    // Sem o `??`, todo problema lido do banco voltava com `createdAt` = agora,
+    // e como `toPersistence` grava o campo, cada PATCH reescrevia o
+    // `created_at` original com o instante da edicao.
+    this.createdAt = problemInterface.createdAt ?? new Date();
     this.updatedAt = problemInterface.updatedAt;
     this.resolved = problemInterface.resolved ?? 0;
     this.submissions = problemInterface.submissions ?? 0;
