@@ -61,8 +61,9 @@ export const GetAllProblemsDecorator = applyDecorators(
 
 export const GetAllAdminProblemsDecorator = applyDecorators(
   ApiOperation({
-    summary: 'List all problems',
-    description: 'This endpoint retrieves a list of all problems in the system.',
+    summary: 'List all problems (admin)',
+    description:
+      'Admin only. Retrieves every problem, including archived ones, with the `answer` field filled in.',
   }),
   ApiOkResponse({
     description: 'List of problems retrieved successfully.',

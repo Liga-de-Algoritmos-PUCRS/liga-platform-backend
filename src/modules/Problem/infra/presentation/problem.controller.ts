@@ -37,11 +37,20 @@ export class ProblemController {
     private readonly GetAdminProblemByIdService: GetAdminProblemByIdService,
   ) {}
 
+  // Precisa vir antes de @Get(':id'): a rota tem segmentos fixos e so seria
+  // alcancada depois do parametro se a ordem fosse invertida.
+  @IsAdmin()
+  @GetAllAdminProblemsDecorator
+  @Get('admin/all')
+  async getAllAdminProblems(): Promise<ProblemResponseDTO[]> {
+    return await this.GetAllAdminProblemsService.execute();
+  }
+
   @IsAdmin()
   @GetAdminProblemByIdDecorator
   @Get(':id/admin')
-  async getAdminProblemById(@Param('id') id: string, @GetUser() user): Promise<ProblemResponseDTO> {
-    return await this.GetAdminProblemByIdService.execute(id, String(user.id));
+  async getAdminProblemById(@Param('id') id: string): Promise<ProblemResponseDTO> {
+    return await this.GetAdminProblemByIdService.execute(id);
   }
 
   @Public()
@@ -56,13 +65,6 @@ export class ProblemController {
   @Get()
   async getAllProblems(): Promise<ProblemResponseDTO[]> {
     return await this.GetAllProblemsService.execute();
-  }
-
-  @IsAdmin()
-  @GetAllAdminProblemsDecorator
-  @Get(':id/admin/all')
-  async getAllAdminProblems(@Param('id') id: string): Promise<ProblemResponseDTO[]> {
-    return await this.GetAllAdminProblemsService.execute(id);
   }
 
   @IsAdmin()
@@ -86,7 +88,7 @@ export class ProblemController {
   @IsAdmin()
   @DeleteProblemDecorator
   @Delete(':id')
-  async deleteProblem(@Param('id') id: string, @GetUser() user) {
-    return await this.DeleteProblemService.execute(id, String(user.id));
+  async deleteProblem(@Param('id') id: string) {
+    return await this.DeleteProblemService.execute(id);
   }
 }
