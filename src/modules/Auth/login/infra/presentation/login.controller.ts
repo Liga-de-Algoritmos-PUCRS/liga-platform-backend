@@ -1,7 +1,8 @@
-import { Body, Controller, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, Res, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { Public } from '@/global/common/decorators/public.decorator';
+import { GetUser, GetUserInterface } from '@/global/common/decorators/get-user.decorator';
 import { RefreshTokenGuard } from '@/global/common/guards/refresh-token.guard';
 import {
   LoginDecorator,
@@ -12,7 +13,6 @@ import {
 import { LoginService } from '@/modules/Auth/login/application/services/login.service';
 import { RefreshTokenService } from '@/modules/Auth/login/application/services/refresh-tokens.service';
 import { LogoutService } from '@/modules/Auth/login/application/services/logout.service';
-import { RefreshTokenPayload } from '@/global/common/strategies/refresh-token-payload.dto';
 import { LoginResponseInterface } from '@/modules/Auth/login/application/dtos/refreshToken';
 import { SetAuthCookiesService } from '../../application/services/set-auth-cookies.service';
 import { ClearAuthCookiesService } from '../../application/services/clear-auth-cookie.service';
@@ -45,13 +45,13 @@ export class LoginController {
   @Public()
   @UseGuards(RefreshTokenGuard)
   @Post('refresh')
-  async refreshTokens(@Req() token, @Res({ passthrough: true }) res: Response) {
-    const information: RefreshTokenPayload = token.user;
-    const accountId = information.sub;
-    const oldRefreshToken = information.refreshToken;
+  async refreshTokens(
+    @GetUser() user: GetUserInterface,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const { accessToken, refreshToken } = await this.RefreshTokenService.execute(
-      accountId,
-      oldRefreshToken,
+      user.id,
+      user.refreshToken,
     );
 
     this.SetAuthCookiesService.execute(res, refreshToken);
@@ -62,9 +62,9 @@ export class LoginController {
   @LogoutDecorator
   @Public()
   @Post('logout')
-  async logout(@Req() token: RefreshTokenPayload, @Res({ passthrough: true }) res: Response) {
+  async logout(@GetUser() user: GetUserInterface, @Res({ passthrough: true }) res: Response) {
     this.ClearAuthCookiesService.execute(res);
-    await this.LogoutService.execute(token.sub);
+    await this.LogoutService.execute(user.id);
     return { message: 'Logged out successfully' };
   }
 }

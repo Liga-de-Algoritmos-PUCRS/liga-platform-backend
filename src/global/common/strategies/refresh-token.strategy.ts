@@ -5,6 +5,7 @@ import { Request } from 'express';
 import { Env } from '@/global/env.schema';
 import { ConfigService } from '@nestjs/config';
 import { RefreshTokenPayload } from '@/global/common/strategies/refresh-token-payload.dto';
+import { REFRESH_TOKEN_COOKIE_NAME } from '@/modules/Auth/login/application/refresh-token-cookie';
 
 @Injectable()
 export class RefreshTokenStrategy extends PassportStrategy(Strategy, 'refresh-token') {
@@ -14,7 +15,7 @@ export class RefreshTokenStrategy extends PassportStrategy(Strategy, 'refresh-to
     });
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
-        (req: Request) => req.cookies['refreshToken'] as string,
+        (req: Request) => req.cookies[REFRESH_TOKEN_COOKIE_NAME] as string,
       ]),
       secretOrKey: secret,
       passReqToCallback: true,
@@ -22,7 +23,7 @@ export class RefreshTokenStrategy extends PassportStrategy(Strategy, 'refresh-to
   }
 
   validate(req: Request, payload: RefreshTokenPayload): RefreshTokenPayload {
-    const refreshToken = req.cookies['refreshToken'];
+    const refreshToken = req.cookies[REFRESH_TOKEN_COOKIE_NAME];
 
     return {
       sub: payload.sub,
