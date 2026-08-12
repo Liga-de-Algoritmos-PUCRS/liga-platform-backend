@@ -11,7 +11,6 @@ import { GetAllAdminProblemsService } from '@/modules/Problem/application/servic
 import { UpdateProblemDTO } from '@/modules/Problem/application/dtos/update-problem.dto';
 import { ProblemResponseDTO } from '@/modules/Problem/application/dtos/problem.response';
 import { Public } from '@/global/common/decorators/public.decorator';
-import { GetUser } from '@/global/common/decorators/get-user.decorator';
 import { CreateProblemDTO } from '@/modules/Problem/application/dtos/create-problem.dto';
 import {
   CreateProblemDecorator,
@@ -37,8 +36,9 @@ export class ProblemController {
     private readonly GetAdminProblemByIdService: GetAdminProblemByIdService,
   ) {}
 
-  // Precisa vir antes de @Get(':id'): a rota tem segmentos fixos e so seria
-  // alcancada depois do parametro se a ordem fosse invertida.
+  // Fica no topo junto com a outra rota de admin. Nao ha conflito de captura
+  // com @Get(':id') nem com @Get(':id/admin'): 'admin/all' tem dois segmentos
+  // fixos, e nenhum dos dois padroes casa com esse caminho.
   @IsAdmin()
   @GetAllAdminProblemsDecorator
   @Get('admin/all')
@@ -70,19 +70,15 @@ export class ProblemController {
   @IsAdmin()
   @CreateProblemDecorator
   @Post()
-  async createProblem(@Body() CreateProblemDTO: CreateProblemDTO, @GetUser() user) {
-    return await this.CreateProblemService.execute(CreateProblemDTO, String(user.id));
+  async createProblem(@Body() CreateProblemDTO: CreateProblemDTO) {
+    return await this.CreateProblemService.execute(CreateProblemDTO);
   }
 
   @IsAdmin()
   @UpdateProblemDecorator
   @Patch(':id')
-  async updateProblem(
-    @Param('id') id: string,
-    @Body() UpdateProblemDTO: UpdateProblemDTO,
-    @GetUser() user,
-  ) {
-    return await this.UpdateProblemService.execute(id, UpdateProblemDTO, String(user.id));
+  async updateProblem(@Param('id') id: string, @Body() UpdateProblemDTO: UpdateProblemDTO) {
+    return await this.UpdateProblemService.execute(id, UpdateProblemDTO);
   }
 
   @IsAdmin()

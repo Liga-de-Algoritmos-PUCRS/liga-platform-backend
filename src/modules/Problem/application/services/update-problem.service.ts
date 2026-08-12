@@ -4,33 +4,20 @@ import { ProblemRepository } from '@/modules/Problem/domain/problem.repository';
 import { ExceptionsAdapter } from '@/infrastructure/Exceptions/exceptions.adapter';
 import { LoggerAdapter } from '@/infrastructure/Logger/logger.adapter';
 import { UpdateProblemDTO } from '@/modules/Problem/application/dtos/update-problem.dto';
-import { UserRepository } from '@/modules/User/domain/user.repository';
 
 @Injectable()
 export class UpdateProblemService {
   constructor(
     private readonly ProblemRepository: ProblemRepository,
-    private readonly UserRepository: UserRepository,
     private readonly ExceptionsAdapter: ExceptionsAdapter,
     private readonly LoggerAdapter: LoggerAdapter,
   ) {}
 
-  public async execute(
-    id: string,
-    updateProblemDTO: UpdateProblemDTO,
-    userId: string,
-  ): Promise<Problem> {
+  public async execute(id: string, updateProblemDTO: UpdateProblemDTO): Promise<Problem> {
     const existingProblem = await this.ProblemRepository.getProblem(id);
     if (!existingProblem) {
       throw this.ExceptionsAdapter.notFound({
         message: `[updateProblemService].execute --> Problem not found with id: ${id}`,
-      });
-    }
-
-    const user = await this.UserRepository.getUser(userId);
-    if (!user) {
-      throw this.ExceptionsAdapter.notFound({
-        message: `[updateProblemService].execute --> User not found with id: ${userId}`,
       });
     }
 
