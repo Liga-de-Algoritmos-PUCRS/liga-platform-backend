@@ -2,6 +2,7 @@ import { Global, Module } from '@nestjs/common';
 import { UserController } from '@/modules/User/infra/presentation/user.controller';
 import { UpdateUserService } from '@/modules/User/application/services/update-user.service';
 import { GetAllUserService } from '@/modules/User/application/services/get-all-user.service';
+import { GetMembersService } from '@/modules/User/application/services/get-members.service';
 import { GetUserByIdService } from '@/modules/User/application/services/get-user.service';
 import { DeleteUserService } from '@/modules/User/application/services/delete-user.service';
 import { CryptographyModule } from '@/infrastructure/Criptography/criptography.module';
@@ -17,6 +18,7 @@ import { SendEmailModule } from '@/infrastructure/SendEmail/sendEmail.module';
   providers: [
     UpdateUserService,
     GetAllUserService,
+    GetMembersService,
     GetUserByIdService,
     DeleteUserService,
     GetTopUserService,

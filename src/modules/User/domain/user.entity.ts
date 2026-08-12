@@ -90,4 +90,41 @@ export class User {
       problemsResolved: this.problemsResolved,
     };
   }
+
+  /**
+   * Serializacao sem dados pessoais, para as rotas que qualquer visitante ou
+   * qualquer usuario autenticado alcanca. Deixa `email` e `role` de fora: o
+   * `toJSON()` completo so pode sair por rota admin ou pelo proprio usuario.
+   */
+  public toPublicJSON(): PublicUser {
+    return {
+      id: this.id,
+      name: this.name,
+      createdAt: this.createdAt,
+      bannerUrl: this.bannerUrl,
+      avatarUrl: this.avatarUrl,
+      course: this.course,
+      semester: this.semester,
+      monthlyPoints: this.monthlyPoints,
+      allTimePoints: this.allTimePoints,
+      historycalSubmissions: this.historycalSubmissions,
+      submissions: this.submissions,
+      problemsResolved: this.problemsResolved,
+    };
+  }
+}
+
+export interface PublicUser {
+  id: string;
+  name: string;
+  createdAt: Date;
+  bannerUrl: string | null;
+  avatarUrl: string | null;
+  course?: Course;
+  semester?: Semester;
+  monthlyPoints?: number;
+  allTimePoints?: number;
+  historycalSubmissions?: number;
+  submissions: number;
+  problemsResolved: number;
 }

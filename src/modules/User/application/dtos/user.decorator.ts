@@ -10,6 +10,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { UserResponseDTO } from './response-user.dto';
+import { PublicUserResponseDTO } from './public-user.response.dto';
 
 export const CreateUserDecorator = applyDecorators(
   ApiOperation({
@@ -53,7 +54,8 @@ export const UpdateUserDecorator = applyDecorators(
 export const GetAllUsersDecorator = applyDecorators(
   ApiOperation({
     summary: 'List all users',
-    description: 'This endpoint retrieves a list of all users in the system.',
+    description:
+      'Admin only. This endpoint retrieves a list of all users in the system, with the full payload.',
   }),
   ApiOkResponse({
     description: 'List of users retrieved successfully.',
@@ -68,14 +70,34 @@ export const GetAllUsersDecorator = applyDecorators(
   }),
 );
 
+export const GetMembersDecorator = applyDecorators(
+  ApiOperation({
+    summary: 'List all members',
+    description:
+      'This endpoint retrieves the list of members for any authenticated user. The payload omits email and role.',
+  }),
+  ApiOkResponse({
+    description: 'Members retrieved successfully.',
+    type: [PublicUserResponseDTO],
+  }),
+  ApiUnauthorizedResponse({
+    description: 'Unauthorized. A valid access token is required.',
+  }),
+  ApiInternalServerErrorResponse({
+    description:
+      'Internal server error. An unexpected error occurred while processing the request.',
+  }),
+);
+
 export const GetUserDecorator = applyDecorators(
   ApiOperation({
     summary: 'Get a user by ID',
-    description: 'This endpoint retrieves a user by their unique ID.',
+    description:
+      'This endpoint retrieves a user by their unique ID. Public route: the payload omits email and role.',
   }),
   ApiOkResponse({
     description: 'User retrieved successfully.',
-    type: UserResponseDTO,
+    type: PublicUserResponseDTO,
   }),
   ApiNotFoundResponse({
     description: 'User not found. The user with the specified ID does not exist.',
@@ -149,7 +171,7 @@ export const GetTopUsersDecorator = applyDecorators(
   }),
   ApiOkResponse({
     description: 'Top users retrieved successfully.',
-    type: [UserResponseDTO],
+    type: [PublicUserResponseDTO],
   }),
   ApiNotFoundResponse({
     description: 'No top users found. The system does not contain any top users.',
@@ -167,7 +189,7 @@ export const GetMonthlyTopUsersDecorator = applyDecorators(
   }),
   ApiOkResponse({
     description: 'Monthly top users retrieved successfully.',
-    type: [UserResponseDTO],
+    type: [PublicUserResponseDTO],
   }),
   ApiNotFoundResponse({
     description: 'No monthly top users found. The system does not contain any monthly top users.',
