@@ -78,7 +78,7 @@ export class FileController {
 
   @DeleteFileDecorator
   @Delete(':id')
-  async deleteFile(@Param('id') id: string): Promise<void> {
-    return await this.DeleteFileService.execute(id);
+  async deleteFile(@Param('id') id: string, @GetUser() user): Promise<void> {
+    return await this.DeleteFileService.execute(id, String(user.id));
   }
 }

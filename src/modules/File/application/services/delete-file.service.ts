@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { FileRepository } from '@/modules/File/domain/file.repository';
 import { BucketAdapter } from '@/infrastructure/Bucket/bucket.adapter';
 import { ExceptionsAdapter } from '@/infrastructure/Exceptions/exceptions.adapter';
-import { FileExceptions } from '@/infrastructure/Exceptions/exceptions.types';
+import { FileExceptions, UserExceptions } from '@/infrastructure/Exceptions/exceptions.types';
 import { TransactionAdapter } from '@/infrastructure/Database/Transaction/transaction.adapter';
 import { LoggerAdapter } from '@/infrastructure/Logger/logger.adapter';
 
@@ -16,7 +16,7 @@ export class DeleteFileService {
     private readonly TransactionAdapter: TransactionAdapter,
   ) {}
 
-  async execute(id: string): Promise<void> {
+  async execute(id: string, userId: string): Promise<void> {
     const file = await this.FileRepository.getFileById(id);
 
     if (!file) {
@@ -29,6 +29,13 @@ export class DeleteFileService {
       throw this.Exception.badRequest({
         message: 'File already deleted',
         internalKey: FileExceptions.FILE_ALREADY_DELETED,
+      });
+    }
+    // O UpdateFileService ja fazia esta checagem; o delete tinha ficado sem.
+    if (file.authorId !== userId) {
+      throw this.Exception.forbidden({
+        message: 'You do not have permission to delete this file',
+        internalKey: UserExceptions.USER_NOT_ALLOWED,
       });
     }
 
