@@ -11,8 +11,9 @@ export class LogoutService {
   ) {}
 
   async execute(userId: string): Promise<void> {
-    // Sem userId o where do Prisma vira `undefined` e o updateMany revogaria os
-    // refresh tokens de todos os usuarios.
+    // O Prisma remove da cláusula `where` todo campo `undefined` em vez de
+    // traduzi-lo para `IS NULL`. Sem esta trava, um userId vazio transformaria o
+    // updateMany numa revogação dos refresh tokens de todos os usuários.
     if (!userId) {
       throw this.exceptionsAdapter.unauthorized({
         message: 'Missing user id on logout',
