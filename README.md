@@ -43,3 +43,8 @@ npx prisma generate
 ```bash
 npm run dev
 ```
+
+## 🚢 Deploy
+
+O passo a passo de produção — o que roda no servidor, qual arquivo de env é
+lido, o comando de deploy e como verificar — está em [DEPLOY.md](DEPLOY.md).

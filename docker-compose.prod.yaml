@@ -4,27 +4,42 @@ services:
     container_name: liga-db
     restart: always
     environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      # O ":?" faz o compose ABORTAR quando a variavel nao chega, em vez de
+      # resolver para string vazia e recriar o postgres sem usuario. Elas vem
+      # da interpolacao do compose, nao do env_file: exigem --env-file.
+      POSTGRES_USER: ${DB_USER:?defina DB_USER e rode o deploy com --env-file .env.prod (ver DEPLOY.md)}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?defina DB_PASSWORD e rode o deploy com --env-file .env.prod (ver DEPLOY.md)}
       POSTGRES_DB: liga_db
     volumes:
       - postgres-liga-data:/var/lib/postgresql/data
     networks:
       - liga
     ports:
-      - '5432:5432'
+      # So no loopback: o banco continua acessivel por tunel SSH, mas nao pela internet.
+      - '127.0.0.1:5432:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER} -d liga_db']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   api:
     container_name: liga-api
+    # A imagem e buildada no proprio servidor (nao ha pipeline de ECR neste repo).
     build:
       context: .
       dockerfile: Dockerfile
     restart: unless-stopped
     env_file:
-      - .env
+      # Producao le o .env.prod; o .env e do ambiente de desenvolvimento. Ver DEPLOY.md.
+      - .env.prod
     command: sh -c "npx prisma migrate deploy && npm run start:prod"
     depends_on:
-      - postgres
+      postgres:
+        # O boot roda "prisma migrate deploy": sem esperar o banco aceitar
+        # conexao, a migracao falha e a api nao sobe.
+        condition: service_healthy
     networks:
       - liga
 
