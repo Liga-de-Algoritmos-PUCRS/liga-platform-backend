@@ -1,16 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { Response } from 'express';
+import {
+  REFRESH_TOKEN_COOKIE_NAME,
+  REFRESH_TOKEN_COOKIE_OPTIONS,
+} from '@/modules/Auth/login/application/refresh-token-cookie';
 
 @Injectable()
 export class ClearAuthCookiesService {
   public execute(res: Response): void {
-    // Os atributos precisam ser identicos aos do SetAuthCookiesService, senao o
-    // navegador nao remove o cookie e a sessao "volta" no proximo refresh.
-    res.clearCookie('refreshToken', {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none',
-      path: '/',
-    });
+    res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, REFRESH_TOKEN_COOKIE_OPTIONS);
   }
 }
