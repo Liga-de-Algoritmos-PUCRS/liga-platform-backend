@@ -34,6 +34,11 @@ export class DeleteSubmitService {
         return;
       }
 
+      // De proposito, os contadores de tentativa nao voltam: o
+      // `submissionsNumber` do aluno e o `submits` do problema registram que a
+      // tentativa aconteceu, e isso continua verdade depois que o admin apaga
+      // a linha. Nenhum dos dois entra no ranking -- so os pontos e o
+      // `problemsResolved`, que sao justamente os que sao desfeitos aqui.
       await this.UserRepository.decrementUserPoints(submit.userId, submit.pointsEarned, tx);
       await this.UserRepository.decrementUserProblemsResolved(submit.userId, tx);
       await this.ProblemRepository.revertSolve(submit.problemId, tx);

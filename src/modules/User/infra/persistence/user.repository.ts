@@ -148,17 +148,17 @@ export class PrismaUserRepository implements UserRepository {
     tx?: Transaction,
   ): Promise<void> {
     const client = tx ?? this.prisma;
-    await client.user.update({
-      where: { id: userId },
-      data: {
-        monthlyPoints: {
-          decrement: points,
-        },
-        allPoints: {
-          decrement: points,
-        },
-      },
-    });
+
+    // O mensal leva `GREATEST` e o total nao: `POST /user/reset-points` zera
+    // so o mensal, entao desfazer um acerto feito antes do reset tiraria
+    // pontos que ja nao estao mais la e deixaria o ranking mensal negativo --
+    // e nao existe pontuacao negativa no modelo competitivo. O `all_points`
+    // nunca e zerado, entao o que foi creditado sempre esta la para tirar.
+    await client.$executeRaw`
+      UPDATE "users"
+      SET "all_points" = "all_points" - ${points},
+          "monthly_points" = GREATEST(0, "monthly_points" - ${points})
+      WHERE "id" = ${userId}`;
   }
 
   public async resetAllMonthlyPoints(): Promise<void> {
