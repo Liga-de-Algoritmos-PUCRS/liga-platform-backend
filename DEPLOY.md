@@ -41,7 +41,10 @@ Pontos que costumam surpreender:
    - `ACCESS_TOKEN_SECRET` e `REFRESH_TOKEN_SECRET` **diferentes entre si**;
    - `DATABASE_URL` apontando para o host `postgres` (nome do serviço) e o
      banco `liga_db`;
-   - `DB_USER` / `DB_PASSWORD`, que a aplicação não lê mas o compose interpola.
+   - `DB_USER` / `DB_PASSWORD`, que a aplicação não lê mas o compose interpola;
+   - `PORT` vazia ou `3000` — o nginx faz proxy para `api:3000`; outro valor
+     aqui exige mudar o `set $upstream` do `nginx/default.conf` junto, senão a
+     API responde 502.
 3. O nginx do host desabilitado e mascarado.
 
 ## Comando de deploy
