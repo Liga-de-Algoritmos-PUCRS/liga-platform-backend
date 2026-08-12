@@ -42,6 +42,8 @@ lerna-debug.log*
 .env.test.local
 .env.production.local
 .env.local
+# a negacao precisa vir DEPOIS do .env.* acima, senao nao vale
+!.env.example
 
 # temp directory
 .temp
