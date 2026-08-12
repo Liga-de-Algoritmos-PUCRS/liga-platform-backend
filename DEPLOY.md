@@ -54,9 +54,19 @@ docker compose --env-file .env.prod -f docker-compose.prod.yaml up -d --build
 
 **O `--env-file .env.prod` não é opcional.** O `env_file:` de um serviço só
 alimenta o ambiente *dentro* do container; ele **não** alimenta a interpolação
-`${...}` do compose. Sem a flag, `${DB_USER}` e `${DB_PASSWORD}` resolvem para
-string vazia e o postgres é recriado sem usuário. As duas coisas são
-necessárias e não se substituem.
+`${...}` do compose. As duas coisas são necessárias e não se substituem.
+
+Sem a flag, o compose **aborta antes de mexer em qualquer container**:
+
+```
+$ docker compose -f docker-compose.prod.yaml up -d
+error while interpolating services.postgres.environment.POSTGRES_USER:
+required variable DB_USER is missing a value: defina DB_USER e rode o deploy
+com --env-file .env.prod (ver DEPLOY.md)
+```
+
+É de propósito: o `${DB_USER:?...}` do compose troca uma falha silenciosa (o
+postgres sendo recriado com usuário vazio) por uma recusa em subir.
 
 Para forçar a recriação de todos os containers (o proxy fica fora do ar por
 alguns segundos, faça em janela de baixo uso):

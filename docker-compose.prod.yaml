@@ -4,8 +4,11 @@ services:
     container_name: liga-db
     restart: always
     environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      # O ":?" faz o compose ABORTAR quando a variavel nao chega, em vez de
+      # resolver para string vazia e recriar o postgres sem usuario. Elas vem
+      # da interpolacao do compose, nao do env_file: exigem --env-file.
+      POSTGRES_USER: ${DB_USER:?defina DB_USER e rode o deploy com --env-file .env.prod (ver DEPLOY.md)}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?defina DB_PASSWORD e rode o deploy com --env-file .env.prod (ver DEPLOY.md)}
       POSTGRES_DB: liga_db
     volumes:
       - postgres-liga-data:/var/lib/postgresql/data
