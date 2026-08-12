@@ -26,8 +26,9 @@ export class SubmitResponseDTO {
   userId: string;
 
   @ApiProperty({
-    description: 'Points Earned',
-    example: 10,
+    description:
+      'Points earned, frozen at the instant the problem was solved. Stays `0` while the problem has not been solved.',
+    example: 100,
     required: true,
     type: Number,
   })

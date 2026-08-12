@@ -5,6 +5,7 @@ import { SubmitRepository } from '@/modules/Submit/domain/submit.repository';
 import { PrismaService } from '@/infrastructure/Database/prisma.service';
 import { LoggerAdapter } from '@/infrastructure/Logger/logger.adapter';
 import { ExceptionsAdapter } from '@/infrastructure/Exceptions/exceptions.adapter';
+import { Transaction } from '@/infrastructure/Database/Transaction/transaction.adapter';
 
 @Injectable()
 export class PrismaSubmitRepository implements SubmitRepository {
@@ -112,9 +113,11 @@ export class PrismaSubmitRepository implements SubmitRepository {
     }
   }
 
-  public async deleteSubmit(id: string): Promise<void> {
+  public async deleteSubmit(id: string, tx?: Transaction): Promise<void> {
     try {
-      await this.Prisma.submission.delete({
+      const client = tx ?? this.Prisma;
+
+      await client.submission.delete({
         where: { id },
       });
 
@@ -131,9 +134,16 @@ export class PrismaSubmitRepository implements SubmitRepository {
     }
   }
 
-  public async findByProblemIdAndUserId(problemId: string, userId: string): Promise<Submit | null> {
-    const submit = await this.Prisma.submission.findFirst({
-      where: { problemId: problemId, userId: userId },
+  public async findByProblemIdAndUserId(
+    problemId: string,
+    userId: string,
+    tx?: Transaction,
+  ): Promise<Submit | null> {
+    const client = tx ?? this.Prisma;
+
+    // Pelo indice unico, e nao mais um `findFirst` que corre com as paralelas.
+    const submit = await client.submission.findUnique({
+      where: { userProblem: { userId, problemId } },
     });
 
     if (!submit) {
@@ -153,5 +163,54 @@ export class PrismaSubmitRepository implements SubmitRepository {
     }
 
     return SubmitMapper.toDomain(submit);
+  }
+
+  public async insertIfAbsent(submit: Submit, tx?: Transaction): Promise<boolean> {
+    const client = tx ?? this.Prisma;
+    const row = SubmitMapper.toPersistence(submit);
+
+    const inserted = await client.$executeRaw`
+      INSERT INTO "submissions" ("id", "user_id", "problem_id", "points_earned", "attempts",
+                                 "created_at", "is_finished", "finished_at", "updated_at")
+      VALUES (${row.id}, ${row.userId}, ${row.problemId}, ${row.pointsEarned}, ${row.attempts},
+              ${row.createdAt}, ${row.isFinished}, ${row.finishedAt}, ${row.updatedAt})
+      ON CONFLICT ("user_id", "problem_id") DO NOTHING`;
+
+    return inserted === 1;
+  }
+
+  public async registerAttempt(
+    userId: string,
+    problemId: string,
+    solved: boolean,
+    tx?: Transaction,
+  ): Promise<boolean> {
+    const client = tx ?? this.Prisma;
+    const now = new Date();
+
+    // O `isFinished: false` no filtro e o que faz a corrida ter um vencedor so:
+    // quem chega depois do acerto atualiza zero linhas.
+    const { count } = await client.submission.updateMany({
+      where: { userId, problemId, isFinished: false },
+      data: solved
+        ? { attempts: { increment: 1 }, isFinished: true, finishedAt: now }
+        : { attempts: { increment: 1 } },
+    });
+
+    return count > 0;
+  }
+
+  public async setPointsEarned(
+    userId: string,
+    problemId: string,
+    pointsEarned: number,
+    tx?: Transaction,
+  ): Promise<void> {
+    const client = tx ?? this.Prisma;
+
+    await client.submission.update({
+      where: { userProblem: { userId, problemId } },
+      data: { pointsEarned },
+    });
   }
 }

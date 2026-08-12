@@ -5,6 +5,7 @@ import { UserRepository } from '@/modules/User/domain/user.repository';
 import { PrismaService } from '@/infrastructure/Database/prisma.service';
 import { LoggerAdapter } from '@/infrastructure/Logger/logger.adapter';
 import { ExceptionsAdapter } from '@/infrastructure/Exceptions/exceptions.adapter';
+import { Transaction } from '@/infrastructure/Database/Transaction/transaction.adapter';
 
 @Injectable()
 export class PrismaUserRepository implements UserRepository {
@@ -120,8 +121,15 @@ export class PrismaUserRepository implements UserRepository {
     return users.map((user) => UserMapper.toDomain(user));
   }
 
-  public async incrementUserPoints(userId: string, points: number): Promise<void> {
-    await this.prisma.user.update({
+  public async incrementUserPoints(
+    userId: string,
+    points: number,
+    tx?: Transaction,
+  ): Promise<void> {
+    // Sem o `tx`, o update roda no client base e fica de fora da transacao de
+    // quem chamou -- vale para todos os metodos daqui que recebem `tx`.
+    const client = tx ?? this.prisma;
+    await client.user.update({
       where: { id: userId },
       data: {
         monthlyPoints: {
@@ -134,8 +142,13 @@ export class PrismaUserRepository implements UserRepository {
     });
   }
 
-  public async decrementUserPoints(userId: string, points: number): Promise<void> {
-    await this.prisma.user.update({
+  public async decrementUserPoints(
+    userId: string,
+    points: number,
+    tx?: Transaction,
+  ): Promise<void> {
+    const client = tx ?? this.prisma;
+    await client.user.update({
       where: { id: userId },
       data: {
         monthlyPoints: {
@@ -160,8 +173,9 @@ export class PrismaUserRepository implements UserRepository {
     });
   }
 
-  public async incrementUserSubmissions(userId: string): Promise<void> {
-    await this.prisma.user.update({
+  public async incrementUserSubmissions(userId: string, tx?: Transaction): Promise<void> {
+    const client = tx ?? this.prisma;
+    await client.user.update({
       where: { id: userId },
       data: {
         submissionsNumber: {
@@ -171,12 +185,25 @@ export class PrismaUserRepository implements UserRepository {
     });
   }
 
-  public async incrementUserProblemsResolved(userId: string): Promise<void> {
-    await this.prisma.user.update({
+  public async incrementUserProblemsResolved(userId: string, tx?: Transaction): Promise<void> {
+    const client = tx ?? this.prisma;
+    await client.user.update({
       where: { id: userId },
       data: {
         problemsResolved: {
           increment: 1,
+        },
+      },
+    });
+  }
+
+  public async decrementUserProblemsResolved(userId: string, tx?: Transaction): Promise<void> {
+    const client = tx ?? this.prisma;
+    await client.user.update({
+      where: { id: userId },
+      data: {
+        problemsResolved: {
+          decrement: 1,
         },
       },
     });
