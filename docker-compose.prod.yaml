@@ -26,7 +26,14 @@ services:
 
   api:
     container_name: liga-api
-    # A imagem e buildada no proprio servidor (nao ha pipeline de ECR neste repo).
+    # O deploy automatico (.github/workflows/deploy.yml) builda no runner do
+    # GitHub e publica no GHCR; o servidor so faz "pull" + "up -d". O IMAGE_TAG
+    # e o SHA do commit, e o default ":latest" existe para o comando manual do
+    # DEPLOY.md continuar funcionando sem definir variavel nenhuma.
+    image: ghcr.io/liga-de-algoritmos-pucrs/liga-platform-backend:${IMAGE_TAG:-latest}
+    # O "build:" fica junto do "image:" de proposito: e a saida de emergencia
+    # (GHCR fora do ar, hotfix urgente). Com os dois, "up -d" usa a imagem do
+    # registry e "up -d --build" builda no servidor e sobrescreve a tag local.
     build:
       context: .
       dockerfile: Dockerfile

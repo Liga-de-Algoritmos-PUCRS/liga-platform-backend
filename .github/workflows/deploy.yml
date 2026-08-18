@@ -1,0 +1,118 @@
+name: Deploy para a EC2 (GHCR)
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      # Todo deploy recria o container da api (alguns segundos de 502 no nginx).
+      # Corrigir typo em documentacao nao justifica isso.
+      - '**.md'
+      - '.github/ISSUE_TEMPLATE/**'
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Rollback: SHA completo de uma imagem ja publicada. Em branco = builda e publica o commit atual.'
+        required: false
+        type: string
+
+# Dois deploys nunca correm juntos. "cancel-in-progress: false" e obrigatorio:
+# cancelar um deploy no meio deixa o servidor entre dois estados.
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+env:
+  # Literal minusculo de proposito: a org e "Liga-de-Algoritmos-PUCRS" e o
+  # Docker recusa maiuscula em referencia de imagem, entao ${{ github.repository }}
+  # cru quebraria o push.
+  IMAGE: ghcr.io/liga-de-algoritmos-pucrs/liga-platform-backend
+  # No rollback a tag vem do input; no push da main, e o SHA do commit.
+  IMAGE_TAG: ${{ github.event.inputs.image_tag || github.sha }}
+
+jobs:
+  build-and-push:
+    name: build-and-push
+    runs-on: ubuntu-latest
+    # Rollback nao rebuilda nada: a imagem daquela tag ja esta no GHCR.
+    if: ${{ !github.event.inputs.image_tag }}
+    permissions:
+      contents: read
+      # Sem isso o push da 403 mesmo com o GITHUB_TOKEN.
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+
+      # Sem buildx o cache "type=gha" e ignorado e cada deploy refaz o npm ci.
+      - uses: docker/setup-buildx-action@v4
+
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.IMAGE }}:${{ github.sha }}
+            ${{ env.IMAGE }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    name: deploy
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    # "always()" nao serve: deixaria o deploy rodar depois de um build cancelado.
+    # Roda quando o build passou (push na main) ou foi pulado (rollback).
+    if: ${{ !cancelled() && (needs.build-and-push.result == 'success' || needs.build-and-push.result == 'skipped') }}
+    steps:
+      - name: Puxa a imagem e sobe os containers na EC2
+        uses: appleboy/ssh-action@v1.2.5
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          envs: IMAGE_TAG
+          script_stop: true
+          script: |
+            set -euo pipefail
+            # Sem esta guarda, um IMAGE_TAG que nao chegou pelo "envs:" faria o
+            # compose cair no default ":latest" em silencio -- e um rollback
+            # que nao reverte nada seria reportado como verde.
+            : "${IMAGE_TAG:?IMAGE_TAG nao chegou ao servidor}"
+            cd ~/liga-platform-backend
+            # O compose e o nginx/default.conf sao lidos do disco, nao da imagem:
+            # sem o pull, mudanca de configuracao nao chega ao servidor.
+            # --ff-only de proposito: modificacao local no servidor quebra o
+            # deploy alto, em vez de ser descartada em silencio.
+            git pull --ff-only origin main
+            export IMAGE_TAG
+            # O --env-file nao e opcional nem no pull: o compose interpola
+            # ${DB_USER:?} e aborta sem ele.
+            docker compose --env-file .env.prod -f docker-compose.prod.yaml pull api
+            docker compose --env-file .env.prod -f docker-compose.prod.yaml up -d
+            # Sem "-a" e sem "--volumes": postgres-liga-data e o banco de producao.
+            docker system prune -f
+
+      - name: Verifica producao pela internet
+        run: |
+          # Nao existe rota de health-check: o sinal e o codigo HTTP. 401 em
+          # /user prova a cadeia DNS -> nginx -> api -> Nest (502 seria o nginx
+          # sem enxergar a api); 404 em /api-json confirma NODE_ENV=production.
+          # O retry existe porque o nginx devolve 502 por alguns segundos
+          # enquanto o container da api e recriado.
+          for i in $(seq 1 6); do
+            user=$(curl -s -o /dev/null -w '%{http_code}' https://back.ligadealgoritmos.com/user || true)
+            apijson=$(curl -s -o /dev/null -w '%{http_code}' https://back.ligadealgoritmos.com/api-json || true)
+            echo "tentativa $i: /user=$user /api-json=$apijson"
+            if [ "$user" = "401" ] && [ "$apijson" = "404" ]; then
+              echo "producao respondendo com a versao nova (tag $IMAGE_TAG)"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "::error::producao nao respondeu 401 em /user e 404 em /api-json apos 6 tentativas"
+          exit 1

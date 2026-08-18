@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  pull_request:
+
+# Um push novo no mesmo PR cancela o run anterior: o resultado que importa e o
+# do ultimo commit.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-build:
+    name: lint-build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          # Mesma major do Dockerfile (node:22-alpine): o CI compila no mesmo
+          # ambiente que gera o artefato de producao.
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+
+      # Explicito, como no Dockerfile. O generate le apenas o schema.prisma:
+      # nao precisa de DATABASE_URL nem de banco de pe.
+      - run: npx prisma generate
+
+      - run: npm run lint
+
+      - run: npm run build
