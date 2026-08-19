@@ -4,6 +4,8 @@ import { RollCallRepository } from '../../domain/roll-call.repository';
 import { ExceptionsAdapter } from '@/infrastructure/Exceptions/exceptions.adapter';
 import { RollCall } from '../../domain/roll-call.entity';
 
+const QR_CODE_TTL_SECONDS = 30;
+
 @Injectable()
 export class GenerateQrCodeService {
   constructor(
@@ -18,7 +20,7 @@ export class GenerateQrCodeService {
     }
 
     const code = randomUUID();
-    const expiresAt = new Date(Date.now() + 15 * 1000);
+    const expiresAt = new Date(Date.now() + QR_CODE_TTL_SECONDS * 1000);
 
     return this.rollCallRepository.updateQrCode(id, code, expiresAt);
   }

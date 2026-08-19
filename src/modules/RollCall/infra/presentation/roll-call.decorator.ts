@@ -10,6 +10,7 @@ import {
   ApiInternalServerErrorResponse,
 } from '@nestjs/swagger';
 import { RollCallSummaryResponseDto } from '../../application/dtos/roll-call-summary.response.dto';
+import { MyAttendancesResponseDto } from '../../application/dtos/my-attendances.response.dto';
 
 export const CreateRollCallDecorator = applyDecorators(
   ApiOperation({
@@ -55,7 +56,10 @@ export const GetMyAttendancesDecorator = applyDecorators(
     summary: 'Meu histórico de presenças',
     description: 'Retorna o histórico de presenças do usuário autenticado.',
   }),
-  ApiOkResponse({ description: 'Histórico de presenças retornado com sucesso.' }),
+  ApiOkResponse({
+    description: 'Histórico de presenças retornado com sucesso.',
+    type: MyAttendancesResponseDto,
+  }),
   ApiUnauthorizedResponse({ description: 'Não autenticado.' }),
   ApiInternalServerErrorResponse({ description: 'Erro interno.' }),
 );
@@ -77,7 +81,7 @@ export const GenerateQrCodeDecorator = applyDecorators(
   ApiOperation({
     summary: 'Gerar QR Code',
     description:
-      'Gera um QR Code com expiração de 15 segundos para a chamada informada. Acesso restrito a administradores.',
+      'Gera um QR Code com expiração de 30 segundos para a chamada informada. Acesso restrito a administradores.',
   }),
   ApiOkResponse({ description: 'QR Code gerado com sucesso.' }),
   ApiNotFoundResponse({ description: 'Chamada não encontrada.' }),

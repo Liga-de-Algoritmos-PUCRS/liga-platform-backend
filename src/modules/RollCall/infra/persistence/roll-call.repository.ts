@@ -39,8 +39,11 @@ export class PrismaRollCallRepository implements RollCallRepository {
   }
 
   async findAllRollCallsSimple(): Promise<RollCall[]> {
-    const rows = await this.prisma.rollCall.findMany({ orderBy: { date: 'asc' } });
-    return rows.map((r) => RollCallMapper.toDomain(r));
+    const rows = await this.prisma.rollCall.findMany({
+      orderBy: { date: 'asc' },
+      select: { id: true, date: true, createdAt: true, updatedAt: true },
+    });
+    return rows.map((r) => RollCallMapper.toDomainWithoutQrCode(r));
   }
 
   async findById(id: string): Promise<RollCall | null> {
@@ -95,17 +98,12 @@ export class PrismaRollCallRepository implements RollCallRepository {
     });
   }
 
-  async findUserAttendances(
-    userId: string,
-  ): Promise<Array<{ attendance: Attendance; rollCall: RollCall }>> {
+  async findAttendedRollCallIds(userId: string): Promise<string[]> {
     const rows = await this.prisma.attendance.findMany({
       where: { userId },
-      include: { rollCall: true },
+      select: { rollCallId: true },
     });
-    return rows.map((r) => ({
-      attendance: AttendanceMapper.toDomain(r),
-      rollCall: RollCallMapper.toDomain(r.rollCall),
-    }));
+    return rows.map((r) => r.rollCallId);
   }
 
   async findRollCallAttendeeIds(rollCallId: string): Promise<string[]> {

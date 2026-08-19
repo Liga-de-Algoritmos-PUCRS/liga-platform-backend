@@ -15,6 +15,7 @@ import { UpdateAttendanceService } from '../../application/services/update-atten
 import { GetMyAttendancesService } from '../../application/services/get-my-attendances.service';
 import { GetOverviewService } from '../../application/services/get-overview.service';
 import { RemoveRollCallService } from '../../application/services/remove-roll-call.service';
+import { MyAttendancesResponseDto } from '../../application/dtos/my-attendances.response.dto';
 import {
   AttendRollCallDecorator,
   CreateRollCallDecorator,
@@ -65,7 +66,7 @@ export class RollCallController {
 
   @GetMyAttendancesDecorator
   @Get('my-attendances')
-  getMyAttendances(@GetUser() user) {
+  getMyAttendances(@GetUser() user): Promise<MyAttendancesResponseDto> {
     return this.getMyAttendancesService.execute(String(user.id));
   }
 

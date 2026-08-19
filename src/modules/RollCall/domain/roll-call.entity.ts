@@ -25,6 +25,15 @@ export class RollCall {
     this.createdAt = rollCall.createdAt ?? new Date();
     this.updatedAt = rollCall.updatedAt ?? new Date();
   }
+
+  // Nome do campo é `rollCallId`, não `id`, para bater com o que o front já lê
+  // e com o `history` de get-overview.service.ts.
+  toPublicJSON(): { rollCallId: string; date: Date } {
+    return {
+      rollCallId: this.id,
+      date: this.date,
+    };
+  }
 }
 
 export interface RollCallDetail {
