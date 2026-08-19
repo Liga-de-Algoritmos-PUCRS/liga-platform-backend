@@ -72,13 +72,19 @@ export class RefreshTokenService {
     // `revokeRefreshTokenById` só revoga se o token ainda estiver
     // `isRevoked = false` no banco (compare-and-swap). Se devolver `false`,
     // outra requisição concorrente com o mesmo token venceu a corrida entre
-    // a leitura acima e este `UPDATE` — trata como reuso pelo mesmo motivo.
+    // a leitura acima e este `UPDATE`. Isso não é reuso de um token já
+    // rotacionado — é a corrida legítima entre abas que o front já tolera
+    // (front/CLAUDE.md) — então só rejeita esta requisição, sem revogar a
+    // sessão que a outra aba acabou de conseguir.
     const revoked = await this.refreshTokenRepository.revokeRefreshTokenById(
       matchedRefreshToken.id,
     );
 
     if (!revoked) {
-      await this.revokeFamilyAndThrow(userId);
+      throw this.exceptionsAdapter.unauthorized({
+        message: 'Refresh token already used',
+        internalKey: TokenExceptions.TOKEN_REUSED,
+      });
     }
 
     return this.generateNewTokens({
