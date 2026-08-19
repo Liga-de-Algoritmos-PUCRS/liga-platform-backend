@@ -1,6 +1,7 @@
 import { Injectable, NestInterceptor, ExecutionContext, CallHandler, Logger } from '@nestjs/common';
 import { Observable, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
+import { sanitizeForLog } from '@/infrastructure/Logger/utils/sanitize-log.util';
 
 @Injectable()
 export class LoggerInterceptor implements NestInterceptor {
@@ -14,11 +15,8 @@ export class LoggerInterceptor implements NestInterceptor {
     const now = Date.now();
 
     if (typeof body === 'object' && body !== null && !Array.isArray(body)) {
-      const bodyToLog = { ...body };
+      const bodyToLog = sanitizeForLog(body as Record<string, unknown>);
 
-      if (bodyToLog.password) {
-        bodyToLog.password = '****';
-      }
       this.logger.verbose(`[Request] ${method} ${url} - Body: ${JSON.stringify(bodyToLog)}`);
     } else {
       this.logger.verbose(`[Request] ${method} ${url} - (No Body)`);
