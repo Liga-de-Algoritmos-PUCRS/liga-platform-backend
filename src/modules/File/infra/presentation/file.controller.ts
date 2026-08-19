@@ -20,6 +20,9 @@ import {
   GetFileByIdDecorator,
   UpdateFileDecorator,
   DeleteFileDecorator,
+  MAX_FILES,
+  MAX_FILE_SIZE_MB,
+  ALLOWED_IMAGE_MIME_TYPES,
 } from '@/modules/File/application/dtos/file.decorators';
 import { FileReponseDTO } from '@/modules/File/application/dtos/response-file.dto';
 import { CreateFileService } from '@/modules/File/application/services/create-file.service';
@@ -27,6 +30,8 @@ import { UpdateFileService } from '@/modules/File/application/services/update-fi
 import { DeleteFileService } from '@/modules/File/application/services/delete-file.service';
 import { GetFileByIdService } from '@/modules/File/application/services/get-file-by-id.service';
 import { GetFilesByAuthorIdService } from '@/modules/File/application/services/get-file-by-author-id.service';
+import { ExceptionsAdapter } from '@/infrastructure/Exceptions/exceptions.adapter';
+import { FileExceptions } from '@/infrastructure/Exceptions/exceptions.types';
 
 // Sem @UseGuards(JwtAuthGuard) aqui: o guard e APP_GUARD global e nenhuma
 // rota deste controller e @Public(), entao repeti-lo so dobrava a verificacao.
@@ -39,15 +44,34 @@ export class FileController {
     private readonly DeleteFileService: DeleteFileService,
     private readonly GetFileByIdService: GetFileByIdService,
     private readonly GetFilesByAuthorIdService: GetFilesByAuthorIdService,
+    private readonly Exception: ExceptionsAdapter,
   ) {}
 
   @CreateFileDecorator
-  @UseInterceptors(FilesInterceptor('files', 10, { limits: { fileSize: 100 * 1024 * 1024 } }))
+  @UseInterceptors(
+    FilesInterceptor('files', MAX_FILES, {
+      limits: { fileSize: MAX_FILE_SIZE_MB * 1024 * 1024 },
+      fileFilter: (_req, file, cb) => {
+        cb(
+          null,
+          ALLOWED_IMAGE_MIME_TYPES.includes(
+            file.mimetype as (typeof ALLOWED_IMAGE_MIME_TYPES)[number],
+          ),
+        );
+      },
+    }),
+  )
   @Post('')
   async create(
     @UploadedFiles() files: Array<Express.Multer.File>,
     @GetUser() user,
   ): Promise<FileReponseDTO[]> {
+    if (!files || files.length === 0) {
+      throw this.Exception.badRequest({
+        message: `Tipo de arquivo inválido. Tipos permitidos: ${ALLOWED_IMAGE_MIME_TYPES.join(', ')}.`,
+        internalKey: FileExceptions.FILE_INVALID_TYPE,
+      });
+    }
     const creationPromises = files.map((file) => {
       const fileDTO = ConvertToCreateFileDTO(file);
       return this.CreateFileService.execute(fileDTO, String(user.id));

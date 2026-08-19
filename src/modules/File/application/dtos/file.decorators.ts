@@ -13,21 +13,27 @@ import {
 } from '@nestjs/swagger';
 import { FileReponseDTO } from '@/modules/File/application/dtos/response-file.dto';
 
-const MAX_FILES = 10;
-const MAX_FILE_SIZE_MB = 100;
+export const MAX_FILES = 1;
+export const MAX_FILE_SIZE_MB = 2;
+export const ALLOWED_IMAGE_MIME_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+] as const;
 
 export const CreateFileDecorator = applyDecorators(
   ApiOperation({
     summary: 'Upload a new files',
-    description: `This endpoint allows you to upload a new files in the system and atributes to a user. 
-      Limits: Up to ${MAX_FILES} files per upload, and each file can have up to ${MAX_FILE_SIZE_MB} MB.`,
+    description: `This endpoint allows you to upload a new files in the system and atributes to a user.
+      Limits: Up to ${MAX_FILES} file(s) per upload, each up to ${MAX_FILE_SIZE_MB} MB, mimetype in [${ALLOWED_IMAGE_MIME_TYPES.join(', ')}].`,
   }),
   ApiCreatedResponse({
     description: 'Files successfully uploaded.',
     type: [FileReponseDTO],
   }),
   ApiBadRequestResponse({
-    description: 'Bad request. The input data is invalid or missing.',
+    description: `Bad request. The input data is invalid or missing, or the file mimetype is not in [${ALLOWED_IMAGE_MIME_TYPES.join(', ')}].`,
   }),
   ApiInternalServerErrorResponse({
     description:

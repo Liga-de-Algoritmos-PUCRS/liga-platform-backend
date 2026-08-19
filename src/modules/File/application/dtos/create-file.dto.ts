@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNumber, IsNotEmpty, Validate, IsOptional } from 'class-validator';
-import { FileTypeValidator } from '@/modules/File/application/dtos/file.type.validator';
+import { IsString, IsNumber, IsNotEmpty, IsOptional } from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export function ConvertToCreateFileDTO(files: Express.Multer.File): CreateFileHelperDTO {
@@ -15,39 +14,10 @@ export function ConvertToCreateFileDTO(files: Express.Multer.File): CreateFileHe
 export class CreateFileHelperDTO {
   @ApiProperty({
     required: true,
-    description: 'File (Word, Excel, MP3 ou MP4)',
+    description: 'File (image/jpeg, image/png, image/gif, image/webp)',
     type: 'string',
     format: 'binary',
   })
-  @Validate(FileTypeValidator, [
-    'application/msword', // .doc
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
-    'application/vnd.ms-excel', // .xls
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
-    'application/pdf', // .pdf
-    'application/zip', // .zip
-    'application/x-zip-compressed', // .zip
-    'image/jpeg', // .jpg, .jpeg
-    'image/png', // .png
-    'image/gif', // .gif
-    'audio/mpeg', // .mp3
-    'audio/wav', // .wav
-    'audio/ogg', // .ogg
-    'audio/aac', // .aac
-    'audio/flac', // .flac
-    'audio/mp4', // .m4a
-    'audio/x-caf', // .caf (Core Audio Format used by iPhone)
-    'audio/3gpp', // .3gp audio
-    'video/3gpp', // .3gp video
-    'video/x-m4v', // .m4v
-    'video/mp4', // .mp4
-    'video/webm', // .webm
-    'video/quicktime', // .mov
-    'video/x-msvideo', // .avi
-    'video/mpeg', // .mpeg
-    'text/plain', // .txt
-    'text/csv', // .csv
-  ])
   @IsNotEmpty()
   file: Express.Multer.File;
 
@@ -87,43 +57,4 @@ export class CreateFileHelperDTO {
   @IsString()
   @IsOptional()
   negociationId: string;
-}
-
-export class CreateFileDTO {
-  @ApiProperty({
-    required: true,
-    description: 'File (Word, Excel, MP3 ou MP4)',
-    format: 'binary',
-  })
-  @Validate(FileTypeValidator, [
-    'application/msword', // .doc
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
-    'application/vnd.ms-excel', // .xls
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
-    'application/pdf', // .pdf
-    'application/zip', // .zip
-    'application/x-zip-compressed', // .zip
-    'image/jpeg', // .jpg, .jpeg
-    'image/png', // .png
-    'image/gif', // .gif
-    'audio/mpeg', // .mp3
-    'audio/wav', // .wav
-    'audio/ogg', // .ogg
-    'audio/aac', // .aac
-    'audio/flac', // .flac
-    'audio/mp4', // .m4a
-    'audio/x-caf', // .caf (Core Audio Format used by iPhone)
-    'audio/3gpp', // .3gp audio
-    'video/3gpp', // .3gp video
-    'video/x-m4v', // .m4v
-    'video/mp4', // .mp4
-    'video/webm', // .webm
-    'video/quicktime', // .mov
-    'video/x-msvideo', // .avi
-    'video/mpeg', // .mpeg
-    'text/plain', // .txt
-    'text/csv', // .csv
-  ])
-  @IsNotEmpty()
-  files: Express.Multer.File[];
 }

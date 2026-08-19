@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { createId } from '@paralleldrive/cuid2';
 import { FileRepository } from '@/modules/File/domain/file.repository';
 import { File } from '../../domain/file.entity';
 import { CreateFileHelperDTO } from '../dtos/create-file.dto';
@@ -9,6 +10,13 @@ import { LoggerAdapter } from '@/infrastructure/Logger/logger.adapter';
 import { TransactionAdapter } from '@/infrastructure/Database/Transaction/transaction.adapter';
 import { UserRepository } from '@/modules/User/domain/user.repository';
 import { ConfigService } from '@nestjs/config';
+
+const MIME_TO_EXTENSION = new Map<string, string>([
+  ['image/jpeg', 'jpg'],
+  ['image/png', 'png'],
+  ['image/gif', 'gif'],
+  ['image/webp', 'webp'],
+]);
 
 @Injectable()
 export class CreateFileService {
@@ -31,9 +39,8 @@ export class CreateFileService {
       });
     }
 
-    const sanitizedFileName = fileDto.name.replace(/\s+/g, '');
-
-    const key = `${author.id}-${Date.now()}-${sanitizedFileName}`;
+    const extension = MIME_TO_EXTENSION.get(fileDto.type) ?? '';
+    const key = extension ? `${createId()}.${extension}` : createId();
 
     try {
       const fileUrl = await this.BucketAdapter.uploadFile(fileDto.file, key);
