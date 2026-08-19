@@ -8,8 +8,7 @@ import { SendEmailAdapter } from '@/infrastructure/SendEmail/sendEmail.adapter';
 import { TokenExceptions, UserExceptions } from '@/infrastructure/Exceptions/exceptions.types';
 import { TransactionAdapter } from '@/infrastructure/Database/Transaction/transaction.adapter';
 import { LoggerAdapter } from '@/infrastructure/Logger/logger.adapter';
-
-const MAX_TOKEN_ATTEMPTS = 5;
+import { MAX_TOKEN_ATTEMPTS } from '@/modules/Auth/auth.constants';
 
 @Injectable()
 export class ValidateSignupService {
@@ -49,18 +48,24 @@ export class ValidateSignupService {
     }
 
     if (findToken2Fa.token !== validateSignupDTO.token) {
-      const attemptsUsed = findToken2Fa.attempts + 1;
+      const attempt = await this.Token2FARepository.incrementAttempts(
+        findToken2Fa.id,
+        MAX_TOKEN_ATTEMPTS,
+      );
 
-      if (attemptsUsed >= MAX_TOKEN_ATTEMPTS) {
-        await this.Token2FARepository.revokeToken2FaById(findToken2Fa.id);
+      if (attempt === null) {
+        throw this.ExceptionsAdapter.badRequest({
+          message: 'This token has already been used',
+          internalKey: TokenExceptions.TOKEN_INVALID,
+        });
+      }
 
+      if (attempt.revoked) {
         throw this.ExceptionsAdapter.badRequest({
           message: 'Maximum number of attempts exceeded',
           internalKey: TokenExceptions.TOKEN_ATTEMPTS_EXCEEDED,
         });
       }
-
-      await this.Token2FARepository.incrementAttempts(findToken2Fa.id);
 
       throw this.ExceptionsAdapter.badRequest({
         message: 'Invalid token',

@@ -33,11 +33,23 @@ export class PrismaToken2FaRepository implements Token2FARepository {
     return true;
   }
 
-  public async incrementAttempts(id: string): Promise<void> {
-    await this.prisma.token2FA.update({
-      where: { id: id },
-      data: { attempts: { increment: 1 } },
-    });
+  public async incrementAttempts(
+    id: string,
+    maxAttempts: number,
+  ): Promise<{ attempts: number; revoked: boolean } | null> {
+    const rows = await this.prisma.$queryRaw<{ attempts: number; is_revoked: boolean }[]>`
+      UPDATE "token2fa"
+      SET "attempts" = "attempts" + 1,
+          "is_revoked" = CASE WHEN "attempts" + 1 >= ${maxAttempts} THEN true ELSE "is_revoked" END
+      WHERE "id" = ${id} AND "is_revoked" = false
+      RETURNING "attempts", "is_revoked"
+    `;
+
+    if (rows.length === 0) {
+      return null;
+    }
+
+    return { attempts: rows[0].attempts, revoked: rows[0].is_revoked };
   }
 
   public async revokeAllValidTokensByEmail(email: string): Promise<void> {

@@ -46,11 +46,23 @@ export class PrismaResetPasswordTokenRepository implements ResetPasswordTokenRep
     return result.count > 0;
   }
 
-  public async incrementAttempts(id: string): Promise<void> {
-    await this.PrismaService.resetPasswordToken.update({
-      where: { id },
-      data: { attempts: { increment: 1 } },
-    });
+  public async incrementAttempts(
+    id: string,
+    maxAttempts: number,
+  ): Promise<{ attempts: number; revoked: boolean } | null> {
+    const rows = await this.PrismaService.$queryRaw<{ attempts: number; is_revoked: boolean }[]>`
+      UPDATE "reset_password_tokens"
+      SET "attempts" = "attempts" + 1,
+          "is_revoked" = CASE WHEN "attempts" + 1 >= ${maxAttempts} THEN true ELSE "is_revoked" END
+      WHERE "id" = ${id} AND "is_revoked" = false
+      RETURNING "attempts", "is_revoked"
+    `;
+
+    if (rows.length === 0) {
+      return null;
+    }
+
+    return { attempts: rows[0].attempts, revoked: rows[0].is_revoked };
   }
 
   public async revokeAllValidTokensByUserId(userId: string): Promise<void> {
