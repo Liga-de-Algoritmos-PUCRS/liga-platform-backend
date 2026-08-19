@@ -6,6 +6,7 @@ import { PrismaService } from '@/infrastructure/Database/prisma.service';
 import { LoggerAdapter } from '@/infrastructure/Logger/logger.adapter';
 import { ExceptionsAdapter } from '@/infrastructure/Exceptions/exceptions.adapter';
 import { Transaction } from '@/infrastructure/Database/Transaction/transaction.adapter';
+import { sanitizeForLog } from '@/infrastructure/Logger/utils/sanitize-log.util';
 
 @Injectable()
 export class PrismaUserRepository implements UserRepository {
@@ -26,7 +27,7 @@ export class PrismaUserRepository implements UserRepository {
       if (createdUser) {
         this.LoggerAdapter.log({
           where: 'UserRepository.CreateUser',
-          message: `New user in database: ${JSON.stringify(createdUser)}`,
+          message: `New user in database: ${JSON.stringify(sanitizeForLog(createdUser))}`,
         });
 
         return UserMapper.toDomain(createdUser);
