@@ -59,6 +59,9 @@ export class PrismaProblemRepository implements ProblemRepository {
       where: {
         archived: false,
       },
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
     this.LoggerAdapter.log({
       where: 'ProblemRepository.GetProblems',
