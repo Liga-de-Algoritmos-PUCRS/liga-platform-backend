@@ -6,6 +6,7 @@ export interface RefreshTokenInterface {
   expiresAt: Date;
   createdAt: Date;
   isRevoked: boolean;
+  replacedByTokenId?: string | null;
 }
 
 export class RefreshToken {
@@ -15,6 +16,7 @@ export class RefreshToken {
   expiresAt: Date;
   createdAt: Date;
   isRevoked: boolean;
+  replacedByTokenId: string | null;
 
   constructor(refreshToken: RefreshTokenInterface, id?: string) {
     this.id = id ?? createId();
@@ -23,6 +25,7 @@ export class RefreshToken {
     this.expiresAt = refreshToken.expiresAt;
     this.createdAt = refreshToken.createdAt;
     this.isRevoked = refreshToken.isRevoked;
+    this.replacedByTokenId = refreshToken.replacedByTokenId ?? null;
   }
 
   public toJSON() {

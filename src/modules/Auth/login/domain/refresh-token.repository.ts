@@ -1,7 +1,8 @@
 import { RefreshToken } from './refresh-token.entity';
+import { Transaction } from '@/infrastructure/Database/Transaction/transaction.adapter';
 
 export abstract class RefreshTokenRepository {
-  public abstract createRefreshToken(refreshToken: RefreshToken): Promise<void>;
+  public abstract createRefreshToken(refreshToken: RefreshToken, tx?: Transaction): Promise<void>;
   /**
    * Inclui tokens já revogados (mas ainda não expirados) — é o que permite
    * detectar reapresentação de um refresh token já rotacionado.
@@ -15,7 +16,18 @@ export abstract class RefreshTokenRepository {
    * `isRevoked = false` antes de qualquer uma escrever — sem essa troca
    * atômica, as duas passariam pelo `if (isRevoked)` e as duas emitiriam um
    * par de tokens novo a partir do mesmo token antigo.
+   *
+   * Grava `replacedByTokenId` no mesmo UPDATE que revoga o token antigo,
+   * para permitir distinguir depois "reapresentação do pai imediato de uma
+   * rotação legítima" de reuso real. Chamado sempre dentro da mesma
+   * transação que cria o token novo — a FK `replaced_by_token_id` exige que
+   * a linha referenciada já exista, então perder o CAS precisa desfazer o
+   * `create` também (ver `RefreshTokenService.generateNewTokens`).
    */
-  public abstract revokeRefreshTokenById(id: string): Promise<boolean>;
+  public abstract revokeRefreshTokenById(
+    id: string,
+    replacedByTokenId: string,
+    tx?: Transaction,
+  ): Promise<boolean>;
   public abstract deleteExpiredRefreshTokens(): Promise<number>;
 }
