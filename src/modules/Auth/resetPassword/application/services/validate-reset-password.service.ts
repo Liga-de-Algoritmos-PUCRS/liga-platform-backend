@@ -4,6 +4,7 @@ import { ValidateResetPasswordDTO } from '@/modules/Auth/resetPassword/applicati
 import { UserRepository } from '@/modules/User/domain/user.repository';
 import { ResetPasswordTokenRepository } from '@/modules/Auth/resetPassword/domain/reset-password-token.repository';
 import { UserExceptions, TokenExceptions } from '@/infrastructure/Exceptions/exceptions.types';
+import { MAX_TOKEN_ATTEMPTS } from '@/modules/Auth/auth.constants';
 
 @Injectable()
 export class IsValidateResetPasswordService {
@@ -41,6 +42,25 @@ export class IsValidateResetPasswordService {
     }
 
     if (findToken.token !== ValidateResetPasswordDTO.token) {
+      const attempt = await this.ResetPasswordTokenRepository.incrementAttempts(
+        findToken.id,
+        MAX_TOKEN_ATTEMPTS,
+      );
+
+      if (attempt === null) {
+        throw this.ExceptionsAdapter.badRequest({
+          message: 'This token has already been used',
+          internalKey: TokenExceptions.TOKEN_INVALID,
+        });
+      }
+
+      if (attempt.revoked) {
+        throw this.ExceptionsAdapter.badRequest({
+          message: 'Maximum number of attempts exceeded',
+          internalKey: TokenExceptions.TOKEN_ATTEMPTS_EXCEEDED,
+        });
+      }
+
       throw this.ExceptionsAdapter.badRequest({
         message: 'Invalid token',
         internalKey: TokenExceptions.TOKEN_INVALID,

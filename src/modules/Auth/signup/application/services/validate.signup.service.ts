@@ -7,6 +7,8 @@ import { User } from '@/modules/User/domain/user.entity';
 import { SendEmailAdapter } from '@/infrastructure/SendEmail/sendEmail.adapter';
 import { TokenExceptions, UserExceptions } from '@/infrastructure/Exceptions/exceptions.types';
 import { TransactionAdapter } from '@/infrastructure/Database/Transaction/transaction.adapter';
+import { LoggerAdapter } from '@/infrastructure/Logger/logger.adapter';
+import { MAX_TOKEN_ATTEMPTS } from '@/modules/Auth/auth.constants';
 
 @Injectable()
 export class ValidateSignupService {
@@ -16,6 +18,7 @@ export class ValidateSignupService {
     private readonly TransactionAdapter: TransactionAdapter,
     private readonly Token2FARepository: Token2FARepository,
     private readonly SendEmailAdapter: SendEmailAdapter,
+    private readonly LoggerAdapter: LoggerAdapter,
   ) {}
 
   async execute(validateSignupDTO: ValidateSignupDTO): Promise<User> {
@@ -36,7 +39,7 @@ export class ValidateSignupService {
     }
 
     if (findToken2Fa.expiresAt < new Date()) {
-      await this.Token2FARepository.revokeRefreshTokenById(findToken2Fa.id);
+      await this.Token2FARepository.revokeToken2FaById(findToken2Fa.id);
 
       throw this.ExceptionsAdapter.badRequest({
         message: 'This token has expired',
@@ -45,6 +48,25 @@ export class ValidateSignupService {
     }
 
     if (findToken2Fa.token !== validateSignupDTO.token) {
+      const attempt = await this.Token2FARepository.incrementAttempts(
+        findToken2Fa.id,
+        MAX_TOKEN_ATTEMPTS,
+      );
+
+      if (attempt === null) {
+        throw this.ExceptionsAdapter.badRequest({
+          message: 'This token has already been used',
+          internalKey: TokenExceptions.TOKEN_INVALID,
+        });
+      }
+
+      if (attempt.revoked) {
+        throw this.ExceptionsAdapter.badRequest({
+          message: 'Maximum number of attempts exceeded',
+          internalKey: TokenExceptions.TOKEN_ATTEMPTS_EXCEEDED,
+        });
+      }
+
       throw this.ExceptionsAdapter.badRequest({
         message: 'Invalid token',
         internalKey: TokenExceptions.TOKEN_INVALID,
@@ -64,8 +86,16 @@ export class ValidateSignupService {
     });
 
     if (user) {
-      await this.SendEmailAdapter.sendEmailWelcome(user.email, user.name);
-      await this.Token2FARepository.revokeRefreshTokenById(findToken2Fa.id);
+      try {
+        await this.SendEmailAdapter.sendEmailWelcome(user.email, user.name);
+      } catch (error) {
+        this.LoggerAdapter.error({
+          where: 'ValidateSignupService',
+          message: `Failed to send welcome email to ${user.email}: ${error}`,
+        });
+      }
+
+      await this.Token2FARepository.revokeToken2FaById(findToken2Fa.id);
     } else {
       throw this.ExceptionsAdapter.internalServerError({
         message: 'user not created',

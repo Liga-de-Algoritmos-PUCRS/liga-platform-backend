@@ -6,6 +6,7 @@ import { ResetPasswordTokenRepository } from '@/modules/Auth/resetPassword/domai
 import { ResetPasswordDTO } from '@/modules/Auth/resetPassword/application/dtos/reset-password.dto';
 import { CryptographyAdapter } from '@/infrastructure/Criptography/cryptography.adapter';
 import { UserExceptions, TokenExceptions } from '@/infrastructure/Exceptions/exceptions.types';
+import { MAX_TOKEN_ATTEMPTS } from '@/modules/Auth/auth.constants';
 
 @Injectable()
 export class ResetPasswordService {
@@ -45,6 +46,25 @@ export class ResetPasswordService {
     }
 
     if (findToken.token !== ResetPasswordDTO.token) {
+      const attempt = await this.ResetPasswordTokenRepository.incrementAttempts(
+        findToken.id,
+        MAX_TOKEN_ATTEMPTS,
+      );
+
+      if (attempt === null) {
+        throw this.ExceptionsAdapter.badRequest({
+          message: 'This token has already been used',
+          internalKey: TokenExceptions.TOKEN_INVALID,
+        });
+      }
+
+      if (attempt.revoked) {
+        throw this.ExceptionsAdapter.badRequest({
+          message: 'Maximum number of attempts exceeded',
+          internalKey: TokenExceptions.TOKEN_ATTEMPTS_EXCEEDED,
+        });
+      }
+
       throw this.ExceptionsAdapter.badRequest({
         message: 'Invalid token',
         internalKey: TokenExceptions.TOKEN_INVALID,

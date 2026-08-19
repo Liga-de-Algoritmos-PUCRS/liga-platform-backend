@@ -1,3 +1,4 @@
+import { randomInt } from 'crypto';
 import { Injectable } from '@nestjs/common';
 import { ExceptionsAdapter } from '@/infrastructure/Exceptions/exceptions.adapter';
 import { CryptographyAdapter } from '@/infrastructure/Criptography/cryptography.adapter';
@@ -44,15 +45,14 @@ export class SignupService {
       hashSalt: 8,
     });
 
-    const generateToken2Fa = Math.floor(Math.random() * 10000)
-      .toString()
-      .padStart(4, '0');
+    const generateToken2Fa = randomInt(0, 1_000_000).toString().padStart(6, '0');
     const newToken2Fa = new Token2Fa(
       {
         token: generateToken2Fa,
         expiresAt: new Date(new Date().getTime() + 10 * 60000),
         createdAt: new Date(),
         isRevoked: false,
+        attempts: 0,
       },
       {
         name: signupRequest.name,
@@ -61,6 +61,7 @@ export class SignupService {
       },
     );
 
+    await this.Token2FARepository.revokeAllValidTokensByEmail(signupRequest.email);
     const token = await this.Token2FARepository.createToken2FA(newToken2Fa);
 
     await this.SendEmailAdapter.sendEmail2FA(
