@@ -23,6 +23,7 @@ export enum UserExceptions {
 export enum TokenExceptions {
   TOKEN_INVALID = 'TOKEN_INVALID',
   TOKEN_EXPIRED = 'TOKEN_EXPIRED',
+  TOKEN_REUSED = 'TOKEN_REUSED',
 }
 
 export enum ChatExceptions {

@@ -101,6 +101,7 @@ model RefreshToken {
   isRevoked Boolean  @default(false) @map("is_revoked")
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
   @@map("refresh_tokens")
 }
 

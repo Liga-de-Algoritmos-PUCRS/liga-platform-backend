@@ -16,6 +16,7 @@ import { Role } from '@/modules/User/domain/user.entity';
 import { ConfigService } from '@nestjs/config';
 import { Env } from '@/global/env.schema';
 import { UserExceptions } from '@/infrastructure/Exceptions/exceptions.types';
+import { digestRefreshToken } from '@/modules/Auth/login/application/refresh-token-digest';
 
 @Injectable()
 export class LoginService {
@@ -77,7 +78,7 @@ export class LoginService {
     ]);
 
     const hashedToken = await this.cryptographyAdapter.hash({
-      plainText: refreshToken,
+      plainText: digestRefreshToken(refreshToken),
       hashSalt: 8,
     });
 
