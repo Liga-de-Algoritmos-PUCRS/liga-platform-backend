@@ -111,6 +111,7 @@ model Token2FA {
   expiresAt    DateTime @map("expires_at")
   createdAt    DateTime @default(now()) @map("created_at")
   isRevoked    Boolean  @default(false) @map("is_revoked")
+  attempts     Int      @default(0) @map("attempts")
   userEmail    String   @map("user_email")
   userName     String   @map("user_name")
   userPassword String   @map("usage_password")
@@ -124,6 +125,7 @@ model ResetPasswordToken {
   expiresAt DateTime @map("expires_at")
   createdAt DateTime @default(now()) @map("created_at")
   isRevoked Boolean  @default(false) @map("is_revoked")
+  attempts  Int      @default(0) @map("attempts")
   userId    String   @map("user_id")
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
