@@ -25,11 +25,25 @@ export class PrismaToken2FaRepository implements Token2FARepository {
     return token2Fa ? Token2FAMapper.toDomain(token2Fa) : null;
   }
 
-  public async revokeRefreshTokenById(id: string): Promise<boolean> {
+  public async revokeToken2FaById(id: string): Promise<boolean> {
     await this.prisma.token2FA.update({
       where: { id: id },
       data: { isRevoked: true },
     });
     return true;
+  }
+
+  public async incrementAttempts(id: string): Promise<void> {
+    await this.prisma.token2FA.update({
+      where: { id: id },
+      data: { attempts: { increment: 1 } },
+    });
+  }
+
+  public async revokeAllValidTokensByEmail(email: string): Promise<void> {
+    await this.prisma.token2FA.updateMany({
+      where: { userEmail: email, isRevoked: false },
+      data: { isRevoked: true },
+    });
   }
 }
