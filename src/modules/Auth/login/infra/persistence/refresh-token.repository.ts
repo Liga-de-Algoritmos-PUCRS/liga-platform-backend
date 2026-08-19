@@ -3,14 +3,16 @@ import { RefreshToken } from '@/modules/Auth/login/domain/refresh-token.entity';
 import { RefreshTokenRepository } from '@/modules/Auth/login/domain/refresh-token.repository';
 import { PrismaService } from '@/infrastructure/Database/prisma.service';
 import { RefreshTokenMapper } from '@/modules/Auth/login/infra/persistence/refresh-token.mapper';
+import { Transaction } from '@/infrastructure/Database/Transaction/transaction.adapter';
 
 @Injectable()
 export class PrismaRefreshTokenRepository implements RefreshTokenRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  public async createRefreshToken(refreshToken: RefreshToken): Promise<void> {
+  public async createRefreshToken(refreshToken: RefreshToken, tx?: Transaction): Promise<void> {
+    const client = tx ?? this.prisma;
     const data = RefreshTokenMapper.toPersistence(refreshToken);
-    await this.prisma.refreshToken.create({
+    await client.refreshToken.create({
       data: data,
     });
   }
@@ -48,10 +50,15 @@ export class PrismaRefreshTokenRepository implements RefreshTokenRepository {
     });
   }
 
-  public async revokeRefreshTokenById(id: string): Promise<boolean> {
-    const { count } = await this.prisma.refreshToken.updateMany({
+  public async revokeRefreshTokenById(
+    id: string,
+    replacedByTokenId: string,
+    tx?: Transaction,
+  ): Promise<boolean> {
+    const client = tx ?? this.prisma;
+    const { count } = await client.refreshToken.updateMany({
       where: { id, isRevoked: false },
-      data: { isRevoked: true },
+      data: { isRevoked: true, replacedByTokenId },
     });
 
     return count > 0;

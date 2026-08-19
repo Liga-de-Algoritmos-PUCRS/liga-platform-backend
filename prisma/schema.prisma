@@ -94,13 +94,16 @@ model File {
 }
 
 model RefreshToken {
-  id        String   @id @default(uuid())
-  token     String   @unique
-  userId    String   @map("user_id")
-  createdAt DateTime @default(now()) @map("created_at")
-  expiresAt DateTime @map("expires_at")
-  isRevoked Boolean  @default(false) @map("is_revoked")
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String         @id @default(uuid())
+  token             String         @unique
+  userId            String         @map("user_id")
+  createdAt         DateTime       @default(now()) @map("created_at")
+  expiresAt         DateTime       @map("expires_at")
+  isRevoked         Boolean        @default(false) @map("is_revoked")
+  replacedByTokenId String?        @map("replaced_by_token_id")
+  user              User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  replacedByToken   RefreshToken?  @relation("RefreshTokenRotation", fields: [replacedByTokenId], references: [id], onDelete: SetNull)
+  supersedesTokens  RefreshToken[] @relation("RefreshTokenRotation")
 
   @@index([userId])
   @@map("refresh_tokens")

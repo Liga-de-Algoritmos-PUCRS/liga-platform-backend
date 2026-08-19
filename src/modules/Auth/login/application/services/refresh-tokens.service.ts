@@ -14,6 +14,15 @@ import { Env } from '@/global/env.schema';
 import { UserExceptions, TokenExceptions } from '@/infrastructure/Exceptions/exceptions.types';
 import { Role } from '@/modules/User/domain/user.entity';
 import { digestRefreshToken } from '@/modules/Auth/login/application/refresh-token-digest';
+import { TransactionAdapter } from '@/infrastructure/Database/Transaction/transaction.adapter';
+
+/**
+ * Sentinela interna: sinaliza que o CAS de revogação do token antigo perdeu
+ * a corrida, para abortar (rollback) a transação que já inseriu o token novo
+ * — sem essa transação, a linha nova ficaria órfã no banco quando a
+ * requisição perde a corrida.
+ */
+class RefreshTokenRaceLostError extends Error {}
 
 @Injectable()
 export class RefreshTokenService {
@@ -24,6 +33,7 @@ export class RefreshTokenService {
     private readonly loggerAdapter: LoggerAdapter,
     private readonly jwtService: JwtService,
     private readonly refreshTokenRepository: RefreshTokenRepository,
+    private readonly transactionAdapter: TransactionAdapter,
     private readonly configService: ConfigService<Env, true>,
   ) {}
 
@@ -63,24 +73,24 @@ export class RefreshTokenService {
     }
 
     if (matchedRefreshToken.isRevoked) {
-      // Reapresentação de um refresh token já rotacionado: sinal de roubo de
-      // token. Revoga toda a família (todas as sessões do usuário) em vez de
-      // só rejeitar essa requisição.
-      await this.revokeFamilyAndThrow(userId);
-    }
+      // Reapresentação de um refresh token já rotacionado. Se o vínculo de
+      // rotação aponta para a sessão viva atual (uma geração de distância),
+      // é uma requisição atrasada de uma corrida benigna entre abas — não
+      // roubo de token — e não deve derrubar a família inteira.
+      const child = matchedRefreshToken.replacedByTokenId
+        ? candidates.find((candidate) => candidate.id === matchedRefreshToken.replacedByTokenId)
+        : null;
+      const isImmediateParentOfLiveSession = !!child && !child.isRevoked;
 
-    // `revokeRefreshTokenById` só revoga se o token ainda estiver
-    // `isRevoked = false` no banco (compare-and-swap). Se devolver `false`,
-    // outra requisição concorrente com o mesmo token venceu a corrida entre
-    // a leitura acima e este `UPDATE`. Isso não é reuso de um token já
-    // rotacionado — é a corrida legítima entre abas que o front já tolera
-    // (front/CLAUDE.md) — então só rejeita esta requisição, sem revogar a
-    // sessão que a outra aba acabou de conseguir.
-    const revoked = await this.refreshTokenRepository.revokeRefreshTokenById(
-      matchedRefreshToken.id,
-    );
+      if (!isImmediateParentOfLiveSession) {
+        await this.revokeFamilyAndThrow(userId);
+      }
 
-    if (!revoked) {
+      this.loggerAdapter.debug({
+        where: 'RefreshTokenService.execute',
+        message: `Refresh token rotation race tolerated for user ${userId} (immediate parent reused)`,
+      });
+
       throw this.exceptionsAdapter.unauthorized({
         message: 'Refresh token already used',
         internalKey: TokenExceptions.TOKEN_REUSED,
@@ -90,6 +100,7 @@ export class RefreshTokenService {
     return this.generateNewTokens({
       accountId: user.id,
       userRole: user.role,
+      oldRefreshTokenId: matchedRefreshToken.id,
     });
   }
 
@@ -141,7 +152,41 @@ export class RefreshTokenService {
       createdAt: new Date(),
     });
 
-    await this.refreshTokenRepository.createRefreshToken(newRefreshToken);
+    try {
+      // Uma transação só: cria o token novo e, no mesmo fôlego, tenta o CAS
+      // de revogação do token antigo (`WHERE isRevoked = false`) gravando
+      // `replacedByTokenId` nesse UPDATE. A FK exige que o token novo já
+      // exista para ser referenciado — por isso o `create` vem primeiro —
+      // mas se o CAS devolver `false` (outra requisição concorrente com o
+      // mesmo token venceu a corrida entre a leitura e este UPDATE), o
+      // rollback da transação desfaz também o `create`, sem deixar linha
+      // órfã. Essa corrida não é reuso de um token já rotacionado — é a
+      // corrida legítima entre abas que o front já tolera (front/CLAUDE.md)
+      // — então só rejeita esta requisição, sem revogar a sessão que a
+      // outra aba acabou de conseguir.
+      await this.transactionAdapter.transaction(async (tx) => {
+        await this.refreshTokenRepository.createRefreshToken(newRefreshToken, tx);
+
+        const revoked = await this.refreshTokenRepository.revokeRefreshTokenById(
+          tokenParams.oldRefreshTokenId,
+          newRefreshToken.id,
+          tx,
+        );
+
+        if (!revoked) {
+          throw new RefreshTokenRaceLostError();
+        }
+      });
+    } catch (error) {
+      if (error instanceof RefreshTokenRaceLostError) {
+        throw this.exceptionsAdapter.unauthorized({
+          message: 'Refresh token already used',
+          internalKey: TokenExceptions.TOKEN_REUSED,
+        });
+      }
+
+      throw error;
+    }
 
     return { accessToken, refreshToken };
   }
@@ -150,4 +195,5 @@ export class RefreshTokenService {
 interface TokenParams {
   accountId: string;
   userRole: Role;
+  oldRefreshTokenId: string;
 }
