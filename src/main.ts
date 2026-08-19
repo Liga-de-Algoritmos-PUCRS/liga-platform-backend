@@ -16,7 +16,7 @@ async function bootstrap() {
 
   app.use(
     express.json({
-      limit: '150mb',
+      limit: '5mb',
       verify: (req: express.Request & { rawBody: Buffer }, _res, buf) => {
         req.rawBody = buf;
       },
