@@ -24,6 +24,10 @@ export abstract class UserRepository {
     tx?: Transaction,
   ): Promise<void>;
   public abstract resetAllMonthlyPoints(): Promise<void>;
+  public abstract adjustUserPoints(
+    userId: string,
+    delta: { allTimePointsDelta?: number; monthlyPointsDelta?: number },
+  ): Promise<void>;
   public abstract incrementUserSubmissions(userId: string, tx?: Transaction): Promise<void>;
   public abstract incrementUserProblemsResolved(userId: string, tx?: Transaction): Promise<void>;
   public abstract decrementUserProblemsResolved(userId: string, tx?: Transaction): Promise<void>;

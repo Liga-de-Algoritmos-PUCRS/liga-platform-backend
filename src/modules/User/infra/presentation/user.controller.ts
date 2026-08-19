@@ -6,6 +6,7 @@ import { GetMembersService } from '@/modules/User/application/services/get-membe
 import { DeleteUserService } from '@/modules/User/application/services/delete-user.service';
 import { GetUserByIdService } from '@/modules/User/application/services/get-user.service';
 import { UpdateUserDTO } from '@/modules/User/application/dtos/update-user.dto';
+import { AdjustUserPointsDTO } from '@/modules/User/application/dtos/adjust-user-points.dto';
 import { GetUser, GetUserInterface } from '@/global/common/decorators/get-user.decorator';
 import {
   UpdateUserDecorator,
@@ -17,12 +18,14 @@ import {
   ResetUserPointsDecorator,
   GetUserInformations,
   GetMembersDecorator,
+  AdjustUserPointsDecorator,
 } from '../../application/dtos/user.decorator';
 import { UserResponseDTO } from '@/modules/User/application/dtos/response-user.dto';
 import { PublicUserResponseDTO } from '@/modules/User/application/dtos/public-user.response.dto';
 import { GetTopUserService } from '@/modules/User/application/services/get-top-user.service';
 import { GetMonthlyTopUserService } from '@/modules/User/application/services/get-top-monthly-user.service';
 import { ResetUserPointsService } from '@/modules/User/application/services/reset-user-points.service';
+import { AdjustUserPointsService } from '@/modules/User/application/services/adjust-user-points.service';
 
 import { IsAdmin } from '@/global/common/decorators/is-admin-decorator';
 import { DeleteUserDTO } from '../../application/dtos/delete-user.dto';
@@ -39,6 +42,7 @@ export class UserController {
     private readonly GetTopUser: GetTopUserService,
     private readonly GetMonthlyTopUser: GetMonthlyTopUserService,
     private readonly ResetUserPointsService: ResetUserPointsService,
+    private readonly AdjustUserPointsService: AdjustUserPointsService,
   ) {}
 
   // Precisa vir antes de @Get(':id'): 'members' e um unico segmento e seria
@@ -80,6 +84,17 @@ export class UserController {
     @GetUser() requester: GetUserInterface,
   ) {
     return await this.UpdateUserService.execute(id, user, requester);
+  }
+
+  @AdjustUserPointsDecorator
+  @IsAdmin()
+  @Patch(':id/points')
+  async adjustUserPoints(
+    @Param('id') id: string,
+    @Body() dto: AdjustUserPointsDTO,
+    @GetUser() requester: GetUserInterface,
+  ): Promise<UserResponseDTO> {
+    return await this.AdjustUserPointsService.execute(id, dto, requester);
   }
 
   @DeleteUserDecorator
