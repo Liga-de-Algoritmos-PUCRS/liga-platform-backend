@@ -17,9 +17,7 @@ export abstract class RollCallRepository {
   abstract findAttendance(userId: string, rollCallId: string): Promise<Attendance | null>;
   abstract upsertAttendance(userId: string, rollCallId: string): Promise<void>;
   abstract deleteAttendance(userId: string, rollCallId: string): Promise<void>;
-  abstract findUserAttendances(
-    userId: string,
-  ): Promise<Array<{ attendance: Attendance; rollCall: RollCall }>>;
+  abstract findAttendedRollCallIds(userId: string): Promise<string[]>;
   abstract findRollCallAttendeeIds(rollCallId: string): Promise<string[]>;
   abstract findAllAttendances(): Promise<Attendance[]>;
 }
