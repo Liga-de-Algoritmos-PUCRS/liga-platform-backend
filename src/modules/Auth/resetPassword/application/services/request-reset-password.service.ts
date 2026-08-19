@@ -1,3 +1,4 @@
+import { randomInt } from 'crypto';
 import { Injectable } from '@nestjs/common';
 import { ExceptionsAdapter } from '@/infrastructure/Exceptions/exceptions.adapter';
 import { UserRepository } from '@/modules/User/domain/user.repository';
@@ -24,9 +25,7 @@ export class RequestResetPasswordService {
       });
     }
 
-    const generatedTokenResetPassword = Math.floor(Math.random() * 10000)
-      .toString()
-      .padStart(4, '0');
+    const generatedTokenResetPassword = randomInt(0, 1_000_000).toString().padStart(6, '0');
 
     const ResetToken = new ResetPasswordToken({
       userId: user.id,
@@ -34,8 +33,10 @@ export class RequestResetPasswordService {
       createdAt: new Date(),
       expiresAt: new Date(Date.now() + 15 * 60 * 1000),
       isRevoked: false,
+      attempts: 0,
     });
 
+    await this.ResetPasswordTokenRepository.revokeAllValidTokensByUserId(user.id);
     const CreatedResetToken =
       await this.ResetPasswordTokenRepository.createResetPasswordToken(ResetToken);
 

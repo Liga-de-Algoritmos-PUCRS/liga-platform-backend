@@ -22,10 +22,6 @@ export class PrismaResetPasswordTokenRepository implements ResetPasswordTokenRep
     const prismaToken = await this.PrismaService.resetPasswordToken.findFirst({
       where: {
         id,
-        isRevoked: false,
-        expiresAt: {
-          gt: new Date(),
-        },
       },
     });
 
@@ -48,5 +44,19 @@ export class PrismaResetPasswordTokenRepository implements ResetPasswordTokenRep
     });
 
     return result.count > 0;
+  }
+
+  public async incrementAttempts(id: string): Promise<void> {
+    await this.PrismaService.resetPasswordToken.update({
+      where: { id },
+      data: { attempts: { increment: 1 } },
+    });
+  }
+
+  public async revokeAllValidTokensByUserId(userId: string): Promise<void> {
+    await this.PrismaService.resetPasswordToken.updateMany({
+      where: { userId, isRevoked: false },
+      data: { isRevoked: true },
+    });
   }
 }

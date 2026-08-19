@@ -6,4 +6,6 @@ export abstract class ResetPasswordTokenRepository {
   ): Promise<ResetPasswordToken>;
   public abstract findValidResetPasswordToken(id: string): Promise<ResetPasswordToken | null>;
   public abstract revokeResetPasswordTokenById(id: string): Promise<boolean>;
+  public abstract incrementAttempts(id: string): Promise<void>;
+  public abstract revokeAllValidTokensByUserId(userId: string): Promise<void>;
 }
