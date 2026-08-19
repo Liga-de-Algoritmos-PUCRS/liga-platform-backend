@@ -90,6 +90,25 @@ jobs:
             # deploy alto, em vez de ser descartada em silencio.
             git pull --ff-only origin main
             export IMAGE_TAG
+            # Antes do pull: remove imagens SHA antigas do backend (back#53).
+            # Cada merge builda e publica uma tag nova; sem limpeza previa elas
+            # se acumulam ate faltar espaco pro proprio "pull" (foi o que
+            # aconteceu -- "no space left on device" na extracao de uma
+            # camada). Mantem as 3 mais recentes por data de criacao local +
+            # "latest" (nunca candidata, e o fallback do deploy manual de
+            # emergencia) + a imagem que o liga-api esta rodando agora
+            # (salvaguarda contra apagar um rollback manual que caiu fora da
+            # janela de 3). Nao usa "-a" nem "--volumes" em lugar nenhum.
+            RUNNING_IMAGE=$(docker inspect -f '{{.Config.Image}}' liga-api 2>/dev/null || true)
+            OLD_IMAGES=$(docker images --format '{{.CreatedAt}}\t{{.Repository}}:{{.Tag}}' ghcr.io/liga-de-algoritmos-pucrs/liga-platform-backend | grep -v ':latest$' | sort -r | tail -n +4 | cut -f2 || true)
+            for old_image in $OLD_IMAGES; do
+              if [ "$old_image" = "$RUNNING_IMAGE" ]; then
+                echo "mantendo $old_image: e a imagem em uso pelo liga-api"
+                continue
+              fi
+              # Best-effort: uma remocao que falha nao pode travar o deploy.
+              docker rmi "$old_image" || echo "nao foi possivel remover $old_image"
+            done
             # O --env-file nao e opcional nem no pull: o compose interpola
             # ${DB_USER:?} e aborta sem ele.
             docker compose --env-file .env.prod -f docker-compose.prod.yaml pull api

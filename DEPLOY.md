@@ -151,8 +151,10 @@ em dois jobs:
 1. `build-and-push` — builda a imagem **no runner do GitHub** e publica no GHCR
    com duas tags: o SHA completo do commit e `latest`.
 2. `deploy` — só começa depois que o primeiro termina verde (`needs:`). Entra
-   por SSH na EC2, faz `git pull --ff-only origin main`, puxa a imagem daquela
-   tag e sobe os containers. Nada é compilado no servidor.
+   por SSH na EC2, faz `git pull --ff-only origin main`, **remove imagens SHA
+   antigas do backend mantendo só as 3 mais recentes + a que está em uso**
+   (ver "Pegadinhas conhecidas"), puxa a imagem daquela tag e sobe os
+   containers. Nada é compilado no servidor.
 
 Depois disso o próprio job verifica a produção pela internet (401 em `/user`,
 404 em `/api-json`, até 6 tentativas espaçadas de 10s) e **fica vermelho se não
@@ -321,7 +323,22 @@ aditiva, e um `pg_dump` a cada merge custaria disco e tempo sem pagar por si.
   O compose interpola `${DB_USER:?}` ao ler o arquivo, antes de decidir o que
   vai fazer — sem a flag, qualquer subcomando aborta.
 
-- **O deploy roda `docker system prune -f`, sem `-a` e sem `--volumes`.** Nunca
+- **Antes do `pull`, o deploy remove imagens SHA antigas do backend
+  mantendo só as 3 mais recentes (back#53).** Cada merge builda e publica uma
+  tag nova; sem essa limpeza elas se acumulavam sem teto até faltar espaço
+  para o próprio `pull` (foi o que aconteceu — "no space left on device" ao
+  extrair uma camada). A janela guarda 3 SHAs porque é a mesma folga do
+  rollback manual via `workflow_dispatch` (ver "Deploy manual"); a tag
+  `latest` nunca entra na contagem nem é removida, é o fallback do deploy
+  manual de emergência; e a imagem que o `liga-api` está rodando no momento
+  nunca é removida mesmo se cair fora da janela — cobre o caso de um rollback
+  manual para um SHA antigo que os deploys automáticos seguintes empurrariam
+  para fora das 3. Cada `docker rmi` é best-effort: uma falha individual só
+  loga, não trava o deploy. Roda **antes** do `pull`, não depois do `up -d` —
+  o próprio ponto da correção é liberar espaço a tempo de o `pull` não falhar.
+
+- **O deploy roda `docker system prune -f`, sem `-a` e sem `--volumes`, depois
+  do `up -d` — isso continua igual, é aditivo à limpeza acima.** Nunca
   acrescente nenhum dos dois: `--volumes` apagaria o `postgres-liga-data`, que é
   o banco de produção, e `-a` removeria imagens ainda referenciadas, incluindo
   as tags antigas que servem de rollback. O prune padrão só limpa camadas
