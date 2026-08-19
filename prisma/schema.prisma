@@ -55,6 +55,7 @@ model Problem {
   fixed         Boolean        @default(false) @map("fixed")
   submissions   Submission[]
 
+  @@index([createdAt])
   @@map("problems")
 }
 
