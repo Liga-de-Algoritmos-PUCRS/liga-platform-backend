@@ -5,6 +5,7 @@ import { RefreshTokenRepository } from '@/modules/Auth/login/domain/refresh-toke
 import { UserRepository } from '@/modules/User/domain/user.repository';
 import { ExceptionsAdapter } from '@/infrastructure/Exceptions/exceptions.adapter';
 import { CryptographyAdapter } from '@/infrastructure/Criptography/cryptography.adapter';
+import { LoggerAdapter } from '@/infrastructure/Logger/logger.adapter';
 import { JwtService } from '@nestjs/jwt';
 import { StringValue } from 'ms';
 import * as ms from 'ms';
@@ -12,6 +13,7 @@ import { ConfigService } from '@nestjs/config';
 import { Env } from '@/global/env.schema';
 import { UserExceptions, TokenExceptions } from '@/infrastructure/Exceptions/exceptions.types';
 import { Role } from '@/modules/User/domain/user.entity';
+import { digestRefreshToken } from '@/modules/Auth/login/application/refresh-token-digest';
 
 @Injectable()
 export class RefreshTokenService {
@@ -19,6 +21,7 @@ export class RefreshTokenService {
     private readonly userRepository: UserRepository,
     private readonly exceptionsAdapter: ExceptionsAdapter,
     private readonly cryptographyAdapter: CryptographyAdapter,
+    private readonly loggerAdapter: LoggerAdapter,
     private readonly jwtService: JwtService,
     private readonly refreshTokenRepository: RefreshTokenRepository,
     private readonly configService: ConfigService<Env, true>,
@@ -33,13 +36,16 @@ export class RefreshTokenService {
       });
     }
 
-    const userRefreshTokens =
-      await this.refreshTokenRepository.findValidRefreshTokensByAccountId(userId);
+    // Inclui tokens já revogados (não expirados) para poder distinguir "token
+    // nunca existiu" de "token já foi rotacionado e está sendo reapresentado".
+    const candidates =
+      await this.refreshTokenRepository.findNonExpiredRefreshTokensByAccountId(userId);
 
+    const digest = digestRefreshToken(oldRefreshToken);
     let matchedRefreshToken: RefreshToken | null = null;
-    for (const candidate of userRefreshTokens) {
+    for (const candidate of candidates) {
       const isMatch = await this.cryptographyAdapter.compare({
-        plainText: oldRefreshToken,
+        plainText: digest,
         cryptographedText: candidate.token,
       });
 
@@ -56,11 +62,42 @@ export class RefreshTokenService {
       });
     }
 
-    await this.refreshTokenRepository.revokeRefreshTokenById(matchedRefreshToken.id);
+    if (matchedRefreshToken.isRevoked) {
+      // Reapresentação de um refresh token já rotacionado: sinal de roubo de
+      // token. Revoga toda a família (todas as sessões do usuário) em vez de
+      // só rejeitar essa requisição.
+      await this.revokeFamilyAndThrow(userId);
+    }
+
+    // `revokeRefreshTokenById` só revoga se o token ainda estiver
+    // `isRevoked = false` no banco (compare-and-swap). Se devolver `false`,
+    // outra requisição concorrente com o mesmo token venceu a corrida entre
+    // a leitura acima e este `UPDATE` — trata como reuso pelo mesmo motivo.
+    const revoked = await this.refreshTokenRepository.revokeRefreshTokenById(
+      matchedRefreshToken.id,
+    );
+
+    if (!revoked) {
+      await this.revokeFamilyAndThrow(userId);
+    }
 
     return this.generateNewTokens({
       accountId: user.id,
       userRole: user.role,
+    });
+  }
+
+  private async revokeFamilyAndThrow(userId: string): Promise<never> {
+    this.loggerAdapter.warn({
+      where: 'RefreshTokenService.execute',
+      message: `Refresh token reuse detected for user ${userId}; revoking all sessions`,
+    });
+
+    await this.refreshTokenRepository.revokeAllRefreshTokensByAccountId(userId);
+
+    throw this.exceptionsAdapter.unauthorized({
+      message: 'Refresh token already used',
+      internalKey: TokenExceptions.TOKEN_REUSED,
     });
   }
 
@@ -82,7 +119,7 @@ export class RefreshTokenService {
     ]);
 
     const hashedToken = await this.cryptographyAdapter.hash({
-      plainText: refreshToken,
+      plainText: digestRefreshToken(refreshToken),
       hashSalt: 8,
     });
 

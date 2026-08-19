@@ -15,16 +15,25 @@ export class PrismaRefreshTokenRepository implements RefreshTokenRepository {
     });
   }
 
-  public async findValidRefreshTokensByAccountId(accountId: string): Promise<RefreshToken[]> {
+  public async findNonExpiredRefreshTokensByAccountId(accountId: string): Promise<RefreshToken[]> {
     const refreshTokens = await this.prisma.refreshToken.findMany({
       where: {
         userId: accountId,
-        isRevoked: false,
         expiresAt: { gt: new Date() },
       },
     });
 
     return refreshTokens.map((refreshToken) => RefreshTokenMapper.toDomain(refreshToken));
+  }
+
+  public async deleteExpiredRefreshTokens(): Promise<number> {
+    const { count } = await this.prisma.refreshToken.deleteMany({
+      where: {
+        expiresAt: { lte: new Date() },
+      },
+    });
+
+    return count;
   }
 
   public async revokeAllRefreshTokensByAccountId(accountId: string): Promise<void> {
@@ -39,10 +48,12 @@ export class PrismaRefreshTokenRepository implements RefreshTokenRepository {
     });
   }
 
-  public async revokeRefreshTokenById(id: string): Promise<void> {
-    await this.prisma.refreshToken.update({
-      where: { id: id },
+  public async revokeRefreshTokenById(id: string): Promise<boolean> {
+    const { count } = await this.prisma.refreshToken.updateMany({
+      where: { id, isRevoked: false },
       data: { isRevoked: true },
     });
+
+    return count > 0;
   }
 }
