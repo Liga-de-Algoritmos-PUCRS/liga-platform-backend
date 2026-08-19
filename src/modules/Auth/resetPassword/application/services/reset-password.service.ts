@@ -7,6 +7,8 @@ import { ResetPasswordDTO } from '@/modules/Auth/resetPassword/application/dtos/
 import { CryptographyAdapter } from '@/infrastructure/Criptography/cryptography.adapter';
 import { UserExceptions, TokenExceptions } from '@/infrastructure/Exceptions/exceptions.types';
 import { MAX_TOKEN_ATTEMPTS } from '@/modules/Auth/auth.constants';
+import { RefreshTokenRepository } from '@/modules/Auth/login/domain/refresh-token.repository';
+import { LoggerAdapter } from '@/infrastructure/Logger/logger.adapter';
 
 @Injectable()
 export class ResetPasswordService {
@@ -16,6 +18,8 @@ export class ResetPasswordService {
     private readonly ResetPasswordTokenRepository: ResetPasswordTokenRepository,
     private readonly SendEmailAdapter: SendEmailAdapter,
     private readonly CryptographyAdapter: CryptographyAdapter,
+    private readonly RefreshTokenRepository: RefreshTokenRepository,
+    private readonly LoggerAdapter: LoggerAdapter,
   ) {}
 
   async execute(ResetPasswordDTO: ResetPasswordDTO): Promise<void> {
@@ -99,9 +103,24 @@ export class ResetPasswordService {
 
     await this.UserRepository.updateUser(user);
 
-    await this.SendEmailAdapter.sendEmailPaswordChanged(user.email, user.name);
+    // Revoga as sessoes ativas antes do token de reset: uma sessao roubada nao
+    // pode sobreviver a troca de senha, e uma falha real de banco aqui deixa o
+    // token ainda valido para retry (nao fica queimado por uma falha alheia).
+    await this.RefreshTokenRepository.revokeAllRefreshTokensByAccountId(user.id);
 
     await this.ResetPasswordTokenRepository.revokeResetPasswordTokenById(findToken.id);
+
+    // Envio de e-mail e best-effort e vem por ultimo: com senha trocada e
+    // token ja revogado, uma falha do SES nao pode virar 500 nem deixar o
+    // token reutilizavel.
+    try {
+      await this.SendEmailAdapter.sendEmailPaswordChanged(user.email, user.name);
+    } catch (error) {
+      this.LoggerAdapter.error({
+        where: 'ResetPasswordService',
+        message: `Failed to send password changed email to ${user.email}: ${error}`,
+      });
+    }
   }
 
   private isSafetyPassword(password: string): boolean {
