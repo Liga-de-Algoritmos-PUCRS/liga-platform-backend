@@ -200,6 +200,31 @@ export const GetMonthlyTopUsersDecorator = applyDecorators(
   }),
 );
 
+export const AdjustUserPointsDecorator = applyDecorators(
+  ApiOperation({
+    summary: "Adjust a user's points",
+    description:
+      'Admin only. Applies a delta (positive or negative) to allTimePoints and/or monthlyPoints of any user. Each field is clamped at 0.',
+  }),
+  ApiOkResponse({
+    description: 'User points adjusted successfully.',
+    type: UserResponseDTO,
+  }),
+  ApiBadRequestResponse({
+    description: 'Bad request. Neither allTimePointsDelta nor monthlyPointsDelta was provided.',
+  }),
+  ApiForbiddenResponse({
+    description: 'Forbidden. Only admins can adjust user points.',
+  }),
+  ApiNotFoundResponse({
+    description: 'User not found. The user with the specified ID does not exist.',
+  }),
+  ApiInternalServerErrorResponse({
+    description:
+      'Internal server error. An unexpected error occurred while processing the request.',
+  }),
+);
+
 export const ResetUserPointsDecorator = applyDecorators(
   ApiOperation({
     summary: 'Reset user points',

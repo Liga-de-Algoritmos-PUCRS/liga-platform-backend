@@ -9,6 +9,7 @@ import { CryptographyModule } from '@/infrastructure/Criptography/criptography.m
 import { GetTopUserService } from '@/modules/User/application/services/get-top-user.service';
 import { GetMonthlyTopUserService } from '@/modules/User/application/services/get-top-monthly-user.service';
 import { ResetUserPointsService } from '@/modules/User/application/services/reset-user-points.service';
+import { AdjustUserPointsService } from '@/modules/User/application/services/adjust-user-points.service';
 import { SendEmailModule } from '@/infrastructure/SendEmail/sendEmail.module';
 
 @Global()
@@ -24,6 +25,7 @@ import { SendEmailModule } from '@/infrastructure/SendEmail/sendEmail.module';
     GetTopUserService,
     GetMonthlyTopUserService,
     ResetUserPointsService,
+    AdjustUserPointsService,
   ],
   exports: [],
 })

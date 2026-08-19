@@ -161,6 +161,20 @@ export class PrismaUserRepository implements UserRepository {
       WHERE "id" = ${userId}`;
   }
 
+  public async adjustUserPoints(
+    userId: string,
+    delta: { allTimePointsDelta?: number; monthlyPointsDelta?: number },
+  ): Promise<void> {
+    const allTimePointsDelta = delta.allTimePointsDelta ?? 0;
+    const monthlyPointsDelta = delta.monthlyPointsDelta ?? 0;
+
+    await this.prisma.$executeRaw`
+      UPDATE "users"
+      SET "all_points" = GREATEST(0, "all_points" + ${allTimePointsDelta}),
+          "monthly_points" = GREATEST(0, "monthly_points" + ${monthlyPointsDelta})
+      WHERE "id" = ${userId}`;
+  }
+
   public async resetAllMonthlyPoints(): Promise<void> {
     this.LoggerAdapter.log({
       where: 'PrismaUserRepository',
