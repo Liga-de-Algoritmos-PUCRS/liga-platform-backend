@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString, Length, Matches } from 'class-validator';
 import { applyDecorators } from '@nestjs/common';
 import {
   ApiInternalServerErrorResponse,
@@ -19,12 +19,14 @@ export class ValidateSignupDTO {
   tokenId: string;
 
   @ApiProperty({
-    description: 'Indicates if the token has 4 digits',
-    example: '1234',
+    description: 'Indicates if the token has 6 digits',
+    example: '123456',
     required: true,
   })
   @IsNotEmpty()
   @IsString()
+  @Length(6, 6)
+  @Matches(/^\d{6}$/)
   token: string;
 }
 
