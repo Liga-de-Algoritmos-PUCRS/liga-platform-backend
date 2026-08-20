@@ -16,11 +16,12 @@ export class PrismaUserRepository implements UserRepository {
     private readonly ExceptionsAdapter: ExceptionsAdapter,
   ) {}
 
-  public async createUser(user: User): Promise<User> {
+  public async createUser(user: User, tx?: Transaction): Promise<User> {
     try {
+      const client = tx ?? this.prisma;
       const userToPersiste = UserMapper.toPersistence(user);
 
-      const createdUser = await this.prisma.user.create({
+      const createdUser = await client.user.create({
         data: userToPersiste,
       });
 

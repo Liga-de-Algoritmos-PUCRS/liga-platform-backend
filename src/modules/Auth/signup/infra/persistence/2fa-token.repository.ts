@@ -3,6 +3,7 @@ import { Token2Fa } from '@/modules/Auth/signup/domain/2fa-token.entity';
 import { Token2FARepository } from '@/modules/Auth/signup/domain/2fa-token.repository';
 import { PrismaService } from '@/infrastructure/Database/prisma.service';
 import { Token2FAMapper } from '@/modules/Auth/signup/infra/persistence/2fa-token.mapper';
+import { Transaction } from '@/infrastructure/Database/Transaction/transaction.adapter';
 
 @Injectable()
 export class PrismaToken2FaRepository implements Token2FARepository {
@@ -25,8 +26,9 @@ export class PrismaToken2FaRepository implements Token2FARepository {
     return token2Fa ? Token2FAMapper.toDomain(token2Fa) : null;
   }
 
-  public async revokeToken2FaById(id: string): Promise<boolean> {
-    await this.prisma.token2FA.update({
+  public async revokeToken2FaById(id: string, tx?: Transaction): Promise<boolean> {
+    const client = tx ?? this.prisma;
+    await client.token2FA.update({
       where: { id: id },
       data: { isRevoked: true },
     });

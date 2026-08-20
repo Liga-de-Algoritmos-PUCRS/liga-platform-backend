@@ -7,7 +7,10 @@ import { BucketAdapter } from '@/infrastructure/Bucket/bucket.adapter';
 import { ExceptionsAdapter } from '@/infrastructure/Exceptions/exceptions.adapter';
 import { UserExceptions, FileExceptions } from '@/infrastructure/Exceptions/exceptions.types';
 import { LoggerAdapter } from '@/infrastructure/Logger/logger.adapter';
-import { TransactionAdapter } from '@/infrastructure/Database/Transaction/transaction.adapter';
+import {
+  Transaction,
+  TransactionAdapter,
+} from '@/infrastructure/Database/Transaction/transaction.adapter';
 import { UserRepository } from '@/modules/User/domain/user.repository';
 import { ConfigService } from '@nestjs/config';
 
@@ -60,8 +63,8 @@ export class CreateFileService {
         deleted: false,
       });
 
-      const persisteFile = this.TransactionAdapter.transaction(async () => {
-        const createdFile = await this.FileRepository.createFile(file);
+      const persisteFile = this.TransactionAdapter.transaction(async (tx: Transaction) => {
+        const createdFile = await this.FileRepository.createFile(file, tx);
         if (!createdFile) {
           throw this.Exception.internalServerError({
             message: 'Failed to create file',

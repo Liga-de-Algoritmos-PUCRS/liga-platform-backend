@@ -4,7 +4,7 @@ import { Transaction } from '@/infrastructure/Database/Transaction/transaction.a
 
 @Injectable()
 export abstract class UserRepository {
-  public abstract createUser(user: User): Promise<User>;
+  public abstract createUser(user: User, tx?: Transaction): Promise<User>;
   public abstract getUser(id: string): Promise<User | null>;
   public abstract getUsers(): Promise<User[]>;
   public abstract updateUser(user: User): Promise<User>;

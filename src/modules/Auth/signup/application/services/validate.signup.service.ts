@@ -6,7 +6,10 @@ import { Token2FARepository } from '@/modules/Auth/signup/domain/2fa-token.repos
 import { User } from '@/modules/User/domain/user.entity';
 import { SendEmailAdapter } from '@/infrastructure/SendEmail/sendEmail.adapter';
 import { TokenExceptions, UserExceptions } from '@/infrastructure/Exceptions/exceptions.types';
-import { TransactionAdapter } from '@/infrastructure/Database/Transaction/transaction.adapter';
+import {
+  Transaction,
+  TransactionAdapter,
+} from '@/infrastructure/Database/Transaction/transaction.adapter';
 import { LoggerAdapter } from '@/infrastructure/Logger/logger.adapter';
 import { MAX_TOKEN_ATTEMPTS } from '@/modules/Auth/auth.constants';
 
@@ -73,7 +76,7 @@ export class ValidateSignupService {
       });
     }
 
-    const user: User = await this.TransactionAdapter.transaction(async () => {
+    const user: User = await this.TransactionAdapter.transaction(async (tx: Transaction) => {
       const user = await this.UserRepository.createUser(
         new User({
           name: findToken2Fa.userInfo2Fa.name,
@@ -81,7 +84,11 @@ export class ValidateSignupService {
           password: findToken2Fa.userInfo2Fa.password,
           role: 'USER',
         }),
+        tx,
       );
+
+      await this.Token2FARepository.revokeToken2FaById(findToken2Fa.id, tx);
+
       return user;
     });
 
@@ -94,8 +101,6 @@ export class ValidateSignupService {
           message: `Failed to send welcome email to ${user.email}: ${error}`,
         });
       }
-
-      await this.Token2FARepository.revokeToken2FaById(findToken2Fa.id);
     } else {
       throw this.ExceptionsAdapter.internalServerError({
         message: 'user not created',
