@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsNotEmpty, IsString, Length, Matches, ValidateIf } from 'class-validator';
+import { NotTogetherWith } from '@/global/common/validators/not-together-with.validator';
 import { applyDecorators } from '@nestjs/common';
 import {
   ApiInternalServerErrorResponse,
@@ -14,9 +15,15 @@ export class ValidateResetPasswordDTO {
     example: 'guilhermecassol@gmail.com',
     required: false,
   })
-  @ValidateIf((dto: ValidateResetPasswordDTO) => !dto.tokenId)
+  // Valida o e-mail sempre que ele vier, e o exige quando nao veio `tokenId`.
+  // O "veio so um" mora no @NotTogetherWith: escrito so com @ValidateIf, mandar
+  // os dois juntos desligaria as duas condicoes e nenhum campo seria validado.
+  @ValidateIf(
+    (dto: ValidateResetPasswordDTO) => dto.email !== undefined || dto.tokenId === undefined,
+  )
   @IsEmail()
   @IsNotEmpty()
+  @NotTogetherWith('tokenId')
   email?: string;
 
   @ApiProperty({
@@ -24,7 +31,9 @@ export class ValidateResetPasswordDTO {
     example: 'ivyuuzwcpdbblxmyplhx2tnh',
     required: false,
   })
-  @ValidateIf((dto: ValidateResetPasswordDTO) => !dto.email)
+  @ValidateIf(
+    (dto: ValidateResetPasswordDTO) => dto.tokenId !== undefined || dto.email === undefined,
+  )
   @IsString()
   @IsNotEmpty()
   tokenId?: string;
