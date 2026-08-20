@@ -6,6 +6,7 @@ import { SendEmailWelcomeService } from '@/infrastructure/SendEmail/application/
 import { SendBugReportEmailService } from '@/infrastructure/SendEmail/application/send-bug-reporter-.service';
 import { SendEmailPasswordChangedService } from '@/infrastructure/SendEmail/application/send-email-password-changed.service';
 import { SendEmailAccountCreatedService } from '@/infrastructure/SendEmail/application/send-email-account-created.service';
+import { SendEmailAccountExistsService } from '@/infrastructure/SendEmail/application/send-email-account-exists.service';
 @Injectable()
 export class SendEmailService implements SendEmailAdapter {
   constructor(
@@ -14,6 +15,7 @@ export class SendEmailService implements SendEmailAdapter {
     private readonly SendEmailWelcomeService: SendEmailWelcomeService,
     private readonly SendEmailPasswordChangedService: SendEmailPasswordChangedService,
     private readonly SendEmailAccountCreatedService: SendEmailAccountCreatedService,
+    private readonly SendEmailAccountExistsService: SendEmailAccountExistsService,
     private readonly SendEmailBugReportService: SendBugReportEmailService,
   ) {}
 
@@ -35,6 +37,10 @@ export class SendEmailService implements SendEmailAdapter {
 
   async sendEmailAccountCreated(email: string, password: string, name?: string): Promise<void> {
     return await this.SendEmailAccountCreatedService.execute(email, password, name);
+  }
+
+  async sendEmailAccountExists(email: string, name?: string): Promise<void> {
+    return await this.SendEmailAccountExistsService.execute(email, name);
   }
 
   async sendEmailBugReport(

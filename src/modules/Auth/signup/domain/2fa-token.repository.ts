@@ -4,6 +4,7 @@ import { Transaction } from '@/infrastructure/Database/Transaction/transaction.a
 export abstract class Token2FARepository {
   public abstract createToken2FA(token2Fa: Token2Fa): Promise<Token2Fa>;
   public abstract findValidToken2FA(id: string): Promise<Token2Fa | null>;
+  public abstract findValidToken2FAByEmail(email: string): Promise<Token2Fa | null>;
   public abstract revokeToken2FaById(id: string, tx?: Transaction): Promise<boolean>;
   public abstract incrementAttempts(
     id: string,
