@@ -63,7 +63,7 @@ export class CreateFileService {
         deleted: false,
       });
 
-      const persisteFile = this.TransactionAdapter.transaction(async (tx: Transaction) => {
+      return await this.TransactionAdapter.transaction(async (tx: Transaction) => {
         const createdFile = await this.FileRepository.createFile(file, tx);
         if (!createdFile) {
           throw this.Exception.internalServerError({
@@ -75,7 +75,6 @@ export class CreateFileService {
 
         return createdFile;
       });
-      return persisteFile;
     } catch (error) {
       await this.BucketAdapter.deleteFile(key);
       this.LoggerAdapter.error({
