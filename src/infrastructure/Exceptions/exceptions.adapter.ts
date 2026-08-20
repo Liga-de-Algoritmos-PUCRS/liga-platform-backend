@@ -8,8 +8,13 @@ import {
 } from '@nestjs/common';
 import { ExceptionInternalCode } from '@/infrastructure/Exceptions/exceptions.types';
 
+/**
+ * `message` é contratualmente público: vai no corpo HTTP.
+ * `internal`/`internalKey` nunca saem da resposta — só alimentam o log.
+ */
 export interface ExceptionParams {
   message: string;
+  internal?: string;
   internalKey?: ExceptionInternalCode;
 }
 
