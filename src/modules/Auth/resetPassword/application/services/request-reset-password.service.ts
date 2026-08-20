@@ -6,6 +6,8 @@ import { ResetPasswordTokenRepository } from '@/modules/Auth/resetPassword/domai
 import { ResetPasswordRequestDTO } from '@/modules/Auth/resetPassword/application/dtos/request-token.dto';
 import { ResetPasswordToken } from '../../domain/reset-password-token.entity';
 import { LoggerAdapter } from '@/infrastructure/Logger/logger.adapter';
+import { AUTH_EMAIL_BRANCH_MIN_RESPONSE_MS } from '@/modules/Auth/auth.constants';
+import { withMinimumResponseTime } from '@/modules/Auth/constant-time-response';
 
 const RESET_TOKEN_EXPIRES_IN_SECONDS = 15 * 60;
 
@@ -20,8 +22,19 @@ export class RequestResetPasswordService {
 
   // Sempre 200 com o mesmo corpo, exista ou nao o e-mail -- senao o status
   // vira um oraculo de quem tem conta. O envio do e-mail e disparado sem
-  // await para o SES nao entrar no timing da resposta.
+  // await para o SES nao entrar no timing da resposta, e o piso fixo de tempo
+  // esconde as duas escritas que so o ramo com conta faz (sem ele, medido,
+  // 98% das respostas sem conta chegavam antes da mais rapida com conta).
   async execute(ResetPasswordRequestDTO: ResetPasswordRequestDTO): Promise<{
+    message: string;
+    expiresInSeconds: number;
+  }> {
+    return withMinimumResponseTime(AUTH_EMAIL_BRANCH_MIN_RESPONSE_MS, () =>
+      this.issueToken(ResetPasswordRequestDTO),
+    );
+  }
+
+  private async issueToken(ResetPasswordRequestDTO: ResetPasswordRequestDTO): Promise<{
     message: string;
     expiresInSeconds: number;
   }> {
