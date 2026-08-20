@@ -29,7 +29,8 @@ export class GetAllProblemsService {
       return problems.map((problem) => problem.toPublicJSON());
     } catch (error) {
       throw this.ExceptionsAdapter.internalServerError({
-        message: `[getAllProblemsService].execute --> Failed to retrieve problems from database | errorText: ${error}`,
+        message: 'Unable to complete the operation',
+        internal: `[getAllProblemsService].execute --> Failed to retrieve problems from database | errorText: ${error}`,
       });
     }
   }

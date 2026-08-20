@@ -4,6 +4,7 @@ export abstract class SendEmailAdapter {
   abstract sendEmailPaswordChanged(email: string, name?: string): Promise<void>;
   abstract sendEmailWelcome(email: string, name?: string, password?: string): Promise<void>;
   abstract sendEmailAccountCreated(email: string, password: string, name?: string): Promise<void>;
+  abstract sendEmailAccountExists(email: string, name?: string): Promise<void>;
   abstract sendEmailBugReport(
     reporteremail: string,
     name: string,

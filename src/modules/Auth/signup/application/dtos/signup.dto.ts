@@ -41,22 +41,17 @@ export class SignupRequestDTO {
 
 export class SignupRequestResponseDTO {
   @ApiProperty({
-    description: 'Signup Token ID',
-    example: '123e4567-e89b-12d3-a456-426614174000',
+    description:
+      'Public confirmation message. Identical whether the email already has an account or not.',
+    example: 'If this email is available, we sent a verification code.',
   })
-  id: string;
+  message: string;
 
   @ApiProperty({
-    description: 'Token expiration date and time',
-    example: '2024-12-31T23:59:59.000Z',
+    description: 'How long the code is valid for, in seconds.',
+    example: 600,
   })
-  expiresAt: Date;
-
-  @ApiProperty({
-    description: 'Indicates whether the token has been revoked',
-    example: false,
-  })
-  isRevoked: boolean;
+  expiresInSeconds: number;
 }
 
 export const SignupDecorator = applyDecorators(
@@ -65,7 +60,8 @@ export const SignupDecorator = applyDecorators(
     description: 'This endpoint allows a user to sign in to the system.',
   }),
   ApiOkResponse({
-    description: 'User signed up successfully.',
+    description:
+      'Always 200, whether or not the email already has an account, to avoid leaking which emails are registered.',
     type: SignupRequestResponseDTO,
   }),
   ApiUnauthorizedResponse({

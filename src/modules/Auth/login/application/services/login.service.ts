@@ -18,6 +18,14 @@ import { Env } from '@/global/env.schema';
 import { UserExceptions } from '@/infrastructure/Exceptions/exceptions.types';
 import { digestRefreshToken } from '@/modules/Auth/login/application/refresh-token-digest';
 
+/**
+ * Hash bcrypt (custo 8, igual ao resto do projeto) de uma senha que nao
+ * corresponde a nenhuma conta. Usado so para gastar o mesmo tempo de um
+ * `compare` de verdade quando o e-mail nao existe -- sem isso, o timing do
+ * login denuncia quais e-mails tem conta (bcrypt so roda se o usuario existe).
+ */
+const DUMMY_PASSWORD_HASH = '$2b$08$0ofuZKpDPTFPt.tdt08V0OHxii69qFaFM/tjKrUltsfXrVM/anYb2';
+
 @Injectable()
 export class LoginService {
   constructor(
@@ -33,21 +41,19 @@ export class LoginService {
     const { email, password } = loginRequest;
 
     const user = await this.userRepository.findUserByEmail(email);
-    if (!user) {
-      throw this.exceptionsAdapter.badRequest({
-        message: 'Invalid email or password',
-        internalKey: UserExceptions.USER_INVALID_CREDENTIALS,
-      });
-    }
 
+    // Compara contra um hash real nos dois ramos -- existindo ou nao o
+    // usuario -- para o tempo de resposta nao denunciar quem tem conta.
     const verifyPassword = await this.cryptographyAdapter.compare({
       plainText: password,
-      cryptographedText: user.password,
+      cryptographedText: user?.password ?? DUMMY_PASSWORD_HASH,
     });
 
-    if (!verifyPassword) {
+    if (!user || !verifyPassword) {
       throw this.exceptionsAdapter.badRequest({
         message: 'Invalid email or password',
+        internal: !user ? `Login attempt for unknown email: ${email}` : undefined,
+        internalKey: UserExceptions.USER_INVALID_CREDENTIALS,
       });
     }
 

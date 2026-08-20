@@ -3,8 +3,11 @@ import { ExceptionsAdapter } from '@/infrastructure/Exceptions/exceptions.adapte
 import { ValidateResetPasswordDTO } from '@/modules/Auth/resetPassword/application/dtos/validate.dto';
 import { UserRepository } from '@/modules/User/domain/user.repository';
 import { ResetPasswordTokenRepository } from '@/modules/Auth/resetPassword/domain/reset-password-token.repository';
-import { UserExceptions, TokenExceptions } from '@/infrastructure/Exceptions/exceptions.types';
+import { TokenExceptions } from '@/infrastructure/Exceptions/exceptions.types';
 import { MAX_TOKEN_ATTEMPTS } from '@/modules/Auth/auth.constants';
+import { ResetPasswordToken } from '@/modules/Auth/resetPassword/domain/reset-password-token.entity';
+
+const INVALID_CODE_MESSAGE = 'Invalid or expired code';
 
 @Injectable()
 export class IsValidateResetPasswordService {
@@ -15,20 +18,23 @@ export class IsValidateResetPasswordService {
   ) {}
 
   async execute(ValidateResetPasswordDTO: ValidateResetPasswordDTO): Promise<void> {
-    const findToken = await this.ResetPasswordTokenRepository.findValidResetPasswordToken(
-      ValidateResetPasswordDTO.tokenId,
-    );
+    const findToken = await this.resolveToken(ValidateResetPasswordDTO);
 
+    // Todos os ramos de falha daqui pra baixo respondem a mesma mensagem:
+    // depois de re-chavear por e-mail, "tem token valido" quase equivale a
+    // "tem conta", entao diferenciar o motivo reabriria a enumeracao.
     if (!findToken) {
       throw this.ExceptionsAdapter.badRequest({
-        message: 'Invalid or expired token',
+        message: INVALID_CODE_MESSAGE,
+        internal: 'Token not found (by id or by email)',
         internalKey: TokenExceptions.TOKEN_INVALID,
       });
     }
 
     if (findToken.isRevoked) {
       throw this.ExceptionsAdapter.badRequest({
-        message: 'This token has already been used',
+        message: INVALID_CODE_MESSAGE,
+        internal: 'Token already used/revoked',
         internalKey: TokenExceptions.TOKEN_INVALID,
       });
     }
@@ -36,8 +42,9 @@ export class IsValidateResetPasswordService {
     if (findToken.expiresAt < new Date()) {
       await this.ResetPasswordTokenRepository.revokeResetPasswordTokenById(findToken.id);
       throw this.ExceptionsAdapter.badRequest({
-        message: 'This token has expired',
-        internalKey: TokenExceptions.TOKEN_INVALID,
+        message: INVALID_CODE_MESSAGE,
+        internal: 'Token expired',
+        internalKey: TokenExceptions.TOKEN_EXPIRED,
       });
     }
 
@@ -49,30 +56,38 @@ export class IsValidateResetPasswordService {
 
       if (attempt === null) {
         throw this.ExceptionsAdapter.badRequest({
-          message: 'This token has already been used',
+          message: INVALID_CODE_MESSAGE,
+          internal: 'Token already used/revoked (race on increment)',
           internalKey: TokenExceptions.TOKEN_INVALID,
         });
       }
 
       if (attempt.revoked) {
         throw this.ExceptionsAdapter.badRequest({
-          message: 'Maximum number of attempts exceeded',
+          message: INVALID_CODE_MESSAGE,
+          internal: 'Maximum number of attempts exceeded',
           internalKey: TokenExceptions.TOKEN_ATTEMPTS_EXCEEDED,
         });
       }
 
       throw this.ExceptionsAdapter.badRequest({
-        message: 'Invalid token',
+        message: INVALID_CODE_MESSAGE,
+        internal: 'Wrong code',
         internalKey: TokenExceptions.TOKEN_INVALID,
       });
     }
+  }
 
-    const user = await this.UserRepository.findUserById(findToken.userId);
-    if (!user) {
-      throw this.ExceptionsAdapter.notFound({
-        message: 'User not found',
-        internalKey: UserExceptions.USER_NOT_FOUND,
-      });
+  private async resolveToken(dto: ValidateResetPasswordDTO): Promise<ResetPasswordToken | null> {
+    if (dto.email) {
+      const user = await this.UserRepository.findUserByEmail(dto.email);
+      if (!user) {
+        return null;
+      }
+      return this.ResetPasswordTokenRepository.findValidResetPasswordTokenByUserId(user.id);
     }
+
+    // Retrocompat transitoria: front antigo ainda manda tokenId.
+    return this.ResetPasswordTokenRepository.findValidResetPasswordToken(dto.tokenId as string);
   }
 }

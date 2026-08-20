@@ -28,7 +28,8 @@ export class CreateProblemService {
     // e a relacao entre eles.
     if (floorPoints > initialPoints) {
       throw this.ExceptionsAdapter.badRequest({
-        message: `[CreateProblemService].execute --> floorPoints (${floorPoints}) cannot be greater than initialPoints (${initialPoints})`,
+        message: `floorPoints (${floorPoints}) cannot be greater than initialPoints (${initialPoints})`,
+        internal: `[CreateProblemService].execute --> floorPoints (${floorPoints}) cannot be greater than initialPoints (${initialPoints})`,
       });
     }
 

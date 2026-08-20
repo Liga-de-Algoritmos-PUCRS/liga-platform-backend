@@ -22,22 +22,16 @@ export class ResetPasswordRequestDTO {
 
 export class ResetPasswordRequestResponseDTO {
   @ApiProperty({
-    description: 'Reset Password Token ID',
-    example: '123e4567-e89b-12d3-a456-426614174000',
+    description: 'Public confirmation message. Identical whether the email has an account or not.',
+    example: 'If this email exists, a code has been sent.',
   })
-  id: string;
+  message: string;
 
   @ApiProperty({
-    description: 'Token expiration date and time',
-    example: '2024-12-31T23:59:59.000Z',
+    description: 'How long the code is valid for, in seconds.',
+    example: 900,
   })
-  expiresAt: Date;
-
-  @ApiProperty({
-    description: 'Indicates whether the token has been revoked',
-    example: false,
-  })
-  isRevoked: boolean;
+  expiresInSeconds: number;
 }
 
 export const ResetPasswordRequestDecorator = applyDecorators(
@@ -46,7 +40,8 @@ export const ResetPasswordRequestDecorator = applyDecorators(
     description: 'This endpoint allows a user to request a password reset.',
   }),
   ApiOkResponse({
-    description: 'Reset password token created successfully.',
+    description:
+      'Always 200, whether or not the email has an account, to avoid leaking which emails are registered.',
     type: ResetPasswordRequestResponseDTO,
   }),
   ApiUnauthorizedResponse({

@@ -32,12 +32,14 @@ export class PrismaSubmitRepository implements SubmitRepository {
         return SubmitMapper.toDomain(createdSubmit);
       } else {
         throw this.ExceptionsAdapter.internalServerError({
-          message: `[submit.repository].createSubmit --> Submit was not created in database under problemId: ${submit.problemId}`,
+          message: 'Unable to complete the operation',
+          internal: `[submit.repository].createSubmit --> Submit was not created in database under problemId: ${submit.problemId}`,
         });
       }
     } catch (error) {
       throw this.ExceptionsAdapter.internalServerError({
-        message: `[submit.repository].createSubmit --> Submit was not created in database under problemId: ${submit.problemId} | errorText: ${error}`,
+        message: 'Unable to complete the operation',
+        internal: `[submit.repository].createSubmit --> Submit was not created in database under problemId: ${submit.problemId} | errorText: ${error}`,
       });
     }
   }
@@ -103,12 +105,14 @@ export class PrismaSubmitRepository implements SubmitRepository {
         return SubmitMapper.toDomain(updatedSubmit);
       } else {
         throw this.ExceptionsAdapter.internalServerError({
-          message: `[submit.repository].updateSubmit --> Submit was not updated in database under problemId: ${submit.problemId}`,
+          message: 'Unable to complete the operation',
+          internal: `[submit.repository].updateSubmit --> Submit was not updated in database under problemId: ${submit.problemId}`,
         });
       }
     } catch (error) {
       throw this.ExceptionsAdapter.internalServerError({
-        message: `[submit.repository].updateSubmit --> Submit was not updated in database under problemId: ${submit.problemId} | errorText: ${error}`,
+        message: 'Unable to complete the operation',
+        internal: `[submit.repository].updateSubmit --> Submit was not updated in database under problemId: ${submit.problemId} | errorText: ${error}`,
       });
     }
   }
@@ -129,7 +133,8 @@ export class PrismaSubmitRepository implements SubmitRepository {
       return;
     } catch (error) {
       throw this.ExceptionsAdapter.internalServerError({
-        message: `[submit.repository].deleteSubmit --> Submit was not deleted in database with id: ${id} | errorText: ${error}`,
+        message: 'Unable to complete the operation',
+        internal: `[submit.repository].deleteSubmit --> Submit was not deleted in database with id: ${id} | errorText: ${error}`,
       });
     }
   }

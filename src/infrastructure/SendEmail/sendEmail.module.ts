@@ -8,6 +8,7 @@ import { SendBugReportEmailService } from '@/infrastructure/SendEmail/applicatio
 import { SendEmailHelperIntegration } from '@/infrastructure/SendEmail/application/send-email-Helper-integration';
 import { SendEmailPasswordChangedService } from '@/infrastructure/SendEmail/application/send-email-password-changed.service';
 import { SendEmailAccountCreatedService } from '@/infrastructure/SendEmail/application/send-email-account-created.service';
+import { SendEmailAccountExistsService } from '@/infrastructure/SendEmail/application/send-email-account-exists.service';
 
 @Module({
   providers: [
@@ -17,6 +18,7 @@ import { SendEmailAccountCreatedService } from '@/infrastructure/SendEmail/appli
     SendEmailPasswordChangedService,
     SendEmailHelperIntegration,
     SendEmailAccountCreatedService,
+    SendEmailAccountExistsService,
     SendBugReportEmailService,
     {
       provide: SendEmailAdapter,

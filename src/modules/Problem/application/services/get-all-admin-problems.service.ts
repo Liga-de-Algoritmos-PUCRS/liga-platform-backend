@@ -23,7 +23,8 @@ export class GetAllAdminProblemsService {
       return problems;
     } catch (error) {
       throw this.ExceptionsAdapter.internalServerError({
-        message: `[getAllProblemsService].execute --> Failed to retrieve problems from database | errorText: ${error}`,
+        message: 'Unable to complete the operation',
+        internal: `[getAllAdminProblemsService].execute --> Failed to retrieve problems from database | errorText: ${error}`,
       });
     }
   }

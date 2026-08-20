@@ -20,7 +20,8 @@ export class GetSubmitByUserIdService {
     // categoria do delete-user.service, por isso mora aqui e nao num guard.
     if (requester.userRole !== 'ADMIN' && requester.id !== userId) {
       throw this.ExceptionsAdapter.forbidden({
-        message: `[getSubmitByUserIdService].execute --> User ${requester.id} is not allowed to read submissions from user ${userId}`,
+        message: 'Not allowed',
+        internal: `[getSubmitByUserIdService].execute --> User ${requester.id} is not allowed to read submissions from user ${userId}`,
       });
     }
 

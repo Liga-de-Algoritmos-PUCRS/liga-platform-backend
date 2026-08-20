@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, Length, Matches } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, Length, Matches, ValidateIf } from 'class-validator';
+import { NotTogetherWith } from '@/global/common/validators/not-together-with.validator';
 import { applyDecorators } from '@nestjs/common';
 import {
   ApiInternalServerErrorResponse,
@@ -10,13 +11,28 @@ import {
 
 export class ValidateSignupDTO {
   @ApiProperty({
-    description: 'Token id',
-    example: 'ivyuuzwcpdbblxmyplhx2tnh',
-    required: true,
+    description: 'User email',
+    example: 'guilhermecassol@gmail.com',
+    required: false,
   })
+  // Valida o e-mail sempre que ele vier, e o exige quando nao veio `tokenId`.
+  // O "veio so um" mora no @NotTogetherWith: escrito so com @ValidateIf, mandar
+  // os dois juntos desligaria as duas condicoes e nenhum campo seria validado.
+  @ValidateIf((dto: ValidateSignupDTO) => dto.email !== undefined || dto.tokenId === undefined)
+  @IsEmail()
+  @IsNotEmpty()
+  @NotTogetherWith('tokenId')
+  email?: string;
+
+  @ApiProperty({
+    description: 'Token id. Deprecated: kept only for backwards compatibility, prefer email.',
+    example: 'ivyuuzwcpdbblxmyplhx2tnh',
+    required: false,
+  })
+  @ValidateIf((dto: ValidateSignupDTO) => dto.tokenId !== undefined || dto.email === undefined)
   @IsString()
   @IsNotEmpty()
-  tokenId: string;
+  tokenId?: string;
 
   @ApiProperty({
     description: 'Indicates if the token has 6 digits',

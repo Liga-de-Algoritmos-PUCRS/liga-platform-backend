@@ -26,6 +26,18 @@ export class PrismaToken2FaRepository implements Token2FARepository {
     return token2Fa ? Token2FAMapper.toDomain(token2Fa) : null;
   }
 
+  public async findValidToken2FAByEmail(email: string): Promise<Token2Fa | null> {
+    // No maximo 1 token nao revogado por e-mail -- o signup revoga os
+    // anteriores antes de criar um novo -- mas pega o mais recente por
+    // criacao para o fluxo de revogado/expirado continuar funcionando igual
+    // ao lookup por id.
+    const token2Fa = await this.prisma.token2FA.findFirst({
+      where: { userEmail: email },
+      orderBy: { createdAt: 'desc' },
+    });
+    return token2Fa ? Token2FAMapper.toDomain(token2Fa) : null;
+  }
+
   public async revokeToken2FaById(id: string, tx?: Transaction): Promise<boolean> {
     const client = tx ?? this.prisma;
     await client.token2FA.update({

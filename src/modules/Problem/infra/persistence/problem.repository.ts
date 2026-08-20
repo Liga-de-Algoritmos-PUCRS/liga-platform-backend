@@ -32,12 +32,14 @@ export class PrismaProblemRepository implements ProblemRepository {
         return ProblemMapper.toDomain(createdProblem);
       } else {
         throw this.ExceptionsAdapter.internalServerError({
-          message: `[problem.repository].createProblem --> Problem was not created in database under title: ${problem.title}`,
+          message: 'Unable to complete the operation',
+          internal: `[problem.repository].createProblem --> Problem was not created in database under title: ${problem.title}`,
         });
       }
     } catch (error) {
       throw this.ExceptionsAdapter.internalServerError({
-        message: `[problem.repository].createProblem --> Problem was not created in database under title: ${problem.title} | errorText: ${error}`,
+        message: 'Unable to complete the operation',
+        internal: `[problem.repository].createProblem --> Problem was not created in database under title: ${problem.title} | errorText: ${error}`,
       });
     }
   }
@@ -97,12 +99,14 @@ export class PrismaProblemRepository implements ProblemRepository {
         return ProblemMapper.toDomain(updatedProblem);
       } else {
         throw this.ExceptionsAdapter.internalServerError({
-          message: `[problem.repository].updateProblem --> Problem was not updated in database under title: ${problem.title}`,
+          message: 'Unable to complete the operation',
+          internal: `[problem.repository].updateProblem --> Problem was not updated in database under title: ${problem.title}`,
         });
       }
     } catch (error) {
       throw this.ExceptionsAdapter.internalServerError({
-        message: `[problem.repository].updateProblem --> Problem was not updated in database under title: ${problem.title} | errorText: ${error}`,
+        message: 'Unable to complete the operation',
+        internal: `[problem.repository].updateProblem --> Problem was not updated in database under title: ${problem.title} | errorText: ${error}`,
       });
     }
   }
@@ -121,7 +125,8 @@ export class PrismaProblemRepository implements ProblemRepository {
       return true;
     } catch (error) {
       throw this.ExceptionsAdapter.internalServerError({
-        message: `[problem.repository].deleteProblem --> Problem was not deleted in database with id: ${id} | errorText: ${error}`,
+        message: 'Unable to complete the operation',
+        internal: `[problem.repository].deleteProblem --> Problem was not deleted in database with id: ${id} | errorText: ${error}`,
       });
     }
   }

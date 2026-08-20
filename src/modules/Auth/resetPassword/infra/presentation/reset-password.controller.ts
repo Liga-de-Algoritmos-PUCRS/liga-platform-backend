@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Public } from '@/global/common/decorators/public.decorator';
 import {
@@ -29,6 +29,7 @@ export class ResetPasswordController {
 
   @ResetPasswordRequestDecorator
   @Public()
+  @HttpCode(HttpStatus.OK)
   @Post('request')
   async requestResetPassword(
     @Body() body: ResetPasswordRequestDTO,
