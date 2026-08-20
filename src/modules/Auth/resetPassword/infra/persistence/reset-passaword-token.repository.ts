@@ -32,6 +32,25 @@ export class PrismaResetPasswordTokenRepository implements ResetPasswordTokenRep
     return ResetPasswordTokenMapper.toDomain(prismaToken);
   }
 
+  public async findValidResetPasswordTokenByUserId(
+    userId: string,
+  ): Promise<ResetPasswordToken | null> {
+    // So existe no maximo 1 token nao revogado por usuario -- o request
+    // revoga os anteriores antes de criar um novo -- mas pega o mais recente
+    // por criacao para o fluxo de revogado/expirado continuar funcionando
+    // igual ao lookup por id.
+    const prismaToken = await this.PrismaService.resetPasswordToken.findFirst({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (!prismaToken) {
+      return null;
+    }
+
+    return ResetPasswordTokenMapper.toDomain(prismaToken);
+  }
+
   public async revokeResetPasswordTokenById(id: string): Promise<boolean> {
     const result = await this.PrismaService.resetPasswordToken.updateMany({
       where: {

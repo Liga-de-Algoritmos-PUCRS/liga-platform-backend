@@ -1,51 +1,62 @@
 import { randomInt } from 'crypto';
 import { Injectable } from '@nestjs/common';
-import { ExceptionsAdapter } from '@/infrastructure/Exceptions/exceptions.adapter';
 import { UserRepository } from '@/modules/User/domain/user.repository';
 import { SendEmailAdapter } from '@/infrastructure/SendEmail/sendEmail.adapter';
 import { ResetPasswordTokenRepository } from '@/modules/Auth/resetPassword/domain/reset-password-token.repository';
 import { ResetPasswordRequestDTO } from '@/modules/Auth/resetPassword/application/dtos/request-token.dto';
 import { ResetPasswordToken } from '../../domain/reset-password-token.entity';
-import { UserExceptions } from '@/infrastructure/Exceptions/exceptions.types';
+import { LoggerAdapter } from '@/infrastructure/Logger/logger.adapter';
+
+const RESET_TOKEN_EXPIRES_IN_SECONDS = 15 * 60;
+
 @Injectable()
 export class RequestResetPasswordService {
   constructor(
-    private readonly ExceptionsAdapter: ExceptionsAdapter,
     private readonly UserRepository: UserRepository,
     private readonly ResetPasswordTokenRepository: ResetPasswordTokenRepository,
     private readonly SendEmailAdapter: SendEmailAdapter,
+    private readonly LoggerAdapter: LoggerAdapter,
   ) {}
 
-  async execute(ResetPasswordRequestDTO: ResetPasswordRequestDTO): Promise<ResetPasswordToken> {
+  // Sempre 200 com o mesmo corpo, exista ou nao o e-mail -- senao o status
+  // vira um oraculo de quem tem conta. O envio do e-mail e disparado sem
+  // await para o SES nao entrar no timing da resposta.
+  async execute(ResetPasswordRequestDTO: ResetPasswordRequestDTO): Promise<{
+    message: string;
+    expiresInSeconds: number;
+  }> {
     const user = await this.UserRepository.findUserByEmail(ResetPasswordRequestDTO.email);
-    if (!user) {
-      throw this.ExceptionsAdapter.notFound({
-        message: 'User not found',
-        internalKey: UserExceptions.USER_NOT_FOUND,
+
+    if (user) {
+      const generatedTokenResetPassword = randomInt(0, 1_000_000).toString().padStart(6, '0');
+
+      const ResetToken = new ResetPasswordToken({
+        userId: user.id,
+        token: generatedTokenResetPassword,
+        createdAt: new Date(),
+        expiresAt: new Date(Date.now() + RESET_TOKEN_EXPIRES_IN_SECONDS * 1000),
+        isRevoked: false,
+        attempts: 0,
+      });
+
+      await this.ResetPasswordTokenRepository.revokeAllValidTokensByUserId(user.id);
+      await this.ResetPasswordTokenRepository.createResetPasswordToken(ResetToken);
+
+      void this.SendEmailAdapter.sendEmailResetPassword(
+        user.email,
+        generatedTokenResetPassword,
+        user.name,
+      ).catch((error) => {
+        this.LoggerAdapter.error({
+          where: 'RequestResetPasswordService',
+          message: `Failed to send reset password email to ${user.email}: ${error}`,
+        });
       });
     }
 
-    const generatedTokenResetPassword = randomInt(0, 1_000_000).toString().padStart(6, '0');
-
-    const ResetToken = new ResetPasswordToken({
-      userId: user.id,
-      token: generatedTokenResetPassword,
-      createdAt: new Date(),
-      expiresAt: new Date(Date.now() + 15 * 60 * 1000),
-      isRevoked: false,
-      attempts: 0,
-    });
-
-    await this.ResetPasswordTokenRepository.revokeAllValidTokensByUserId(user.id);
-    const CreatedResetToken =
-      await this.ResetPasswordTokenRepository.createResetPasswordToken(ResetToken);
-
-    await this.SendEmailAdapter.sendEmailResetPassword(
-      user.email,
-      generatedTokenResetPassword,
-      user.name,
-    );
-
-    return CreatedResetToken;
+    return {
+      message: 'If this email exists, a code has been sent.',
+      expiresInSeconds: RESET_TOKEN_EXPIRES_IN_SECONDS,
+    };
   }
 }

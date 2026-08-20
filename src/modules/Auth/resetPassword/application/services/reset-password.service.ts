@@ -9,6 +9,9 @@ import { UserExceptions, TokenExceptions } from '@/infrastructure/Exceptions/exc
 import { MAX_TOKEN_ATTEMPTS } from '@/modules/Auth/auth.constants';
 import { RefreshTokenRepository } from '@/modules/Auth/login/domain/refresh-token.repository';
 import { LoggerAdapter } from '@/infrastructure/Logger/logger.adapter';
+import { ResetPasswordToken } from '@/modules/Auth/resetPassword/domain/reset-password-token.entity';
+
+const INVALID_CODE_MESSAGE = 'Invalid or expired code';
 
 @Injectable()
 export class ResetPasswordService {
@@ -23,20 +26,20 @@ export class ResetPasswordService {
   ) {}
 
   async execute(ResetPasswordDTO: ResetPasswordDTO): Promise<void> {
-    const findToken = await this.ResetPasswordTokenRepository.findValidResetPasswordToken(
-      ResetPasswordDTO.tokenId,
-    );
+    const findToken = await this.resolveToken(ResetPasswordDTO);
 
     if (!findToken) {
       throw this.ExceptionsAdapter.badRequest({
-        message: 'Invalid or expired token',
+        message: INVALID_CODE_MESSAGE,
+        internal: 'Token not found (by id or by email)',
         internalKey: TokenExceptions.TOKEN_EXPIRED,
       });
     }
 
     if (findToken.isRevoked) {
       throw this.ExceptionsAdapter.badRequest({
-        message: 'This token has already been used',
+        message: INVALID_CODE_MESSAGE,
+        internal: 'Token already used/revoked',
         internalKey: TokenExceptions.TOKEN_INVALID,
       });
     }
@@ -44,7 +47,8 @@ export class ResetPasswordService {
     if (findToken.expiresAt < new Date()) {
       await this.ResetPasswordTokenRepository.revokeResetPasswordTokenById(findToken.id);
       throw this.ExceptionsAdapter.badRequest({
-        message: 'This token has expired',
+        message: INVALID_CODE_MESSAGE,
+        internal: 'Token expired',
         internalKey: TokenExceptions.TOKEN_EXPIRED,
       });
     }
@@ -57,20 +61,23 @@ export class ResetPasswordService {
 
       if (attempt === null) {
         throw this.ExceptionsAdapter.badRequest({
-          message: 'This token has already been used',
+          message: INVALID_CODE_MESSAGE,
+          internal: 'Token already used/revoked (race on increment)',
           internalKey: TokenExceptions.TOKEN_INVALID,
         });
       }
 
       if (attempt.revoked) {
         throw this.ExceptionsAdapter.badRequest({
-          message: 'Maximum number of attempts exceeded',
+          message: INVALID_CODE_MESSAGE,
+          internal: 'Maximum number of attempts exceeded',
           internalKey: TokenExceptions.TOKEN_ATTEMPTS_EXCEEDED,
         });
       }
 
       throw this.ExceptionsAdapter.badRequest({
-        message: 'Invalid token',
+        message: INVALID_CODE_MESSAGE,
+        internal: 'Wrong code',
         internalKey: TokenExceptions.TOKEN_INVALID,
       });
     }
@@ -78,7 +85,8 @@ export class ResetPasswordService {
     const user = await this.UserRepository.findUserById(findToken.userId);
     if (!user) {
       throw this.ExceptionsAdapter.notFound({
-        message: 'User not found',
+        message: INVALID_CODE_MESSAGE,
+        internal: 'Token valid but user vanished',
         internalKey: UserExceptions.USER_NOT_FOUND,
       });
     }
@@ -129,5 +137,18 @@ export class ResetPasswordService {
     const hasNumber = /\d/.test(password);
     const hasSymbol = /[!@#$%^&*(),.?":{}|<>]/.test(password);
     return password.length > 8 && hasUpperCase && hasLowerCase && hasNumber && hasSymbol;
+  }
+
+  private async resolveToken(dto: ResetPasswordDTO): Promise<ResetPasswordToken | null> {
+    if (dto.email) {
+      const user = await this.UserRepository.findUserByEmail(dto.email);
+      if (!user) {
+        return null;
+      }
+      return this.ResetPasswordTokenRepository.findValidResetPasswordTokenByUserId(user.id);
+    }
+
+    // Retrocompat transitoria: front antigo ainda manda tokenId.
+    return this.ResetPasswordTokenRepository.findValidResetPasswordToken(dto.tokenId as string);
   }
 }

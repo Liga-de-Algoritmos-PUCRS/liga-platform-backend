@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, Length, Matches } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, Length, Matches, ValidateIf } from 'class-validator';
 import { applyDecorators } from '@nestjs/common';
 import {
   ApiInternalServerErrorResponse,
@@ -10,13 +10,24 @@ import {
 
 export class ResetPasswordDTO {
   @ApiProperty({
-    description: 'Token id',
-    example: 'ivyuuzwcpdbblxmyplhx2tnh',
-    required: true,
+    description: 'User email',
+    example: 'guilhermecassol@gmail.com',
+    required: false,
   })
+  @ValidateIf((dto: ResetPasswordDTO) => !dto.tokenId)
+  @IsEmail()
+  @IsNotEmpty()
+  email?: string;
+
+  @ApiProperty({
+    description: 'Token id. Deprecated: kept only for backwards compatibility, prefer email.',
+    example: 'ivyuuzwcpdbblxmyplhx2tnh',
+    required: false,
+  })
+  @ValidateIf((dto: ResetPasswordDTO) => !dto.email)
   @IsString()
   @IsNotEmpty()
-  tokenId: string;
+  tokenId?: string;
 
   @ApiProperty({
     description: 'Indicates if the token has 6 digits',
