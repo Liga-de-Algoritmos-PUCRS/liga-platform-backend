@@ -17,7 +17,8 @@ export class UpdateProblemService {
     const existingProblem = await this.ProblemRepository.getProblem(id);
     if (!existingProblem) {
       throw this.ExceptionsAdapter.notFound({
-        message: `[updateProblemService].execute --> Problem not found with id: ${id}`,
+        message: 'Problem not found',
+        internal: `[updateProblemService].execute --> Problem not found with id: ${id}`,
       });
     }
 
@@ -35,7 +36,8 @@ export class UpdateProblemService {
 
     if (floorPoints > initialPoints) {
       throw this.ExceptionsAdapter.badRequest({
-        message: `[UpdateProblemService].execute --> floorPoints (${floorPoints}) cannot be greater than initialPoints (${initialPoints})`,
+        message: `floorPoints (${floorPoints}) cannot be greater than initialPoints (${initialPoints})`,
+        internal: `[UpdateProblemService].execute --> floorPoints (${floorPoints}) cannot be greater than initialPoints (${initialPoints})`,
       });
     }
 

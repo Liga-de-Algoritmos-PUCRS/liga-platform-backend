@@ -15,7 +15,8 @@ export class GetAdminProblemByIdService {
     const problem = await this.ProblemRepository.getProblem(id);
     if (!problem) {
       throw this.ExceptionsAdapter.notFound({
-        message: `[getAdminProblemByIdService].execute --> Problem not found with id: ${id}`,
+        message: 'Problem not found',
+        internal: `[getAdminProblemByIdService].execute --> Problem not found with id: ${id}`,
       });
     }
 

@@ -15,7 +15,8 @@ export class DeleteProblemService {
     const existingProblem = await this.ProblemRepository.getProblem(id);
     if (!existingProblem) {
       throw this.ExceptionsAdapter.notFound({
-        message: `[deleteProblemService].execute --> Problem not found with id: ${id}`,
+        message: 'Problem not found',
+        internal: `[deleteProblemService].execute --> Problem not found with id: ${id}`,
       });
     }
 

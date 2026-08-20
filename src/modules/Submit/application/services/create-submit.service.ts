@@ -89,7 +89,8 @@ export class CreateSubmitService {
     const current = solved ? await this.ProblemRepository.lockCurrentPoints(problemId, tx) : null;
     if (solved && !current) {
       throw this.ExceptionsAdapter.badRequest({
-        message: `[CreateSubmitService].execute --> Problem not found with id: ${problemId}`,
+        message: 'Problem not found',
+        internal: `[CreateSubmitService].execute --> Problem not found with id: ${problemId}`,
       });
     }
 
@@ -116,7 +117,8 @@ export class CreateSubmitService {
       const registered = await this.SubmitRepository.registerAttempt(userId, problemId, solved, tx);
       if (!registered) {
         throw this.ExceptionsAdapter.conflict({
-          message: `[CreateSubmitService].execute --> User ${userId} already solved problem ${problemId}`,
+          message: 'You already solved this problem',
+          internal: `[CreateSubmitService].execute --> User ${userId} already solved problem ${problemId}`,
         });
       }
     }
@@ -147,7 +149,8 @@ export class CreateSubmitService {
     const submit = await this.SubmitRepository.findByProblemIdAndUserId(problemId, userId, tx);
     if (!submit) {
       throw this.ExceptionsAdapter.internalServerError({
-        message: `[CreateSubmitService].execute --> Submission vanished for user ${userId} on problem ${problemId}`,
+        message: 'Unable to complete the operation',
+        internal: `[CreateSubmitService].execute --> Submission vanished for user ${userId} on problem ${problemId}`,
       });
     }
     return submit;

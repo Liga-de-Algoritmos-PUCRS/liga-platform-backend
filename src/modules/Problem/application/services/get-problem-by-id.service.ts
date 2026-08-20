@@ -15,7 +15,8 @@ export class GetProblemByIdService {
     const problem = await this.ProblemRepository.getProblem(id);
     if (!problem) {
       throw this.ExceptionsAdapter.notFound({
-        message: `[getProblemByIdService].execute --> Problem not found with id: ${id}`,
+        message: 'Problem not found',
+        internal: `[getProblemByIdService].execute --> Problem not found with id: ${id}`,
       });
     }
 

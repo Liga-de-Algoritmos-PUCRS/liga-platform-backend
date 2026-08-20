@@ -34,12 +34,14 @@ export class PrismaUserRepository implements UserRepository {
         return UserMapper.toDomain(createdUser);
       } else {
         throw this.ExceptionsAdapter.internalServerError({
-          message: `[user.repository].createUser --> User was not created in database under email: ${user.email}`,
+          message: 'Unable to complete the operation',
+          internal: `[user.repository].createUser --> User was not created in database under email: ${user.email}`,
         });
       }
     } catch (error) {
       throw this.ExceptionsAdapter.internalServerError({
-        message: `[user.repository].createUser --> User was not created in database under email: ${user.email} | errorText: ${error}`,
+        message: 'Unable to complete the operation',
+        internal: `[user.repository].createUser --> User was not created in database under email: ${user.email} | errorText: ${error}`,
       });
     }
   }
