@@ -5,7 +5,10 @@ import { UpdateFileDTO } from '../dtos/update-file.dto';
 import { BucketAdapter } from '@/infrastructure/Bucket/bucket.adapter';
 import { ExceptionsAdapter } from '@/infrastructure/Exceptions/exceptions.adapter';
 import { FileExceptions, UserExceptions } from '@/infrastructure/Exceptions/exceptions.types';
-import { TransactionAdapter } from '@/infrastructure/Database/Transaction/transaction.adapter';
+import {
+  Transaction,
+  TransactionAdapter,
+} from '@/infrastructure/Database/Transaction/transaction.adapter';
 
 @Injectable()
 export class UpdateFileService {
@@ -45,8 +48,8 @@ export class UpdateFileService {
       deleted: existingFile.deleted,
     };
 
-    return await this.TransactionAdapter.transaction(async () => {
-      const fileUrl = await this.FileRepository.updateFile(updatedFile, file.id);
+    return await this.TransactionAdapter.transaction(async (tx: Transaction) => {
+      const fileUrl = await this.FileRepository.updateFile(updatedFile, file.id, tx);
 
       fileUrl.fileUrl = this.BucketAdapter.getFileUrl(fileUrl.fileUrl);
       return fileUrl;

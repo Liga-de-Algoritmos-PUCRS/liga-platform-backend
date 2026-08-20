@@ -3,14 +3,16 @@ import { File } from '../../domain/file.entity';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/infrastructure/Database/prisma.service';
 import { FileMapper } from './file.mapper';
+import { Transaction } from '@/infrastructure/Database/Transaction/transaction.adapter';
 
 @Injectable()
 export class PrismaFileRepository implements FileRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  public async createFile(file: File): Promise<File> {
+  public async createFile(file: File, tx?: Transaction): Promise<File> {
+    const client = tx ?? this.prisma;
     const data = FileMapper.toPersistence(file);
-    const createdFile = await this.prisma.file.create({
+    const createdFile = await client.file.create({
       data: data,
     });
 
@@ -52,9 +54,10 @@ export class PrismaFileRepository implements FileRepository {
     return FileMapper.toDomain(file);
   }
 
-  public async updateFile(file: File, id: string): Promise<File> {
+  public async updateFile(file: File, id: string, tx?: Transaction): Promise<File> {
+    const client = tx ?? this.prisma;
     const data = FileMapper.toPersistence(file);
-    const updatedFile = await this.prisma.file.update({
+    const updatedFile = await client.file.update({
       where: { id },
       data: data,
     });
@@ -62,8 +65,9 @@ export class PrismaFileRepository implements FileRepository {
     return FileMapper.toDomain(updatedFile);
   }
 
-  public async deleteFile(id: string): Promise<void | boolean> {
-    await this.prisma.file.update({
+  public async deleteFile(id: string, tx?: Transaction): Promise<void | boolean> {
+    const client = tx ?? this.prisma;
+    await client.file.update({
       where: { id },
       data: {
         deleted: true,

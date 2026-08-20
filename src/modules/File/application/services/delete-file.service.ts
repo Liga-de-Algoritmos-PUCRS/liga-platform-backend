@@ -3,7 +3,10 @@ import { FileRepository } from '@/modules/File/domain/file.repository';
 import { BucketAdapter } from '@/infrastructure/Bucket/bucket.adapter';
 import { ExceptionsAdapter } from '@/infrastructure/Exceptions/exceptions.adapter';
 import { FileExceptions, UserExceptions } from '@/infrastructure/Exceptions/exceptions.types';
-import { TransactionAdapter } from '@/infrastructure/Database/Transaction/transaction.adapter';
+import {
+  Transaction,
+  TransactionAdapter,
+} from '@/infrastructure/Database/Transaction/transaction.adapter';
 import { LoggerAdapter } from '@/infrastructure/Logger/logger.adapter';
 
 @Injectable()
@@ -39,7 +42,7 @@ export class DeleteFileService {
       });
     }
 
-    return this.TransactionAdapter.transaction(async () => {
+    return this.TransactionAdapter.transaction(async (tx: Transaction) => {
       try {
         await this.BucketAdapter.deleteFile(file.fileUrl);
       } catch (error) {
@@ -52,7 +55,7 @@ export class DeleteFileService {
           internalKey: FileExceptions.FILE_UPLOAD_FAILED,
         });
       }
-      await this.FileRepository.deleteFile(id);
+      await this.FileRepository.deleteFile(id, tx);
     });
   }
 }
