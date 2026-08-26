@@ -25,7 +25,7 @@ export class SendBugReportEmailService extends SendEmailHelperIntegration {
     const command = new SendEmailCommand({
       Source: this.senderEmail,
       Destination: {
-        ToAddresses: ['bekirsch123@gmail.com'],
+        ToAddresses: ['bekirsch123@gmail.com', 'guicassol9@hotmail.com'],
       },
       Message: {
         Subject: {
