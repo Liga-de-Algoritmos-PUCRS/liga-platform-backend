@@ -102,10 +102,18 @@ export class RefreshTokenService {
             message: `Refresh token rotation recovered for user ${userId} (immediate parent reused within recovery grace window)`,
           });
 
+          // repointOrphanId reaponta matchedRefreshToken (o órfão) para o
+          // token vivo que sai desta recuperação. Sem isso, uma segunda
+          // reapresentação do mesmo órfão (ex.: retry de rede duplicado —
+          // plausível justo no cenário de conexão instável desta issue)
+          // encontraria `child` já revogado por esta própria recuperação,
+          // seria lida como reuso de 2+ gerações e derrubaria a família
+          // inteira, inclusive o token que acabamos de emitir.
           return this.generateNewTokens({
             accountId: user.id,
             userRole: user.role,
             oldRefreshTokenId: child.id,
+            repointOrphanId: matchedRefreshToken.id,
           });
         }
 
@@ -200,6 +208,14 @@ export class RefreshTokenService {
         if (!revoked) {
           throw new RefreshTokenRaceLostError();
         }
+
+        if (tokenParams.repointOrphanId) {
+          await this.refreshTokenRepository.repointOrphanToLiveDescendant(
+            tokenParams.repointOrphanId,
+            newRefreshToken.id,
+            tx,
+          );
+        }
       });
     } catch (error) {
       if (error instanceof RefreshTokenRaceLostError) {
@@ -220,4 +236,5 @@ interface TokenParams {
   accountId: string;
   userRole: Role;
   oldRefreshTokenId: string;
+  repointOrphanId?: string;
 }

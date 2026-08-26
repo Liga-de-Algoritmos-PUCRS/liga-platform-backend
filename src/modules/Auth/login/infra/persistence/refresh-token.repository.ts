@@ -63,4 +63,16 @@ export class PrismaRefreshTokenRepository implements RefreshTokenRepository {
 
     return count > 0;
   }
+
+  public async repointOrphanToLiveDescendant(
+    orphanId: string,
+    liveDescendantId: string,
+    tx?: Transaction,
+  ): Promise<void> {
+    const client = tx ?? this.prisma;
+    await client.refreshToken.update({
+      where: { id: orphanId },
+      data: { replacedByTokenId: liveDescendantId },
+    });
+  }
 }
