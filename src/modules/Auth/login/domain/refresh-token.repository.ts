@@ -29,5 +29,20 @@ export abstract class RefreshTokenRepository {
     replacedByTokenId: string,
     tx?: Transaction,
   ): Promise<boolean>;
+  /**
+   * Reaponta `replacedByTokenId` de um token pai já revogado (órfão) para o
+   * token vivo recém-gerado por uma recuperação de sessão (back#63). Sem
+   * isso, o órfão continua apontando para o filho imediato que a própria
+   * recuperação anterior acabou de revogar — uma reapresentação seguinte do
+   * mesmo órfão encontraria esse filho morto, seria lida como reuso de 2+
+   * gerações e derrubaria a família inteira, inclusive o token que a
+   * recuperação anterior acabou de emitir. Não tem CAS: o órfão já está
+   * revogado e não recebe requisições concorrentes disputando esse campo.
+   */
+  public abstract repointOrphanToLiveDescendant(
+    orphanId: string,
+    liveDescendantId: string,
+    tx?: Transaction,
+  ): Promise<void>;
   public abstract deleteExpiredRefreshTokens(): Promise<number>;
 }

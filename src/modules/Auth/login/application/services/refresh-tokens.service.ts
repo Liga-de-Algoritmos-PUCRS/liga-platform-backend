@@ -24,6 +24,15 @@ import { TransactionAdapter } from '@/infrastructure/Database/Transaction/transa
  */
 class RefreshTokenRaceLostError extends Error {}
 
+/**
+ * Janela de tolerância para recuperar uma sessão a partir do pai imediato de
+ * uma rotação já concluída (back#62): cobre o cliente que perdeu a resposta
+ * de um /auth/refresh bem-sucedido (conexão caiu no meio do round-trip) e
+ * reapresenta o token velho pouco depois. Fora da janela, a reapresentação
+ * volta a cair no 401 tolerado (sem revogar família) de back#51.
+ */
+const IMMEDIATE_PARENT_RECOVERY_GRACE_MS = 2 * 60 * 1000;
+
 @Injectable()
 export class RefreshTokenService {
   constructor(
@@ -80,16 +89,39 @@ export class RefreshTokenService {
       const child = matchedRefreshToken.replacedByTokenId
         ? candidates.find((candidate) => candidate.id === matchedRefreshToken.replacedByTokenId)
         : null;
-      const isImmediateParentOfLiveSession = !!child && !child.isRevoked;
 
-      if (!isImmediateParentOfLiveSession) {
+      if (!child || child.isRevoked) {
         await this.revokeFamilyAndThrow(userId);
-      }
+      } else {
+        const withinRecoveryGrace =
+          Date.now() - child.createdAt.getTime() <= IMMEDIATE_PARENT_RECOVERY_GRACE_MS;
 
-      this.loggerAdapter.debug({
-        where: 'RefreshTokenService.execute',
-        message: `Refresh token rotation race tolerated for user ${userId} (immediate parent reused)`,
-      });
+        if (withinRecoveryGrace) {
+          this.loggerAdapter.debug({
+            where: 'RefreshTokenService.execute',
+            message: `Refresh token rotation recovered for user ${userId} (immediate parent reused within recovery grace window)`,
+          });
+
+          // repointOrphanId reaponta matchedRefreshToken (o órfão) para o
+          // token vivo que sai desta recuperação. Sem isso, uma segunda
+          // reapresentação do mesmo órfão (ex.: retry de rede duplicado —
+          // plausível justo no cenário de conexão instável desta issue)
+          // encontraria `child` já revogado por esta própria recuperação,
+          // seria lida como reuso de 2+ gerações e derrubaria a família
+          // inteira, inclusive o token que acabamos de emitir.
+          return this.generateNewTokens({
+            accountId: user.id,
+            userRole: user.role,
+            oldRefreshTokenId: child.id,
+            repointOrphanId: matchedRefreshToken.id,
+          });
+        }
+
+        this.loggerAdapter.debug({
+          where: 'RefreshTokenService.execute',
+          message: `Refresh token rotation race tolerated for user ${userId} (immediate parent reused, outside recovery grace window)`,
+        });
+      }
 
       throw this.exceptionsAdapter.unauthorized({
         message: 'Refresh token already used',
@@ -176,6 +208,14 @@ export class RefreshTokenService {
         if (!revoked) {
           throw new RefreshTokenRaceLostError();
         }
+
+        if (tokenParams.repointOrphanId) {
+          await this.refreshTokenRepository.repointOrphanToLiveDescendant(
+            tokenParams.repointOrphanId,
+            newRefreshToken.id,
+            tx,
+          );
+        }
       });
     } catch (error) {
       if (error instanceof RefreshTokenRaceLostError) {
@@ -196,4 +236,5 @@ interface TokenParams {
   accountId: string;
   userRole: Role;
   oldRefreshTokenId: string;
+  repointOrphanId?: string;
 }
