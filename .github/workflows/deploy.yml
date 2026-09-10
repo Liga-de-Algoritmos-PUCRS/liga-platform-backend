@@ -112,9 +112,33 @@ jobs:
             # O --env-file nao e opcional nem no pull: o compose interpola
             # ${DB_USER:?} e aborta sem ele.
             docker compose --env-file .env.prod -f docker-compose.prod.yaml pull api
+            # Grava o IMAGE_TAG deste deploy em .env.prod (idempotente: troca a
+            # linha se ja existir). E a fonte de verdade que o
+            # scripts/verificar-producao.sh le depois -- inclusive fora deste
+            # workflow, no verificar-producao.yml agendado. O env.schema.ts nao
+            # e "strict", entao essa chave extra nao afeta o boot da api; ela e
+            # consumida so pela interpolacao do compose e por este script.
+            if grep -q '^IMAGE_TAG=' .env.prod; then
+              sed -i "s/^IMAGE_TAG=.*/IMAGE_TAG=${IMAGE_TAG}/" .env.prod
+            else
+              printf '\nIMAGE_TAG=%s\n' "$IMAGE_TAG" >> .env.prod
+            fi
+            # Alinha a copia LOCAL de ":latest" com o que acabou de ser
+            # publicado (issue #37): e "docker pull" direto, nao "docker
+            # compose pull", entao nao precisa de --env-file. Sem isso, o
+            # ":latest" local so e tocado quando alguem builda com
+            # "up -d --build", e qualquer comando que resolva o default
+            # "${IMAGE_TAG:-latest}" sem definir a variavel usa uma copia
+            # velha -- foi o mecanismo que fez o cron das 03:00 reverter todo
+            # deploy por tres semanas.
+            docker pull ghcr.io/liga-de-algoritmos-pucrs/liga-platform-backend:latest
             docker compose --env-file .env.prod -f docker-compose.prod.yaml up -d
             # Sem "-a" e sem "--volumes": postgres-liga-data e o banco de producao.
             docker system prune -f
+            # Confere que o container que subiu e de fato o IMAGE_TAG deste
+            # deploy -- nao so que o "up -d" nao deu erro. Falha o job se
+            # divergir, em vez de reportar verde com o container errado no ar.
+            bash scripts/verificar-producao.sh
 
       - name: Verifica producao pela internet
         run: |
