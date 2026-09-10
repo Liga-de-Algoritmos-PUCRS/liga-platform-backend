@@ -1,0 +1,34 @@
+name: Verifica validade do certificado TLS
+
+# Sem isso, a expiracao so seria notada quando o navegador bloqueasse o site
+# (issue #37: o certbot so tenta renovar nos 30 dias finais, e a renovacao
+# tem historico de falhar sem ninguem saber). Roda pela internet, sem SSH --
+# nao depende do estado do servidor.
+on:
+  schedule:
+    - cron: '0 7 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  verificar:
+    name: verificar-expiracao-certificado
+    runs-on: ubuntu-latest
+    steps:
+      - name: Confere dias restantes do certificado
+        run: |
+          set -euo pipefail
+          HOST=back.ligadealgoritmos.com
+          END_DATE=$(echo | openssl s_client -servername "$HOST" -connect "$HOST:443" 2>/dev/null \
+            | openssl x509 -noout -enddate | cut -d= -f2)
+          if [ -z "$END_DATE" ]; then
+            echo "::error::nao foi possivel ler a data de expiracao do certificado de $HOST"
+            exit 1
+          fi
+          END_EPOCH=$(date -d "$END_DATE" +%s)
+          NOW_EPOCH=$(date +%s)
+          DAYS_LEFT=$(( (END_EPOCH - NOW_EPOCH) / 86400 ))
+          echo "certificado de $HOST expira em $END_DATE ($DAYS_LEFT dias)"
+          if [ "$DAYS_LEFT" -lt 20 ]; then
+            echo "::error::certificado de $HOST expira em $DAYS_LEFT dias (< 20) -- confira a renovacao (DEPLOY.md)"
+            exit 1
+          fi
