@@ -27,6 +27,11 @@ Pontos que costumam surpreender:
   subir, agarra :80/:443 e serve 404.
 - **O banco não é acessível de fora.** Para conectar um cliente gráfico, use
   túnel: `ssh -L 5432:127.0.0.1:5432 <servidor>`.
+- **`.env.prod` ganha uma chave `IMAGE_TAG`, escrita pelo próprio deploy.**
+  Não preencha à mão: é o `deploy.yml` que grava o SHA publicado a cada push
+  na `main`, e é essa chave — não a variável de ambiente do job — que fica
+  sendo a fonte de verdade de "qual versão está no ar" (ver "Verificação de
+  que a produção está mesmo atualizada").
 
 ## Pré-requisitos no servidor
 
@@ -34,7 +39,10 @@ Pontos que costumam surpreender:
    diretório no nginx como somente-leitura. São necessários
    `live/back.ligadealgoritmos.com/{fullchain,privkey}.pem`,
    `options-ssl-nginx.conf` e `ssl-dhparams.pem`.
-2. Um `.env.prod` no diretório do projeto, com **todas** as chaves do
+2. `/var/www/certbot` no host, legível pelo `liga-nginx` (o compose monta
+   `:ro`) e gravável pelo certbot do host — é onde o desafio ACME é escrito
+   na renovação (ver "Certificado TLS e sua renovação").
+3. Um `.env.prod` no diretório do projeto, com **todas** as chaves do
    `.env.example` preenchidas. Em especial:
    - `NODE_ENV=production` — sem isso, `/docs` e `/api-json` ficam públicos;
    - `ACCESS_TOKEN_SECRET` e `REFRESH_TOKEN_SECRET` **diferentes entre si**;
@@ -44,7 +52,7 @@ Pontos que costumam surpreender:
    - `PORT` vazia ou `3000` — o nginx faz proxy para `api:3000`; outro valor
      aqui exige mudar o `set $upstream` do `nginx/default.conf` junto, senão a
      API responde 502.
-3. O nginx do host desabilitado e mascarado.
+4. O nginx do host desabilitado e mascarado.
 
 ## Configuração inicial do CI/CD (uma vez só)
 
@@ -232,6 +240,33 @@ que o `NODE_ENV=production` está valendo.
 Nenhum `docker network connect` manual deve ser necessário: os três serviços
 declaram `networks: - liga` no compose.
 
+### Verificação de que a produção está mesmo atualizada
+
+**Actions verde não é prova de que o container certo está no ar** — foi
+assim que a issue #37 passou três semanas sem ninguém notar: um cron fora
+deste repositório revertia o deploy horas depois de cada merge, sem deixar
+rastro nenhum no workflow. O próprio `deploy.yml` agora fecha esse buraco
+sozinho, mas o sinal existe também fora dele:
+
+```bash
+cd ~/liga-platform-backend
+bash scripts/verificar-producao.sh
+```
+
+Compara a imagem que o `liga-api` está rodando com o `IMAGE_TAG` gravado em
+`.env.prod` (não com a variável de ambiente do job, que já não existe depois
+que o workflow termina) e imprime `em dia` ou `divergente: esperado X,
+rodando Y`, saindo com código diferente de zero no segundo caso. Roda em
+três lugares:
+
+1. **dentro do próprio `deploy.yml`**, logo depois do `up -d` — se divergir,
+   o deploy fica vermelho, mesmo que o `up -d` não tenha dado erro nenhum;
+2. **[`verificar-producao.yml`](.github/workflows/verificar-producao.yml)**,
+   agendado todo dia às 07:00 UTC — pega qualquer coisa que troque a imagem
+   fora do fluxo do `deploy.yml` (o próprio cron que a #37 removeu era desse
+   tipo);
+3. **à mão**, sempre que houver dúvida, com o comando acima.
+
 ## Rollback
 
 O deploy não toca em dado: o volume `postgres-liga-data` é o mesmo antes e
@@ -297,6 +332,80 @@ sudo ss -lntp | grep -E ':80 |:443 '   # dono das portas: docker-proxy
 
 `disable` sozinho não basta — não impede um `start` manual nem um start por
 dependência de outra unit. O `mask` impede.
+
+## Certificado TLS e sua renovação
+
+O certificado vive em `/etc/letsencrypt` no host, montado `:ro` no nginx (ver
+"Pré-requisitos"). A renovação é feita pelo **certbot do host**, no modo
+`webroot`: ele escreve o desafio ACME em `/var/www/certbot`, um segundo
+volume montado `:ro` no `liga-nginx` (`docker-compose.prod.yaml` —
+`/etc/letsencrypt` já é `:ro`, por isso o webroot precisa ser um volume à
+parte, gravável pelo certbot e legível pelo container). O
+[`nginx/default.conf`](nginx/default.conf) serve
+`/.well-known/acme-challenge/` direto na `:80`, com
+`location ^~ /.well-known/acme-challenge/` **antes** do `return 301` — sem
+essa exceção o desafio seria redirecionado para HTTPS, e renovar um
+certificado **expirado** passaria a depender de servir HTTPS com esse mesmo
+certificado.
+
+Consequência prática: **a renovação não derruba nem recria nenhum
+container.** Diferente do `authenticator = standalone` anterior — que
+precisava da porta 80 livre e só funcionava com o proxy fora do ar —,
+webroot renova com o stack de produção no ar o tempo todo.
+
+Depois de uma renovação bem-sucedida,
+[`scripts/certbot-deploy-hook.sh`](scripts/certbot-deploy-hook.sh) —
+copiado à mão para `/etc/letsencrypt/renewal-hooks/deploy/` no servidor,
+com `chmod +x` — recarrega o `liga-nginx`
+(`docker exec liga-nginx nginx -s reload`). Sem isso o container continuaria
+servindo o certificado velho até alguém reiniciá-lo manualmente; o
+`renewal-hooks/deploy/` do servidor ficou vazio por muito tempo exatamente
+por essa razão. O hook fica **versionado no repo**, não só no servidor — foi
+a falta disso (um script que só existia na EC2) que tornou o problema
+invisível por semanas.
+
+Testar sem gastar a cota do Let's Encrypt (5 renovações/semana por
+domínio):
+
+```bash
+sudo certbot renew --dry-run
+```
+
+`--dry-run` não dispara deploy-hooks (não há renovação de verdade
+acontecendo), então provar o hook em si é rodá-lo à mão uma vez e conferir
+`/var/log/certbot-deploy-hook.log` e os logs do `liga-nginx`.
+
+## O que roda agendado na EC2
+
+| o quê | quando | o que faz | onde está |
+| --- | --- | --- | --- |
+| renovação do certbot | timer/cron do sistema — confira com `systemctl list-timers \| grep certbot` ou `sudo crontab -l` | `certbot renew` via webroot, sem tocar em nenhum container | configuração do certbot no host, fora do repo (não versionável) |
+| [`verificar-producao.yml`](.github/workflows/verificar-producao.yml) | diário, 07:00 UTC | SSHa na EC2 e roda `scripts/verificar-producao.sh`; falha se a imagem em execução divergir do último `IMAGE_TAG` publicado | `.github/workflows/verificar-producao.yml` |
+| [`verificar-certificado.yml`](.github/workflows/verificar-certificado.yml) | diário, 07:00 UTC | checa via TLS pela internet quantos dias faltam para o certificado expirar; falha abaixo de 20 dias | `.github/workflows/verificar-certificado.yml` |
+
+**Não existe mais nenhum agendamento que derrube o stack.** Até 2026-09-09
+havia um cron do usuário **root** (`sudo crontab -l` — o do usuário `ubuntu`
+nunca mostrou nada, e foi por isso que passou despercebido por semanas:
+`crontab -l` sem `sudo` não é o crontab que importa) que rodava, todo dia às
+03:00:
+
+```
+docker compose -f docker-compose.prod.yaml down && \
+  certbot renew --standalone && \
+  docker compose -f docker-compose.prod.yaml up -d
+```
+
+Paliativo para o `standalone` precisar da porta 80. Sem `IMAGE_TAG` e sem
+`--env-file .env.prod`, esse `up -d` caía no default
+`${IMAGE_TAG:-latest}` e usava a cópia **local** de `:latest` — que nunca
+era atualizada pelo deploy automático (ele puxa só por SHA), então ficava
+presa numa versão antiga. Resultado: qualquer merge só valia entre o deploy
+e as 03:00 seguintes; depois disso a produção voltava a rodar um build de
+semanas atrás, com o Actions permanecendo verde o tempo todo (issue #37). A
+troca para webroot elimina a razão de existir desse cron — a renovação
+deixa de precisar derrubar qualquer coisa —, e o `deploy.yml` agora alinha a
+cópia local de `:latest` a cada deploy, então mesmo um `up -d` "pelado" (sem
+variável nenhuma) não teria mais uma versão velha para cair.
 
 ## Migrações do Prisma
 
@@ -379,7 +488,17 @@ aditiva, e um `pg_dump` a cada merge custaria disco e tempo sem pagar por si.
   do volume. Depois disso é `ALTER USER` dentro do container, e a
   `DATABASE_URL` precisa ser atualizada à parte (a senha está embutida nela).
 
-- **A renovação do certificado está quebrada** (issue #37): o certbot está com
-  `authenticator = standalone`, que precisa da :80 — ocupada pelo
-  `docker-proxy` do nginx —, e `renewal-hooks/deploy/` está vazio, então nada
-  recarrega o `liga-nginx` depois de renovar.
+- **Merge verde não é prova de que a produção está atualizada.** Foi
+  literalmente falso por três semanas (issue #37): um cron fora deste
+  repositório revertia todo deploy horas depois, sem aparecer em lugar
+  nenhum do Actions. Enquanto existir qualquer caminho que suba o stack sem
+  `IMAGE_TAG` explícito, essa possibilidade volta a existir — é por isso que
+  o `deploy.yml` grava a versão em `.env.prod` (não só na variável de
+  ambiente do job) e por que `scripts/verificar-producao.sh` roda tanto no
+  próprio deploy quanto, de novo, todo dia (ver "Verificação de que a
+  produção está mesmo atualizada" e "O que roda agendado na EC2").
+
+- **A renovação do certificado é via `webroot`, não `standalone`+cron**
+  (issue #37) — ver "Certificado TLS e sua renovação". Não recrie o cron
+  antigo nem volte o `authenticator` para `standalone`: foi exatamente esse
+  desenho que exigia derrubar o stack para liberar a porta 80.

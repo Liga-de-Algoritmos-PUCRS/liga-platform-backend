@@ -1,0 +1,39 @@
+name: Verifica validade do certificado TLS
+
+# Sem isso, a expiracao so seria notada quando o navegador bloqueasse o site
+# (issue #37: o certbot so tenta renovar nos 30 dias finais, e a renovacao
+# tem historico de falhar sem ninguem saber). Roda pela internet, sem SSH --
+# nao depende do estado do servidor.
+on:
+  schedule:
+    - cron: '0 7 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  verificar:
+    name: verificar-expiracao-certificado
+    runs-on: ubuntu-latest
+    steps:
+      - name: Confere dias restantes do certificado
+        run: |
+          set -euo pipefail
+          HOST=back.ligadealgoritmos.com
+          # "timeout" evita que uma porta filtrada (em vez de recusada) prenda
+          # o step indefinidamente -- sem isso, a falha so apareceria no
+          # timeout do job inteiro, bem mais tarde. O "|| true" na atribuicao
+          # garante que uma falha aqui (timeout incluido) caia no "-z" abaixo
+          # em vez de matar o script com pipefail antes da mensagem de erro.
+          END_DATE=$(echo | timeout 10 openssl s_client -servername "$HOST" -connect "$HOST:443" 2>/dev/null \
+            | openssl x509 -noout -enddate | cut -d= -f2) || true
+          if [ -z "$END_DATE" ]; then
+            echo "::error::nao foi possivel ler a data de expiracao do certificado de $HOST"
+            exit 1
+          fi
+          END_EPOCH=$(date -d "$END_DATE" +%s)
+          NOW_EPOCH=$(date +%s)
+          DAYS_LEFT=$(( (END_EPOCH - NOW_EPOCH) / 86400 ))
+          echo "certificado de $HOST expira em $END_DATE ($DAYS_LEFT dias)"
+          if [ "$DAYS_LEFT" -lt 20 ]; then
+            echo "::error::certificado de $HOST expira em $DAYS_LEFT dias (< 20) -- confira a renovacao (DEPLOY.md)"
+            exit 1
+          fi

@@ -1,0 +1,28 @@
+name: Verifica producao (imagem em execucao)
+
+# Sinal independente do Actions verde: o deploy pode reportar sucesso e, horas
+# depois, algo fora do repo (ex.: o cron que a issue #37 removeu) trocar a
+# imagem em execucao sem deixar rastro no workflow de deploy. Este job SSHa na
+# EC2 todo dia e falha se divergir -- ver scripts/verificar-producao.sh.
+on:
+  schedule:
+    # 07:00 UTC = 04:00 em Brasilia, fora de qualquer deploy/renovacao.
+    - cron: '0 7 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  verificar:
+    name: verificar-imagem-em-execucao
+    runs-on: ubuntu-latest
+    steps:
+      - name: Compara a imagem rodando com o IMAGE_TAG do ultimo deploy
+        uses: appleboy/ssh-action@v1.2.5
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script_stop: true
+          script: |
+            set -euo pipefail
+            cd ~/liga-platform-backend
+            bash scripts/verificar-producao.sh

@@ -60,6 +60,10 @@ services:
     volumes:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
+      # Webroot do desafio ACME (issue #37): o certbot do host grava o token
+      # aqui, o nginx so le. Precisa ser volume a parte porque /etc/letsencrypt
+      # acima e :ro.
+      - /var/www/certbot:/var/www/certbot:ro
     depends_on:
       - api
     networks:
