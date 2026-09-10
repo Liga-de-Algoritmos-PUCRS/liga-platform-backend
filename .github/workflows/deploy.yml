@@ -118,8 +118,12 @@ jobs:
             # workflow, no verificar-producao.yml agendado. O env.schema.ts nao
             # e "strict", entao essa chave extra nao afeta o boot da api; ela e
             # consumida so pela interpolacao do compose e por este script.
+            # Delimitador "|" em vez de "/": IMAGE_TAG normalmente e um SHA
+            # hexadecimal, mas um rollback via workflow_dispatch aceita
+            # qualquer string no input "image_tag" -- um valor com "/" quebraria
+            # o sed com "/" como delimitador.
             if grep -q '^IMAGE_TAG=' .env.prod; then
-              sed -i "s/^IMAGE_TAG=.*/IMAGE_TAG=${IMAGE_TAG}/" .env.prod
+              sed -i "s|^IMAGE_TAG=.*|IMAGE_TAG=${IMAGE_TAG}|" .env.prod
             else
               printf '\nIMAGE_TAG=%s\n' "$IMAGE_TAG" >> .env.prod
             fi
