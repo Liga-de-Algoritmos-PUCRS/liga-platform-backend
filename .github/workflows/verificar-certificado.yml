@@ -18,8 +18,13 @@ jobs:
         run: |
           set -euo pipefail
           HOST=back.ligadealgoritmos.com
-          END_DATE=$(echo | openssl s_client -servername "$HOST" -connect "$HOST:443" 2>/dev/null \
-            | openssl x509 -noout -enddate | cut -d= -f2)
+          # "timeout" evita que uma porta filtrada (em vez de recusada) prenda
+          # o step indefinidamente -- sem isso, a falha so apareceria no
+          # timeout do job inteiro, bem mais tarde. O "|| true" na atribuicao
+          # garante que uma falha aqui (timeout incluido) caia no "-z" abaixo
+          # em vez de matar o script com pipefail antes da mensagem de erro.
+          END_DATE=$(echo | timeout 10 openssl s_client -servername "$HOST" -connect "$HOST:443" 2>/dev/null \
+            | openssl x509 -noout -enddate | cut -d= -f2) || true
           if [ -z "$END_DATE" ]; then
             echo "::error::nao foi possivel ler a data de expiracao do certificado de $HOST"
             exit 1
